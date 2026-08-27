@@ -1,4 +1,4 @@
-# 🐦 Trust No Pigeon
+#Trust No Pigeon
 
 **Trust No Pigeon** is a 3D First-Person Action Survival Game developed in **Godot 4.7**.
 
@@ -41,4 +41,4 @@ In a world where pigeons aren't what they seem, you must defend yourself against
 
 ## 📜 License & Credits
 
-Developed by **எறுழுரு (Eruzhuru Studios)** with AI pair programming assistance. All audio assets, models, and code are property of the studio.
+Developed by **எறுழுரு (Eruzhuru Studios)**. All audio assets, models, and code are property of the studio.
