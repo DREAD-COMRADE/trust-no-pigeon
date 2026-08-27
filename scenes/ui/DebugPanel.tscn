@@ -1,0 +1,130 @@
+[gd_scene format=3 uid="uid://b5d8g24klmnpq"]
+
+[ext_resource type="Script" uid="uid://dunnm8oyynbqn" path="res://scripts/ui/debug_panel.gd" id="1_dbg"]
+
+[node name="DebugPanel" type="PanelContainer" unique_id=1570255227]
+process_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -220.0
+offset_right = 250.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dbg")
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=1423722453]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="VBox" type="VBoxContainer" parent="Margin" unique_id=482642426]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeaderHBox" type="HBoxContainer" parent="Margin/VBox" unique_id=823694268]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Margin/VBox/HeaderHBox" unique_id=791947203]
+modulate = Color(0.3, 0.9, 1, 1)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "DEBUG / TESTING CONTROL PANEL"
+
+[node name="CloseButton" type="Button" parent="Margin/VBox/HeaderHBox" unique_id=846085665]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+text = "X"
+
+[node name="HSeparator1" type="HSeparator" parent="Margin/VBox" unique_id=81611966]
+layout_mode = 2
+
+[node name="TimeLabel" type="Label" parent="Margin/VBox" unique_id=1042906915]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "TEST DAY / NIGHT CYCLE:"
+
+[node name="TimeGrid" type="GridContainer" parent="Margin/VBox" unique_id=1958280743]
+layout_mode = 2
+columns = 4
+
+[node name="BtnDay" type="Button" parent="Margin/VBox/TimeGrid" unique_id=2090102924]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "DAY"
+
+[node name="BtnSunset" type="Button" parent="Margin/VBox/TimeGrid" unique_id=299460675]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "SUNSET"
+
+[node name="BtnNight" type="Button" parent="Margin/VBox/TimeGrid" unique_id=1800585500]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "NIGHT"
+
+[node name="BtnDawn" type="Button" parent="Margin/VBox/TimeGrid" unique_id=1185069285]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "DAWN"
+
+[node name="EventLabel" type="Label" parent="Margin/VBox" unique_id=922897581]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "TRIGGER TIMED EVENTS:"
+
+[node name="EventGrid" type="GridContainer" parent="Margin/VBox" unique_id=656156859]
+layout_mode = 2
+columns = 4
+
+[node name="BtnUFO" type="Button" parent="Margin/VBox/EventGrid" unique_id=2021198564]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "UFO"
+
+[node name="BtnDrone" type="Button" parent="Margin/VBox/EventGrid" unique_id=1352538971]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "DRONE"
+
+[node name="BtnGovNoticed" type="Button" parent="Margin/VBox/EventGrid" unique_id=1963245451]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "GOV"
+
+[node name="BtnPressConf" type="Button" parent="Margin/VBox/EventGrid" unique_id=692025604]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "PRESS"
+
+[node name="BtnShutHimUp" type="Button" parent="Margin/VBox/EventGrid" unique_id=977399231]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "SHUT UP"
+
+[node name="BtnFlock" type="Button" parent="Margin/VBox/EventGrid" unique_id=154268744]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "FLOCK"
+
+[node name="BtnMultiGov" type="Button" parent="Margin/VBox/EventGrid" unique_id=486528745]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "MULTI-GOV"
+
+[node name="HSeparator2" type="HSeparator" parent="Margin/VBox" unique_id=1760983709]
+layout_mode = 2
+
+[node name="MiscHBox" type="HBoxContainer" parent="Margin/VBox" unique_id=1842314795]
+layout_mode = 2
+
+[node name="ChkGodMode" type="CheckBox" parent="Margin/VBox/MiscHBox" unique_id=1378624615]
+layout_mode = 2
+text = "GOD MODE (INVINCIBLE)"

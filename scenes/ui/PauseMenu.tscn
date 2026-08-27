@@ -1,0 +1,85 @@
+[gd_scene format=3 uid="uid://dbt3yjguv41og"]
+
+[ext_resource type="Script" uid="uid://b2cf83m0t4p4" path="res://scripts/ui/pause_menu.gd" id="1_pm"]
+[ext_resource type="PackedScene" uid="uid://hx1f36yywf0w" path="res://scenes/ui/SettingsPanel.tscn" id="2_sett"]
+[ext_resource type="PackedScene" uid="uid://c7tfjjkmr3xdp" path="res://scenes/ui/RestartConfirmation.tscn" id="3_rc"]
+
+[node name="PauseMenu" type="CanvasLayer" unique_id=855208050]
+process_mode = 3
+layer = 10
+script = ExtResource("1_pm")
+
+[node name="PauseOverlay" type="ColorRect" parent="." unique_id=2108745106]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.27058825)
+
+[node name="CenterVBox" type="VBoxContainer" parent="PauseOverlay" unique_id=1055534800]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -220.0
+offset_right = 220.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="TitleBanner" type="PanelContainer" parent="PauseOverlay/CenterVBox" unique_id=367168227]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="PauseOverlay/CenterVBox/TitleBanner" unique_id=1715607472]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "PAUSED"
+horizontal_alignment = 1
+
+[node name="MenuVBox" type="VBoxContainer" parent="PauseOverlay/CenterVBox" unique_id=1126875290]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="BtnResume" type="Button" parent="PauseOverlay/CenterVBox/MenuVBox" unique_id=157354744]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "RESUME"
+
+[node name="BtnRestart" type="Button" parent="PauseOverlay/CenterVBox/MenuVBox" unique_id=650012674]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "RESTART"
+
+[node name="BtnSettings" type="Button" parent="PauseOverlay/CenterVBox/MenuVBox" unique_id=270875148]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "SETTINGS"
+
+[node name="BtnMainMenu" type="Button" parent="PauseOverlay/CenterVBox/MenuVBox" unique_id=1026266645]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "MAIN MENU"
+
+[node name="FlavorLabel" type="Label" parent="PauseOverlay/CenterVBox" unique_id=2114192417]
+modulate = Color(0.7, 0.7, 0.7, 0.9)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "🐦 EVEN PIGEONS TAKE A BREAK."
+horizontal_alignment = 1
+
+[node name="SettingsPanel" parent="." unique_id=2089573928 instance=ExtResource("2_sett")]
+visible = false
+
+[node name="RestartConfirmation" parent="." unique_id=1234044705 instance=ExtResource("3_rc")]

@@ -1,0 +1,104 @@
+[gd_scene format=3 uid="uid://c7x0g4vm2w8rq"]
+
+[ext_resource type="Script" uid="uid://boj3lf8d6vhko" path="res://scripts/objects/package_drone.gd" id="1_drone"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_hit"]
+radius = 1.3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body"]
+albedo_color = Color(0.2, 0.22, 0.25, 1)
+metallic = 0.8
+roughness = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+material = SubResource("StandardMaterial3D_body")
+size = Vector3(0.6, 0.25, 0.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_arm"]
+material = SubResource("StandardMaterial3D_body")
+size = Vector3(1.6, 0.06, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_crate"]
+albedo_color = Color(0.85, 0.5, 0.1, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_crate"]
+material = SubResource("StandardMaterial3D_crate")
+size = Vector3(0.5, 0.4305664, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hh2rm"]
+albedo_color = Color(0, 0, 0, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_3sw0r"]
+material = SubResource("StandardMaterial3D_hh2rm")
+size = Vector3(0.5426941, 0.5203735, 0.02418518)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_prop"]
+albedo_color = Color(0.1, 0.8, 1, 0.6)
+emission_enabled = true
+emission = Color(0.1, 0.7, 1, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_prop"]
+material = SubResource("StandardMaterial3D_prop")
+top_radius = 0.3
+bottom_radius = 0.3
+height = 0.02
+
+[node name="PackageDrone" type="Area3D" unique_id=2005362019]
+collision_layer = 3
+collision_mask = 3
+script = ExtResource("1_drone")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=419976308]
+shape = SubResource("SphereShape3D_hit")
+
+[node name="Visual" type="Node3D" parent="." unique_id=782207435]
+
+[node name="Body" type="MeshInstance3D" parent="Visual" unique_id=60003126]
+mesh = SubResource("BoxMesh_body")
+
+[node name="Arm1" type="MeshInstance3D" parent="Visual" unique_id=1845272126]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 0, 0, 0)
+mesh = SubResource("BoxMesh_arm")
+
+[node name="Arm2" type="MeshInstance3D" parent="Visual" unique_id=1081782269]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 0, 0, 0)
+mesh = SubResource("BoxMesh_arm")
+
+[node name="Crate" type="MeshInstance3D" parent="Visual" unique_id=661679412]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.35971677, 0)
+mesh = SubResource("BoxMesh_crate")
+
+[node name="Crate2" type="MeshInstance3D" parent="Visual" unique_id=1226297935]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.002029419, -0.3398987, 0.1774118)
+mesh = SubResource("BoxMesh_3sw0r")
+
+[node name="Crate3" type="MeshInstance3D" parent="Visual" unique_id=2062084153]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.002029419, -0.3398987, -0.17840505)
+mesh = SubResource("BoxMesh_3sw0r")
+
+[node name="Rotors" type="Node3D" parent="Visual" unique_id=1733663475]
+
+[node name="Rotor1" type="MeshInstance3D" parent="Visual/Rotors" unique_id=84127540]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 0.12, 0.55)
+mesh = SubResource("CylinderMesh_prop")
+
+[node name="Rotor2" type="MeshInstance3D" parent="Visual/Rotors" unique_id=1111599805]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 0.12, 0.55)
+mesh = SubResource("CylinderMesh_prop")
+
+[node name="Rotor3" type="MeshInstance3D" parent="Visual/Rotors" unique_id=1114036399]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 0.12, -0.55)
+mesh = SubResource("CylinderMesh_prop")
+
+[node name="Rotor4" type="MeshInstance3D" parent="Visual/Rotors" unique_id=184582199]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 0.12, -0.55)
+mesh = SubResource("CylinderMesh_prop")
+
+[node name="BeaconLight" type="OmniLight3D" parent="Visual" unique_id=1067802763]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+light_color = Color(1, 0.8, 0.2, 1)
+light_energy = 5.0
+omni_range = 8.0

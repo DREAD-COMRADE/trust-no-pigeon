@@ -1,0 +1,31 @@
+# ==========================================
+# Godot 4.x Version Control Ignore Rules
+# ==========================================
+
+# Godot 4.x cache & import directories
+.godot/
+*.translation
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+*.log
+
+# Export / Build Artifacts
+build/
+dist/
+exports/
+*.apk
+*.aab
+*.exe
+*.zip
+*.tar.gz
+export_presets.cfg
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,17 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/music_manager.gd" id="1_mm"]
+[ext_resource type="AudioStream" path="res://assets/Audio/Main_theme.mp3" id="2_m1"]
+[ext_resource type="AudioStream" path="res://assets/Audio/Steel_Feathers_Theme5.mp3" id="3_m2"]
+[ext_resource type="AudioStream" path="res://assets/Audio/Theme1.mp3" id="4_m3"]
+[ext_resource type="AudioStream" path="res://assets/Audio/Theme2.mp3" id="5_m4"]
+[ext_resource type="AudioStream" path="res://assets/Audio/Theme3.mp3" id="6_m5"]
+[ext_resource type="AudioStream" path="res://assets/Audio/Theme4.mp3" id="7_m6"]
+
+[node name="MusicManager" type="Node"]
+process_mode = 3
+script = ExtResource("1_mm")
+music_pool = Array[AudioStream]([ExtResource("2_m1"), ExtResource("3_m2"), ExtResource("4_m3"), ExtResource("5_m4"), ExtResource("6_m5"), ExtResource("7_m6")])
+
+[node name="AudioPlayer" type="AudioStreamPlayer" parent="."]
+volume_db = -6.0

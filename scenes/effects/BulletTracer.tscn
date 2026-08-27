@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://b8t5k3mv2saxp"]
+
+[ext_resource type="Script" path="res://scripts/effects/bullet_tracer.gd" id="1_trc"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tracer"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 0.85, 0.35, 0.85)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_tracer"]
+material = SubResource("StandardMaterial3D_tracer")
+top_radius = 0.02
+bottom_radius = 0.02
+height = 0.7
+
+[node name="BulletTracer" type="Node3D"]
+script = ExtResource("1_trc")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -0.35)
+mesh = SubResource("CylinderMesh_tracer")

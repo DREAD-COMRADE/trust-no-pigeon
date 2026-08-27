@@ -1,0 +1,103 @@
+[gd_scene format=3 uid="uid://b28yv1543aa8c"]
+
+[ext_resource type="Script" uid="uid://rbfm2x3ceqqa" path="res://scripts/objects/ufo.gd" id="1_ufo"]
+[ext_resource type="Shader" uid="uid://dt6itm1urudua" path="res://shaders/ufo_shield.gdshader" id="2_shd"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_hit"]
+radius = 4.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_saucer"]
+albedo_color = Color(0.2, 0.25, 0.35, 1)
+metallic = 0.9
+roughness = 0.2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_dish"]
+material = SubResource("StandardMaterial3D_saucer")
+top_radius = 1.6
+bottom_radius = 3.8
+height = 0.7
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_glow"]
+albedo_color = Color(0.1, 0.9, 1, 1)
+emission_enabled = true
+emission = Color(0.2, 0.95, 1, 1)
+emission_energy_multiplier = 1.97
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_rim"]
+material = SubResource("StandardMaterial3D_glow")
+top_radius = 3.85
+bottom_radius = 3.85
+height = 0.15
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_hatch"]
+material = SubResource("StandardMaterial3D_glow")
+top_radius = 1.2
+bottom_radius = 1.2
+height = 0.2
+
+[sub_resource type="SphereMesh" id="SphereMesh_dome"]
+material = SubResource("StandardMaterial3D_glow")
+radius = 1.4
+is_hemisphere = true
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_shield"]
+render_priority = 0
+shader = ExtResource("2_shd")
+shader_parameter/shield_color = Color(0.2, 0.85, 1, 0.45)
+shader_parameter/rim_color = Color(0.4, 0.95, 1, 1)
+shader_parameter/scanline_frequency = 24.0
+shader_parameter/scanline_speed = 6.0
+shader_parameter/fresnel_power = 2.5
+shader_parameter/flicker_alpha = 1.0
+shader_parameter/pulse_intensity = 0.6
+
+[sub_resource type="SphereMesh" id="SphereMesh_shield"]
+material = SubResource("ShaderMaterial_shield")
+radius = 4.6
+height = 9.2
+
+[node name="UFO" type="Area3D" unique_id=1743250584]
+collision_layer = 3
+collision_mask = 3
+script = ExtResource("1_ufo")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=458249720]
+shape = SubResource("SphereShape3D_hit")
+
+[node name="Visual" type="Node3D" parent="." unique_id=1657826648]
+
+[node name="SaucerDish" type="MeshInstance3D" parent="Visual" unique_id=2097681406]
+mesh = SubResource("CylinderMesh_dish")
+
+[node name="SaucerDish2" type="MeshInstance3D" parent="Visual" unique_id=1680114307]
+transform = Transform3D(-1, 8.742278e-08, 0, -8.742278e-08, -1, 0, 0, 0, 1, 6.4407786e-08, -0.7367392, 0)
+mesh = SubResource("CylinderMesh_dish")
+
+[node name="GlowRim" type="MeshInstance3D" parent="Visual" unique_id=1113898747]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.40732482, 0)
+mesh = SubResource("CylinderMesh_rim")
+
+[node name="HatchDoor" type="MeshInstance3D" parent="Visual" unique_id=2107799824]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.1414566, 0)
+mesh = SubResource("CylinderMesh_hatch")
+
+[node name="TopDome" type="MeshInstance3D" parent="Visual" unique_id=1698292270]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+mesh = SubResource("SphereMesh_dome")
+
+[node name="ShieldMesh" type="MeshInstance3D" parent="Visual" unique_id=2083942084]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.35, 0)
+mesh = SubResource("SphereMesh_shield")
+
+[node name="DomeLight" type="OmniLight3D" parent="Visual" unique_id=1036079252]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+light_color = Color(0.2, 0.9, 1, 1)
+light_energy = 6.0
+omni_range = 15.0
+
+[node name="BeamLight" type="SpotLight3D" parent="Visual" unique_id=1377027964]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, -0.5, 0)
+light_color = Color(0.3, 0.8, 1, 1)
+light_energy = 5.0
+spot_range = 35.0
+spot_angle = 35.0

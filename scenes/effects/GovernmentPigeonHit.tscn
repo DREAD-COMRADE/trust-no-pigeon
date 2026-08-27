@@ -1,0 +1,60 @@
+[gd_scene format=3 uid="uid://b45h5ufflgmul"]
+
+[ext_resource type="Script" uid="uid://buhel4a240uck" path="res://scripts/effects/hit_explosion.gd" id="1_fx"]
+[ext_resource type="AudioStream" uid="uid://6o81eg5x1nw2" path="res://assets/Audio/Piegon_explode.mp3" id="2_r5yq7"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flash"]
+transparency = 1
+albedo_color = Color(1, 0.6, 0.1, 0.8)
+emission_enabled = true
+emission = Color(1, 0.4, 0.1, 1)
+emission_energy_multiplier = 5.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_flash"]
+material = SubResource("StandardMaterial3D_flash")
+radius = 0.2
+height = 0.4
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_spark"]
+direction = Vector3(0, 1, 0)
+spread = 180.0
+initial_velocity_min = 3.0
+initial_velocity_max = 8.0
+gravity = Vector3(0, -5, 0)
+scale_min = 0.1
+scale_max = 0.3
+color = Color(1, 0.7, 0.2, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_particle"]
+albedo_color = Color(1, 0.5, 0.1, 1)
+emission_enabled = true
+emission = Color(1, 0.4, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_particle"]
+material = SubResource("StandardMaterial3D_particle")
+size = Vector3(0.08, 0.08, 0.08)
+
+[node name="GovernmentPigeonHit" type="Node3D" unique_id=615561825]
+script = ExtResource("1_fx")
+
+[node name="FlashMesh" type="MeshInstance3D" parent="." unique_id=2113181029]
+mesh = SubResource("SphereMesh_flash")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=1802691165]
+light_color = Color(1, 0.6, 0.2, 1)
+light_energy = 8.0
+omni_range = 4.0
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="." unique_id=1740333845]
+emitting = false
+amount = 16
+lifetime = 0.4
+one_shot = true
+explosiveness = 0.95
+process_material = SubResource("ParticleProcessMaterial_spark")
+draw_pass_1 = SubResource("BoxMesh_particle")
+
+[node name="ExplosionSound" type="AudioStreamPlayer3D" parent="." unique_id=1484498515]
+stream = ExtResource("2_r5yq7")
+volume_db = 80.0
+unit_size = 24.27

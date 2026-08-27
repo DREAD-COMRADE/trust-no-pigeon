@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bh2cpk0t0vmvd"]
+
+[ext_resource type="Script" uid="uid://b3qik32kvslky" path="res://scripts/systems/pigeon_spawner.gd" id="1_spawn"]
+
+[node name="PigeonSpawner" type="Node3D" unique_id=717330799]
+script = ExtResource("1_spawn")

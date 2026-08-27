@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/day_night_manager.gd" id="1_dnm"]
+
+[node name="DayNightManager" type="Node"]
+script = ExtResource("1_dnm")

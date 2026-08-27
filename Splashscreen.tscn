@@ -1,0 +1,71 @@
+[gd_scene format=3 uid="uid://npb36tx4r2xg"]
+
+[ext_resource type="VideoStream" uid="uid://bd6d54h26loyd" path="res://assets/splash_screen/Timeline 1.ogv" id="1_nsmmj"]
+[ext_resource type="Texture2D" uid="uid://bb78s26g8gecb" path="res://assets/icons/game_title_screen.png" id="2_img"]
+[ext_resource type="AudioStream" uid="uid://kq8nf7hbh67f" path="res://assets/Audio/Piegon_sound.mp3" id="3_aud"]
+[ext_resource type="Script" uid="uid://u48ay12ob0gn" path="res://splashscreen.gd" id="4_scr"]
+
+[node name="Splashscreen" type="Control" unique_id=56501508]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("4_scr")
+
+[node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="." unique_id=1929156064]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stream = ExtResource("1_nsmmj")
+autoplay = true
+expand = true
+
+[node name="TitlePanel" type="Control" parent="." unique_id=200563334]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleTexture" type="TextureRect" parent="TitlePanel" unique_id=871401762]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -65.0
+offset_top = -49.0
+offset_right = 62.0
+offset_bottom = 54.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_img")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PromptLabel" type="Label" parent="TitlePanel" unique_id=21197045]
+modulate = Color(1, 1, 1, 0.9490196)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -80.0
+offset_right = 200.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 22
+text = "PRESS ANY KEY TO CONTINUE"
+horizontal_alignment = 1
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=392314409]
+stream = ExtResource("3_aud")

@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://cx8w5v6j4m12y"]
+
+[ext_resource type="Script" uid="uid://wdcvhheup11g" path="res://scripts/objects/event_screen.gd" id="1_screen"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_frame"]
+albedo_color = Color(0.1, 0.12, 0.15, 1)
+metallic = 0.8
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_frame"]
+material = SubResource("StandardMaterial3D_frame")
+size = Vector3(8.4, 4.4, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_screen"]
+albedo_color = Color(0.02, 0.04, 0.08, 1)
+emission_enabled = true
+emission = Color(0.05, 0.1, 0.2, 1)
+emission_energy_multiplier = 0.6
+
+[sub_resource type="QuadMesh" id="QuadMesh_screen"]
+material = SubResource("StandardMaterial3D_screen")
+size = Vector2(8, 4)
+
+[node name="EventScreen" type="Node3D" unique_id=1772403122]
+script = ExtResource("1_screen")
+
+[node name="Frame" type="MeshInstance3D" parent="." unique_id=2060822433]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.1)
+mesh = SubResource("BoxMesh_frame")
+
+[node name="ScreenSurface" type="MeshInstance3D" parent="." unique_id=1480354755]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.06)
+mesh = SubResource("QuadMesh_screen")
+
+[node name="HeaderLabel" type="Label3D" parent="ScreenSurface" unique_id=1677890289]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0.05)
+modulate = Color(0.3, 0.7, 1, 0.8)
+text = "CITY METROPOLITAN FEED"
+font_size = 28
+outline_size = 6
+
+[node name="TitleLabel" type="Label3D" parent="ScreenSurface" unique_id=1382174752]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0.05)
+modulate = Color(0.4, 0.85, 1, 1)
+text = "TRUST NO PIGEON"
+font_size = 46
+outline_size = 10
+autowrap_mode = 2
+
+[node name="SubtitleLabel" type="Label3D" parent="ScreenSurface" unique_id=1919201882]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.2, 0.05)
+modulate = Color(0.6, 0.7, 0.8, 0.7)
+text = "SURVEILLANCE NETWORK ACTIVE"
+font_size = 22
+outline_size = 5
+
+[node name="AlertLight" type="OmniLight3D" parent="." unique_id=1858526739]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1)
+light_color = Color(0.2, 0.6, 1, 1)
+light_energy = 1.5
+omni_range = 8.0

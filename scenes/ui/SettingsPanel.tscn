@@ -1,0 +1,199 @@
+[gd_scene format=3 uid="uid://hx1f36yywf0w"]
+
+[ext_resource type="Script" uid="uid://7ad4j0t4mj2v" path="res://scripts/ui/settings_panel.gd" id="1_sett"]
+[ext_resource type="Texture2D" uid="uid://dxof5mkbxg82k" path="res://assets/icons/Screenshot 2026-08-19 001430.png" id="2_cjf3c"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8hc44"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yopgx"]
+
+[node name="SettingsPanel" type="Control" unique_id=1954626923]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_sett")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=847105168]
+modulate = Color(0.096204735, 0.09620475, 0.096204735, 0.92941177)
+position = Vector2(575, 468)
+scale = Vector2(3.357143, 3.357143)
+texture = ExtResource("2_cjf3c")
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=588302802]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 50
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 50
+theme_override_constants/margin_bottom = 40
+
+[node name="VBoxMain" type="VBoxContainer" parent="Margin" unique_id=436321059]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="HeaderHBox" type="HBoxContainer" parent="Margin/VBoxMain" unique_id=177646799]
+layout_mode = 2
+
+[node name="TitleLabel" type="RichTextLabel" parent="Margin/VBoxMain/HeaderHBox" unique_id=589917147]
+custom_minimum_size = Vector2(400, 50)
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 36
+bbcode_enabled = true
+text = "[b]TRUST [color=#cc2222]NO[/color] PIGEON[/b]"
+
+[node name="HBox" type="HBoxContainer" parent="Margin/VBoxMain" unique_id=1683477577]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 60
+
+[node name="LeftNav" type="PanelContainer" parent="Margin/VBoxMain/HBox" unique_id=173449639]
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_8hc44")
+
+[node name="VBox" type="VBoxContainer" parent="Margin/VBoxMain/HBox/LeftNav" unique_id=11519136]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="BtnGameplay" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=687622690]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "GAMEPLAY"
+
+[node name="BtnControls" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=2082860018]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "CONTROLS"
+
+[node name="BtnAudio" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=1443893904]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "AUDIO"
+
+[node name="BtnVideo" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=730472107]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "VIDEO"
+
+[node name="BtnAccessibility" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=622570886]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "ACCESSIBILITY"
+
+[node name="BtnBack" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=182818748]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "⬅ BACK"
+
+[node name="RightPanel" type="PanelContainer" parent="Margin/VBoxMain/HBox" unique_id=1111560931]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_yopgx")
+
+[node name="VBox" type="VBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel" unique_id=248675341]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="AudioSection" type="VBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/VBox" unique_id=370837575]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="MasterHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection" unique_id=98529812]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/MasterHBox" unique_id=222702535]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "MASTER VOLUME"
+
+[node name="MasterSlider" type="HSlider" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/MasterHBox" unique_id=1101051384]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+value = 80.0
+
+[node name="MasterValue" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/MasterHBox" unique_id=1036484053]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "80%"
+horizontal_alignment = 2
+
+[node name="MusicHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection" unique_id=691583783]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/MusicHBox" unique_id=958424163]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "MUSIC VOLUME"
+
+[node name="MusicSlider" type="HSlider" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/MusicHBox" unique_id=1205389570]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+value = 60.0
+
+[node name="MusicValue" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/MusicHBox" unique_id=865542875]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "60%"
+horizontal_alignment = 2
+
+[node name="SfxHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection" unique_id=638202421]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/SfxHBox" unique_id=339973452]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "SFX VOLUME"
+
+[node name="SfxSlider" type="HSlider" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/SfxHBox" unique_id=2065946119]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+value = 75.0
+
+[node name="SfxValue" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/SfxHBox" unique_id=725319130]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "75%"
+horizontal_alignment = 2
+
+[node name="HSeparator" type="HSeparator" parent="Margin/VBoxMain/HBox/RightPanel/VBox" unique_id=750696717]
+layout_mode = 2
+
+[node name="InvertHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/VBox" unique_id=1100418506]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VBox/InvertHBox" unique_id=1470617339]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "INVERT Y-AXIS"
+
+[node name="CheckButton" type="CheckButton" parent="Margin/VBoxMain/HBox/RightPanel/VBox/InvertHBox" unique_id=998072350]
+layout_mode = 2
+text = "OFF"

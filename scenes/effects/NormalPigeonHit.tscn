@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://txr10kihwrqa"]
+
+[ext_resource type="Script" uid="uid://c7mqtnuttngk2" path="res://scripts/effects/normal_hit.gd" id="1_nhit"]
+[ext_resource type="AudioStream" uid="uid://bfa2easduf64g" path="res://assets/Audio/Pigeon_dead.mp3" id="2_yy6o1"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_feathers"]
+direction = Vector3(0, 1, 0)
+spread = 180.0
+initial_velocity_min = 2.0
+initial_velocity_max = 6.0
+gravity = Vector3(0, -3, 0)
+scale_min = 0.15
+scale_max = 0.35
+color = Color(0.6, 0.65, 0.75, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_feather"]
+albedo_color = Color(0.7, 0.75, 0.8, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_feather"]
+material = SubResource("StandardMaterial3D_feather")
+size = Vector3(0.12, 0.02, 0.2)
+
+[node name="NormalPigeonHit" type="Node3D" unique_id=1908508318]
+script = ExtResource("1_nhit")
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="." unique_id=259715371]
+emitting = false
+amount = 20
+lifetime = 0.45
+one_shot = true
+explosiveness = 0.95
+process_material = SubResource("ParticleProcessMaterial_feathers")
+draw_pass_1 = SubResource("BoxMesh_feather")
+
+[node name="DeathSound" type="AudioStreamPlayer3D" parent="." unique_id=820557035]
+stream = ExtResource("2_yy6o1")
+volume_db = 80.0
+unit_size = 15.55

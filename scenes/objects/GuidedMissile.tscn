@@ -1,0 +1,92 @@
+[gd_scene format=3 uid="uid://dmj2v483x8w0q"]
+
+[ext_resource type="Script" uid="uid://pmipih457fnu" path="res://scripts/objects/guided_missile.gd" id="1_missile"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_missile"]
+radius = 1.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body"]
+albedo_color = Color(0.25, 0.3, 0.2, 1)
+metallic = 0.7
+roughness = 0.3
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_body"]
+material = SubResource("StandardMaterial3D_body")
+top_radius = 0.12
+bottom_radius = 0.12
+height = 0.9
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nose"]
+albedo_color = Color(0.9, 0.2, 0.1, 1)
+emission_enabled = true
+emission = Color(0.8, 0.1, 0.1, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_nose"]
+material = SubResource("StandardMaterial3D_nose")
+top_radius = 0.01
+bottom_radius = 0.12
+height = 0.3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fin"]
+albedo_color = Color(0.15, 0.15, 0.15, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fin"]
+material = SubResource("StandardMaterial3D_fin")
+size = Vector3(0.4, 0.02, 0.2)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_smoke"]
+initial_velocity_min = 0.5
+initial_velocity_max = 1.8
+gravity = Vector3(0, 0.6, 0)
+scale_min = 0.15
+scale_max = 0.45
+color = Color(0.85, 0.85, 0.9, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_smoke"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.85, 0.85, 0.88, 0.35)
+
+[sub_resource type="SphereMesh" id="SphereMesh_smoke"]
+material = SubResource("StandardMaterial3D_smoke")
+radius = 0.14
+height = 0.28
+
+[node name="GuidedMissile" type="Area3D" unique_id=1162480879]
+collision_layer = 3
+collision_mask = 3
+script = ExtResource("1_missile")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=471539084]
+shape = SubResource("SphereShape3D_missile")
+
+[node name="Visual" type="Node3D" parent="." unique_id=1172165737]
+
+[node name="Body" type="MeshInstance3D" parent="Visual" unique_id=1065647708]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("CylinderMesh_body")
+
+[node name="Nose" type="MeshInstance3D" parent="Visual" unique_id=2056407277]
+transform = Transform3D(-1, -8.742278e-08, 0, -3.8213718e-15, 4.37114e-08, -1, 8.742278e-08, -1, -4.37114e-08, 0, 0, -0.6)
+mesh = SubResource("CylinderMesh_nose")
+
+[node name="FinHorizontal" type="MeshInstance3D" parent="Visual" unique_id=2081547955]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.35)
+mesh = SubResource("BoxMesh_fin")
+
+[node name="FinVertical" type="MeshInstance3D" parent="Visual" unique_id=1682631562]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0.35)
+mesh = SubResource("BoxMesh_fin")
+
+[node name="ThrustLight" type="OmniLight3D" parent="." unique_id=656511745]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.6)
+light_color = Color(1, 0.65, 0.2, 1)
+light_energy = 5.0
+omni_range = 6.0
+
+[node name="SmokeTrail" type="GPUParticles3D" parent="." unique_id=869509956]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.65)
+amount = 32
+lifetime = 0.6
+process_material = SubResource("ParticleProcessMaterial_smoke")
+draw_pass_1 = SubResource("SphereMesh_smoke")

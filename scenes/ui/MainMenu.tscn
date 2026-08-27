@@ -1,0 +1,316 @@
+[gd_scene format=3 uid="uid://2u0drqlnv3ux"]
+
+[ext_resource type="Script" uid="uid://uylqvm267m6j" path="res://scripts/ui/main_menu.gd" id="1_mm"]
+[ext_resource type="Script" uid="uid://bwgphw3wqsvrl" path="res://scenes/ui/parallax_background.gd" id="2_2ysvc"]
+[ext_resource type="Texture2D" uid="uid://bb78s26g8gecb" path="res://assets/icons/game_title_screen.png" id="2_iwbf0"]
+[ext_resource type="PackedScene" uid="uid://hx1f36yywf0w" path="res://scenes/ui/SettingsPanel.tscn" id="2_sett"]
+[ext_resource type="AudioStream" uid="uid://b3mmc8f4e6laf" path="res://assets/Audio/Steel_Feathers_Theme5.mp3" id="5_xpiny"]
+
+[sub_resource type="Theme" id="Theme_6jbdy"]
+
+[sub_resource type="Theme" id="Theme_082nw"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2smhn"]
+
+[node name="MainMenu" type="Control" unique_id=1762939512]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_mm")
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="." unique_id=243588116]
+
+[node name="Parallax2D" type="Parallax2D" parent="ParallaxBackground" unique_id=2009460425]
+script = ExtResource("2_2ysvc")
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/Parallax2D" unique_id=1296491161]
+position = Vector2(646, 368)
+scale = Vector2(0.7589392, 0.78749996)
+texture = ExtResource("2_iwbf0")
+offset = Vector2(0.865, 0)
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=117331752]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 60
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 60
+theme_override_constants/margin_bottom = 40
+
+[node name="VBoxMain" type="VBoxContainer" parent="Margin" unique_id=1165371109]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="HeaderHBox" type="HBoxContainer" parent="Margin/VBoxMain" unique_id=1137772353]
+layout_mode = 2
+
+[node name="TitleLabel" type="RichTextLabel" parent="Margin/VBoxMain/HeaderHBox" unique_id=1179175367]
+custom_minimum_size = Vector2(500, 70)
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 48
+bbcode_enabled = true
+text = "[b]TRUST [color=#cc2222]NO[/color] PIGEON[/b]"
+
+[node name="Spacer" type="Control" parent="Margin/VBoxMain/HeaderHBox" unique_id=1454535798]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BestScoreBox" type="PanelContainer" parent="Margin/VBoxMain/HeaderHBox" unique_id=1517667069]
+custom_minimum_size = Vector2(180, 60)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Margin/VBoxMain/HeaderHBox/BestScoreBox" unique_id=2022330406]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HeaderHBox/BestScoreBox/VBox" unique_id=1150459312]
+modulate = Color(0.8, 0.8, 0.8, 1)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "BEST SCORE"
+horizontal_alignment = 1
+
+[node name="ScoreValue" type="Label" parent="Margin/VBoxMain/HeaderHBox/BestScoreBox/VBox" unique_id=1031623365]
+modulate = Color(1, 0.85, 0.2, 1)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "0"
+horizontal_alignment = 1
+
+[node name="ContentHBox" type="HBoxContainer" parent="Margin/VBoxMain" unique_id=339925536]
+layout_mode = 2
+size_flags_vertical = 3
+theme = SubResource("Theme_6jbdy")
+
+[node name="LeftMenu" type="PanelContainer" parent="Margin/VBoxMain/ContentHBox" unique_id=1828897474]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+theme = SubResource("Theme_082nw")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_2smhn")
+
+[node name="VBox" type="VBoxContainer" parent="Margin/VBoxMain/ContentHBox/LeftMenu" unique_id=1990135063]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="BtnPlay" type="Button" parent="Margin/VBoxMain/ContentHBox/LeftMenu/VBox" unique_id=1708568592]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "PLAY"
+
+[node name="BtnHighScores" type="Button" parent="Margin/VBoxMain/ContentHBox/LeftMenu/VBox" unique_id=1687750879]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+text = "HIGH SCORES"
+
+[node name="BtnAchievements" type="Button" parent="Margin/VBoxMain/ContentHBox/LeftMenu/VBox" unique_id=1403356206]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+text = "ACHIEVEMENTS"
+
+[node name="BtnSettings" type="Button" parent="Margin/VBoxMain/ContentHBox/LeftMenu/VBox" unique_id=1050643226]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+text = "SETTINGS"
+
+[node name="BtnCredits" type="Button" parent="Margin/VBoxMain/ContentHBox/LeftMenu/VBox" unique_id=2097991538]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+text = "CREDITS"
+
+[node name="BtnQuit" type="Button" parent="Margin/VBoxMain/ContentHBox/LeftMenu/VBox" unique_id=2044612977]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+text = "QUIT"
+
+[node name="FooterLabel" type="Label" parent="Margin/VBoxMain" unique_id=1487589559]
+modulate = Color(0.6, 0.6, 0.6, 0.8)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "எறுழுரு (ERUZHURU STUDIOS)  |  v1.0.0"
+horizontal_alignment = 1
+
+[node name="SettingsPanel" parent="." unique_id=1950498772 instance=ExtResource("2_sett")]
+visible = false
+layout_mode = 1
+
+[node name="CreditsScreen" type="ColorRect" parent="." unique_id=100131911]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.015, 0.02, 0.035, 0.97)
+
+[node name="CreditsViewport" type="Control" parent="CreditsScreen" unique_id=100131912]
+clip_contents = true
+layout_mode = 1
+anchor_left = 0.15
+anchor_top = 0.1
+anchor_right = 0.85
+anchor_bottom = 0.9
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CreditsRoll" type="VBoxContainer" parent="CreditsScreen/CreditsViewport" unique_id=100131913]
+layout_mode = 0
+anchor_right = 1.0
+theme_override_constants/separation = 18
+
+[node name="Title" type="Label" parent="CreditsScreen/CreditsViewport/CreditsRoll" unique_id=100131914]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.78, 0.26, 1)
+theme_override_font_sizes/font_size = 44
+text = "TRUST NO PIGEON"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CreditsHeading" type="Label" parent="CreditsScreen/CreditsViewport/CreditsRoll" unique_id=100131915]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 22
+text = "CREDITS"
+horizontal_alignment = 1
+
+[node name="SpacerTop" type="Control" parent="CreditsScreen/CreditsViewport/CreditsRoll" unique_id=100131916]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+
+[node name="StudioRole" type="Label" parent="CreditsScreen/CreditsViewport/CreditsRoll" unique_id=100131917]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.7, 0.8, 1)
+theme_override_font_sizes/font_size = 18
+text = "DEVELOPED BY"
+horizontal_alignment = 1
+
+[node name="StudioName" type="Label" parent="CreditsScreen/CreditsViewport/CreditsRoll" unique_id=100131918]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "எறுழுரு (ERUZHURU STUDIOS)"
+horizontal_alignment = 1
+
+[node name="SpacerOne" type="Control" parent="CreditsScreen/CreditsViewport/CreditsRoll" unique_id=100131919]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+
+[node name="DesignRole" type="Label" parent="CreditsScreen/CreditsViewport/CreditsRoll" unique_id=100131920]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.7, 0.8, 1)
+theme_override_font_sizes/font_size = 18
+text = "GAME DESIGN & PROGRAMMING"
+horizontal_alignment = 1
+
+[node name="DesignName" type="Label" parent="CreditsScreen/CreditsViewport/CreditsRoll" unique_id=100131921]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Dread Comrade"
+horizontal_alignment = 1
+
+[node name="SpacerTwo" type="Control" parent="CreditsScreen/CreditsViewport/CreditsRoll" unique_id=100131922]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+
+[node name="AssetsRole" type="Label" parent="CreditsScreen/CreditsViewport/CreditsRoll" unique_id=100131923]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.7, 0.8, 1)
+theme_override_font_sizes/font_size = 18
+text = "ASSETS & AUDIO"
+horizontal_alignment = 1
+
+[node name="AssetsName" type="Label" parent="CreditsScreen/CreditsViewport/CreditsRoll" unique_id=100131924]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "TRUST NO PIGEON ORIGINAL SOUNDTRACK & SFX"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="SpacerBottom" type="Control" parent="CreditsScreen/CreditsViewport/CreditsRoll" unique_id=100131925]
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+
+[node name="Thanks" type="Label" parent="CreditsScreen/CreditsViewport/CreditsRoll" unique_id=100131926]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.78, 0.26, 1)
+theme_override_font_sizes/font_size = 24
+text = "THANK YOU FOR PLAYING"
+horizontal_alignment = 1
+
+[node name="DismissHint" type="Label" parent="CreditsScreen/CreditsViewport/CreditsRoll" unique_id=100131927]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 15
+text = "PRESS ESC OR CLICK TO RETURN"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ModalDialog" type="ColorRect" parent="." unique_id=1706471171]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.8)
+
+[node name="Card" type="PanelContainer" parent="ModalDialog" unique_id=137813554]
+custom_minimum_size = Vector2(480, 320)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -240.0
+offset_top = -160.0
+offset_right = 240.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="ModalDialog/Card" unique_id=1663947043]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Title" type="Label" parent="ModalDialog/Card/VBox" unique_id=155275741]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "MODAL TITLE"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="ModalDialog/Card/VBox" unique_id=1274971300]
+layout_mode = 2
+
+[node name="Body" type="Label" parent="ModalDialog/Card/VBox" unique_id=200119900]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 16
+text = "Modal body text..."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="CloseBtn" type="Button" parent="ModalDialog/Card/VBox" unique_id=427987134]
+custom_minimum_size = Vector2(160, 45)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 18
+text = "CLOSE"
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="." unique_id=408920535]
+stream = ExtResource("5_xpiny")
+volume_db = 15.446
+pitch_scale = 0.96
+autoplay = true
