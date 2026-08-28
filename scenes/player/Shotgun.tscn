@@ -2,58 +2,115 @@
 
 [ext_resource type="Script" uid="uid://b2h054401nd8w" path="res://scripts/player/shotgun.gd" id="1_shotgun"]
 [ext_resource type="AudioStream" path="res://assets/Audio/ShortGun.mp3" id="2_sound"]
+[ext_resource type="AudioStream" path="res://assets/Audio/menu_click.mp3" id="3_click"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_metal"]
+albedo_color = Color(0.12, 0.13, 0.15, 1)
+metallic = 0.9
+roughness = 0.28
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_barrel"]
-albedo_color = Color(0.18, 0.18, 0.2, 1)
-metallic = 0.85
-roughness = 0.25
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_polymer"]
+albedo_color = Color(0.08, 0.08, 0.09, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gold_bead"]
+albedo_color = Color(0.9, 0.75, 0.2, 1)
+metallic = 0.95
+roughness = 0.15
+
+[sub_resource type="BoxMesh" id="BoxMesh_receiver"]
+material = SubResource("StandardMaterial3D_metal")
+size = Vector3(0.08, 0.11, 0.32)
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_barrel"]
-material = SubResource("StandardMaterial3D_barrel")
-top_radius = 0.045
-bottom_radius = 0.045
-height = 0.65
+material = SubResource("StandardMaterial3D_metal")
+top_radius = 0.024
+bottom_radius = 0.024
+height = 0.375
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pump"]
-albedo_color = Color(0.32, 0.18, 0.1, 1)
-roughness = 0.7
+[sub_resource type="CylinderMesh" id="CylinderMesh_mag_tube"]
+material = SubResource("StandardMaterial3D_metal")
+top_radius = 0.02
+bottom_radius = 0.02
+height = 0.34
 
-[sub_resource type="BoxMesh" id="BoxMesh_pump"]
-material = SubResource("StandardMaterial3D_pump")
-size = Vector3(0.1, 0.08, 0.22)
+[sub_resource type="BoxMesh" id="BoxMesh_rib"]
+material = SubResource("StandardMaterial3D_metal")
+size = Vector3(0.015, 0.012, 0.375)
 
-[sub_resource type="BoxMesh" id="BoxMesh_body"]
-material = SubResource("StandardMaterial3D_barrel")
-size = Vector3(0.12, 0.14, 0.4)
+[sub_resource type="SphereMesh" id="SphereMesh_bead"]
+material = SubResource("StandardMaterial3D_gold_bead")
+radius = 0.008
+height = 0.016
+
+[sub_resource type="BoxMesh" id="BoxMesh_forend"]
+material = SubResource("StandardMaterial3D_polymer")
+size = Vector3(0.09, 0.08, 0.22)
+
+[sub_resource type="BoxMesh" id="BoxMesh_birdshead_main"]
+material = SubResource("StandardMaterial3D_polymer")
+size = Vector3(0.07, 0.12, 0.16)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_birdshead_contour"]
+material = SubResource("StandardMaterial3D_polymer")
+top_radius = 0.032
+bottom_radius = 0.022
+height = 0.14
 
 [node name="Shotgun" type="Node3D"]
 script = ExtResource("1_shotgun")
 
 [node name="Visual" type="Node3D" parent="."]
 
-[node name="Body" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.2)
-mesh = SubResource("BoxMesh_body")
+[node name="Receiver" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.15)
+mesh = SubResource("BoxMesh_receiver")
 
 [node name="Barrel" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0.04, -0.55)
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0.035, -0.495)
 mesh = SubResource("CylinderMesh_barrel")
 
-[node name="Pump" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, -0.45)
-mesh = SubResource("BoxMesh_pump")
+[node name="VentRib" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.065, -0.495)
+mesh = SubResource("BoxMesh_rib")
+
+[node name="FrontBeadSight" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.072, -0.675)
+mesh = SubResource("SphereMesh_bead")
+
+[node name="MagTube" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, -0.015, -0.47)
+mesh = SubResource("CylinderMesh_mag_tube")
+
+[node name="ForendHandguard" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.015, -0.42)
+mesh = SubResource("BoxMesh_forend")
+
+[node name="BirdsHeadGrip" type="Node3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, -0.06, 0.04)
+
+[node name="GripBase" type="MeshInstance3D" parent="Visual/BirdsHeadGrip"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, 0.01)
+mesh = SubResource("BoxMesh_birdshead_main")
+
+[node name="GripContour" type="MeshInstance3D" parent="Visual/BirdsHeadGrip"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, -0.02)
+mesh = SubResource("CylinderMesh_birdshead_contour")
 
 [node name="ShootOrigin" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, -0.9)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.035, -0.69)
 
 [node name="MuzzleFlash" type="OmniLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, -0.95)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.035, -0.72)
 visible = false
-light_color = Color(1, 0.7, 0.2, 1)
-light_energy = 7.0
-omni_range = 4.0
+light_color = Color(1, 0.72, 0.25, 1)
+light_energy = 8.0
+omni_range = 4.5
 
 [node name="ShootSound" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource("2_sound")
-volume_db = 80.0
+volume_db = 2.0
+
+[node name="ShellLoadSound" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("3_click")
+volume_db = -3.0

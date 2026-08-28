@@ -93,6 +93,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			switch_to_slot(1)
 		elif event.keycode == KEY_3:
 			switch_to_slot(2)
+		elif event.keycode == KEY_R and not event.echo:
+			var active = get_active_weapon()
+			if active and active.has_method("start_reload"):
+				active.start_reload()
 
 	# Mouse Wheel Weapon Cycling
 	if event is InputEventMouseButton and event.pressed:
@@ -100,6 +104,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			cycle_weapon(-1)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			cycle_weapon(1)
+
 
 func _process(delta: float) -> void:
 	if is_inside_tree() and get_tree() and get_tree().paused:
@@ -185,6 +190,12 @@ func get_active_weapon() -> Node3D:
 			return missile_launcher
 	return null
 
+func add_recoil(pitch_kick: float, yaw_kick: float) -> void:
+	pitch = clamp(pitch + pitch_kick, -75.0, 75.0)
+	yaw = clamp(yaw + yaw_kick, -90.0, 90.0)
+	if camera:
+		camera.rotation_degrees = Vector3(pitch, yaw, 0.0)
+
 func add_rocket_ammo(count: int) -> void:
 	if missile_launcher and "ammo" in missile_launcher:
 		missile_launcher.ammo += count
@@ -194,7 +205,11 @@ func add_rocket_ammo(count: int) -> void:
 
 func add_shotgun_ammo(count: int) -> void:
 	if shotgun and "ammo" in shotgun:
-		shotgun.ammo += count
+		if shotgun.has_method("add_shells"):
+			shotgun.add_shells(count)
+		else:
+			shotgun.ammo += count
 		if shotgun.has_method("on_ammo_added"):
 			shotgun.on_ammo_added()
 		ammo_updated.emit("SHOTGUN", shotgun.ammo)
+
