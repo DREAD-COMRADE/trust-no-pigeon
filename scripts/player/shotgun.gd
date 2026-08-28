@@ -229,24 +229,28 @@ func shoot() -> void:
 	var brace_mult = PUSH_PULL_RECOIL_MULT if is_aiming else 1.0
 
 	# Linear weapon kick (Gas system dampening applied)
-	recoil_offset.z += 0.165 * GAS_PISTON_DAMPENING * brace_mult
-	recoil_offset.y += 0.055 * brace_mult
+	recoil_offset.z += 0.14 * GAS_PISTON_DAMPENING * brace_mult
+	recoil_offset.y += 0.04 * brace_mult
+	recoil_offset.x += 0.012 * brace_mult
 
-	# High upward muzzle flip rotation + erratic horizontal twist (Bird's head grip torque)
-	var snap_yaw = randf_range(-RECOIL_YAW_SNAP_HIP, RECOIL_YAW_SNAP_HIP) * brace_mult
-	var kick_pitch = deg_to_rad(14.0 * brace_mult)
-	recoil_rotation = Vector3(-kick_pitch, deg_to_rad(snap_yaw * 2.0), deg_to_rad(snap_yaw))
+	# High upward muzzle flip rotation + rightward twist (Bird's head grip torque)
+	var kick_pitch = deg_to_rad(14.0 * brace_mult) # Upward barrel flip (+X angle tilts muzzle up)
+	var kick_yaw = deg_to_rad(randf_range(2.0, 5.0) * brace_mult) # Rightward yaw drift (-Y angle turns muzzle right)
+	var kick_roll = deg_to_rad(randf_range(-2.0, -4.5) * brace_mult) # Clockwise cant to the right
+	recoil_rotation = Vector3(kick_pitch, -kick_yaw, kick_roll)
 
 	# Camera trauma & Direct Camera Viewport Recoil Pitch Kick
 	var cam_node = camera if camera else (get_parent() if get_parent() is Camera3D else null)
 	if cam_node and cam_node.has_method("add_trauma"):
 		cam_node.add_trauma(0.20 if is_aiming else 0.32)
 
-	# Direct camera pitch kick to player controller
+	# Direct camera pitch kick to player controller (kicks camera up & slightly right)
 	var player_ctrl = cam_node.get_parent() if cam_node else null
 	if player_ctrl and player_ctrl.has_method("add_recoil"):
 		var pitch_kick = RECOIL_PITCH_KICK_HIP * brace_mult
-		player_ctrl.add_recoil(pitch_kick, snap_yaw)
+		var yaw_kick = randf_range(0.6, 1.4) * brace_mult
+		player_ctrl.add_recoil(pitch_kick, yaw_kick)
+
 
 	if muzzle_flash:
 		muzzle_flash.visible = true

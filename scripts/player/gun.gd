@@ -23,8 +23,10 @@ var fire_timer: float = 0.0
 var init_grace_timer: float = 0.3 # Prevents accidental firing on scene load
 var original_visual_pos: Vector3
 var recoil_offset: Vector3 = Vector3.ZERO
+var recoil_rotation: Vector3 = Vector3.ZERO
 var is_aiming: bool = false
 var mouse_delta: Vector2 = Vector2.ZERO
+
 
 func _ready() -> void:
 	position = hip_position
@@ -64,14 +66,15 @@ func _process(delta: float) -> void:
 	var target_pos = ads_position if is_aiming else hip_position
 	position = position.lerp(target_pos, delta * ads_speed)
 
-	# Weapon sway
+	# Weapon sway & recoil recovery
 	var sway_amount = 0.0008 if not is_aiming else 0.0002
 	var sway_rot = Vector3(-mouse_delta.y * sway_amount, -mouse_delta.x * sway_amount, 0.0)
 
 	if visual:
-		visual.rotation = visual.rotation.lerp(sway_rot, delta * 10.0)
 		recoil_offset = recoil_offset.lerp(Vector3.ZERO, delta * 15.0)
+		recoil_rotation = recoil_rotation.lerp(Vector3.ZERO, delta * 18.0)
 		visual.position = original_visual_pos + recoil_offset
+		visual.rotation = sway_rot + recoil_rotation
 
 	if muzzle_flash and muzzle_flash.visible:
 		muzzle_flash.visible = false
@@ -93,9 +96,12 @@ func shoot() -> void:
 		if sm and sm.has_method("record_shot"):
 			sm.record_shot()
 
-	# Recoil effect
-	recoil_offset.z += 0.12
-	recoil_offset.y += 0.04
+	# Recoil effect (Upward kick + slight rightward drift)
+	var ads_mult = 0.65 if is_aiming else 1.0
+	recoil_offset.z += 0.08 * ads_mult
+	recoil_offset.y += 0.02 * ads_mult
+	recoil_offset.x += 0.006 * ads_mult
+	recoil_rotation = Vector3(deg_to_rad(7.5 * ads_mult), deg_to_rad(-2.0 * ads_mult), deg_to_rad(-1.5 * ads_mult))
 
 	# Muzzle flash
 	if muzzle_flash:
@@ -105,11 +111,17 @@ func shoot() -> void:
 	if camera and camera.has_method("add_trauma"):
 		camera.add_trauma(0.08 if is_aiming else 0.14)
 
-	# Precise Raycast directly along Camera forward vector
 	var cam_node = camera if camera else (get_parent() if get_parent() is Camera3D else null)
+	if cam_node:
+		var player_ctrl = cam_node.get_parent() if cam_node else null
+		if player_ctrl and player_ctrl.has_method("add_recoil"):
+			player_ctrl.add_recoil(0.7 * ads_mult, 0.3 * ads_mult)
+
+
 	var from = cam_node.global_position if cam_node else global_position
 	var dir = -cam_node.global_transform.basis.z if cam_node else -global_transform.basis.z
 	var to = from + dir * max_range
+
 
 	shot_fired.emit(from, dir)
 
