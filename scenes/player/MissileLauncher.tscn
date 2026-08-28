@@ -1,26 +1,7 @@
 [gd_scene format=3 uid="uid://dfvx0574p102j"]
 
-[ext_resource type="Script" path="res://scripts/player/missile_launcher.gd" id="1_launcher"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tube"]
-albedo_color = Color(0.18, 0.22, 0.16, 1)
-metallic = 0.8
-roughness = 0.35
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_tube"]
-material = SubResource("StandardMaterial3D_tube")
-top_radius = 0.08
-bottom_radius = 0.08
-height = 0.9
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body"]
-albedo_color = Color(0.12, 0.14, 0.15, 1)
-metallic = 0.9
-roughness = 0.25
-
-[sub_resource type="BoxMesh" id="BoxMesh_body"]
-material = SubResource("StandardMaterial3D_body")
-size = Vector3(0.18, 0.18, 0.45)
+[ext_resource type="Script" uid="uid://3exr5682kys" path="res://scripts/player/missile_launcher.gd" id="1_launcher"]
+[ext_resource type="PackedScene" uid="uid://ctmybksg8qmbj" path="res://assets/props/G_P_Rocket_Launcher.glb" id="2_dd5os"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sight"]
 albedo_color = Color(0.1, 1, 0.3, 1)
@@ -30,31 +11,32 @@ emission_energy_multiplier = 4.0
 
 [sub_resource type="BoxMesh" id="BoxMesh_sight"]
 material = SubResource("StandardMaterial3D_sight")
-size = Vector3(0.02, 0.04, 0.02)
+size = Vector3(0.0047558593, 0.0024218746, 0.003901367)
 
-[node name="MissileLauncher" type="Node3D"]
+[node name="MissileLauncher" type="Node3D" unique_id=169035131]
 script = ExtResource("1_launcher")
 
-[node name="Visual" type="Node3D" parent="."]
+[node name="Visual" type="Node3D" parent="." unique_id=383421934]
 
-[node name="Tube" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, -0.2)
-mesh = SubResource("CylinderMesh_tube")
+[node name="G_P_Rocket_Launcher" parent="Visual" unique_id=809790698 instance=ExtResource("2_dd5os")]
+unique_name_in_owner = true
+transform = Transform3D(-0.37247333, 0, -3.2562653e-08, 0, 0.37247333, 0, 3.2562653e-08, 0, -0.37247333, 2.4564729e-08, -0.008076042, 0.3486495)
 
-[node name="Body" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, -0.15)
-mesh = SubResource("BoxMesh_body")
-
-[node name="Sight" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, -0.55)
+[node name="Sight" type="MeshInstance3D" parent="Visual/G_P_Rocket_Launcher" unique_id=355166315]
+transform = Transform3D(-0.49074838, 0.49074838, 6.067343e-08, 0.49074838, 0.49074838, 0, -4.2902588e-08, 4.2902588e-08, -0.6940231, 0.3250577, 0.35034564, 1.1513448)
 mesh = SubResource("BoxMesh_sight")
 
-[node name="ShootOrigin" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.75)
+[node name="ADS_AIM" type="Node3D" parent="Visual/G_P_Rocket_Launcher/Sight" unique_id=1841557658]
 
-[node name="MuzzleFlash" type="OmniLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.8)
+[node name="ShootOrigin" type="Node3D" parent="." unique_id=1221401581]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.59835064)
+
+[node name="MuzzleFlash" type="OmniLight3D" parent="." unique_id=1017821058]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.6008184)
 visible = false
 light_color = Color(1, 0.65, 0.2, 1)
 light_energy = 8.0
 omni_range = 4.0
+
+[node name="Marker3D" type="Marker3D" parent="." unique_id=831194017]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12129443, 0.122886166, 0.065985836)

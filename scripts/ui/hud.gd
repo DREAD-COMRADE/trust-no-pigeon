@@ -1,6 +1,8 @@
 extends CanvasLayer
 
+@warning_ignore("unused_signal")
 signal restart_requested
+
 
 @onready var score_label: Label = $TopLeftContainer/ScoreCard/VBox/ScoreLabel if has_node("TopLeftContainer/ScoreCard/VBox/ScoreLabel") else null
 @onready var high_score_label: Label = $TopLeftContainer/ScoreCard/VBox/HighScoreLabel if has_node("TopLeftContainer/ScoreCard/VBox/HighScoreLabel") else null
@@ -77,13 +79,15 @@ func update_aggression(level: int, status_text: String) -> void:
 
 func update_run_time(time_seconds: float, next_event_seconds: float) -> void:
 	if time_label:
-		var mins = int(time_seconds) / 60
-		var secs = int(time_seconds) % 60
+		var total_secs: int = int(time_seconds)
+		var mins: int = total_secs / 60
+		var secs: int = total_secs % 60
 		time_label.text = "TIME %02d:%02d" % [mins, secs]
 
 	if next_event_label:
-		var n_mins = int(next_event_seconds) / 60
-		var n_secs = int(next_event_seconds) % 60
+		var n_total: int = int(next_event_seconds)
+		var n_mins: int = n_total / 60
+		var n_secs: int = n_total % 60
 		next_event_label.text = "NEXT EVENT %02d:%02d" % [n_mins, n_secs]
 
 func update_weapon_ui(slot: int, shotgun_ammo: int, rocket_ammo: int) -> void:

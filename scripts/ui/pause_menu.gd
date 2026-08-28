@@ -1,8 +1,11 @@
 extends CanvasLayer
 
 signal resume_requested
+@warning_ignore("unused_signal")
 signal restart_requested
+@warning_ignore("unused_signal")
 signal main_menu_requested
+
 
 @onready var pause_overlay: Control = $PauseOverlay
 @onready var btn_resume: Button = $PauseOverlay/CenterVBox/MenuVBox/BtnResume
@@ -31,6 +34,11 @@ func _ready() -> void:
 		btn_settings.pressed.connect(func(): if settings_panel: settings_panel.visible = true)
 	if btn_main_menu:
 		btn_main_menu.pressed.connect(_on_main_menu_pressed)
+
+	var helper_script = load("res://scripts/ui/ui_audio_helper.gd")
+	if helper_script:
+		helper_script.setup_ui_audio(self)
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Backquote ( ` ) or F1 key opens DebugPanel while in Pause Menu

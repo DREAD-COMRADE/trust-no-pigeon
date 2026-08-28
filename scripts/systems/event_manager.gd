@@ -4,7 +4,9 @@ class_name EventManager
 signal time_updated(run_time: float, next_event_countdown: float)
 signal event_triggered(event_name: String, banner_title: String)
 signal event_ended(event_name: String)
+@warning_ignore("unused_signal")
 signal weapon_switch_requested(weapon_type: String, ammo: int)
+
 
 @export var min_event_interval: float = 25.0
 @export var max_event_interval: float = 45.0

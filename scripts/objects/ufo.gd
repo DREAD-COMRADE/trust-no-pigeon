@@ -2,8 +2,10 @@ extends Area3D
 class_name UFO
 
 signal ufo_destroyed
+@warning_ignore("unused_signal")
 signal ufo_escaped
 signal ufo_damaged(remaining_health: int)
+
 
 enum State { ENTERING, SHIELDED, SPAWNING, VULNERABLE, RECHARGING, DESTROYED }
 

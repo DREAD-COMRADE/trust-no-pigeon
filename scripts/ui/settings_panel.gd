@@ -31,6 +31,11 @@ func _ready() -> void:
 		sfx_slider.value_changed.connect(_on_sfx_changed)
 		_on_sfx_changed(sfx_slider.value)
 
+	var helper_script = load("res://scripts/ui/ui_audio_helper.gd")
+	if helper_script:
+		helper_script.setup_ui_audio(self)
+
+
 func _on_master_changed(val: float) -> void:
 	if master_label:
 		master_label.text = str(int(val)) + "%"

@@ -8,9 +8,9 @@ signal missile_detonated(hit_ufo: bool)
 @export var max_lifetime: float = 7.5
 @export var ufo_proximity_radius: float = 4.8
 
-@onready var visual: Node3D = $Visual
-@onready var thrust_light: OmniLight3D = $ThrustLight if has_node("ThrustLight") else null
-@onready var smoke_trail: GPUParticles3D = $SmokeTrail if has_node("SmokeTrail") else null
+@onready var visual: Node3D = %G_P_Rocket
+@onready var thrust_light: OmniLight3D = %ThrustLight if has_node("ThrustLight") else null
+@onready var smoke_trail: GPUParticles3D = %SmokeTrail if has_node("SmokeTrail") else null
 
 var trail_audio: AudioStreamPlayer3D
 var trail_sound_stream: AudioStream = preload("res://assets/Audio/Missile_trail.mp3")
@@ -45,19 +45,19 @@ func _physics_process(delta: float) -> void:
 		return
 
 	# Query Camera Aim Direction & Target Lock
-	var camera = get_viewport().get_camera_3d() if get_viewport() else null
-	if camera and camera.is_inside_tree():
-		var cam_pos = camera.global_position
-		var cam_dir = -camera.global_transform.basis.z
+	var cam = get_viewport().get_camera_3d() if get_viewport() else null
+	if cam and cam.is_inside_tree():
+		var cam_pos = cam.global_position
+		var cam_dir = -cam.global_transform.basis.z
 		target_aim_point = cam_pos + cam_dir * 120.0
 
 		# Raycast from camera crosshair
-		var space_state = get_world_3d().direct_space_state if is_inside_tree() else null
-		if space_state:
+		var crosshair_state = get_world_3d().direct_space_state if is_inside_tree() else null
+		if crosshair_state:
 			var query = PhysicsRayQueryParameters3D.create(cam_pos, target_aim_point)
 			query.collide_with_areas = true
 			query.collide_with_bodies = true
-			var cam_hit = space_state.intersect_ray(query)
+			var cam_hit = crosshair_state.intersect_ray(query)
 			if cam_hit:
 				target_aim_point = cam_hit.position
 
@@ -111,12 +111,12 @@ func _physics_process(delta: float) -> void:
 	var fwd_vec = -global_transform.basis.z if is_inside_tree() else Vector3.FORWARD
 	var to_pos = from_pos + fwd_vec * move_dist
 
-	var space_state = get_world_3d().direct_space_state if is_inside_tree() else null
-	if space_state:
+	var raycast_state = get_world_3d().direct_space_state if is_inside_tree() else null
+	if raycast_state:
 		var query = PhysicsRayQueryParameters3D.create(from_pos, to_pos)
 		query.collide_with_areas = true
 		query.collide_with_bodies = true
-		var hit = space_state.intersect_ray(query)
+		var hit = raycast_state.intersect_ray(query)
 		if hit:
 			if is_inside_tree():
 				global_position = hit.position
@@ -189,9 +189,9 @@ func _detonate(hit_ufo: bool) -> void:
 				smoke_trail.queue_free()
 		)
 
-	var camera = get_viewport().get_camera_3d() if get_viewport() else null
-	if camera and camera.has_method("add_trauma"):
-		camera.add_trauma(0.5 if hit_ufo else 0.25)
+	var detonate_cam = get_viewport().get_camera_3d() if get_viewport() else null
+	if detonate_cam and detonate_cam.has_method("add_trauma"):
+		detonate_cam.add_trauma(0.5 if hit_ufo else 0.25)
 
 	if explosion_scene and is_inside_tree():
 		var fx = explosion_scene.instantiate()

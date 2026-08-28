@@ -22,6 +22,11 @@ func _ready() -> void:
 			visible = false
 		)
 
+	var helper_script = load("res://scripts/ui/ui_audio_helper.gd")
+	if helper_script:
+		helper_script.setup_ui_audio(self)
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if visible:
 		if event is InputEventKey and event.keycode == KEY_ESCAPE and event.pressed:

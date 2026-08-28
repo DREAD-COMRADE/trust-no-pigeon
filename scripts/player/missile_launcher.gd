@@ -7,7 +7,7 @@ signal switch_to_gun_requested
 @export var camera: Camera3D
 @export var missile_scene: PackedScene = preload("res://scenes/objects/GuidedMissile.tscn")
 @export var hip_position: Vector3 = Vector3(0.32, -0.32, -0.6)
-@export var ads_position: Vector3 = Vector3(0.0, -0.22, -0.45)
+@export var ads_position: Vector3 = Vector3(0.121, -0.123, -0.066)
 @export var ads_speed: float = 14.0
 
 @onready var shoot_origin: Node3D = $ShootOrigin if has_node("ShootOrigin") else null

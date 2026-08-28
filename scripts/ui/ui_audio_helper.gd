@@ -1,15 +1,18 @@
 extends Node
 
 var click_sound: AudioStream = preload("res://assets/Audio/menu_click.mp3")
-var audio_player: AudioStreamPlayer
 
+# Pitch ranges for variation: hover = slightly higher/breezy, click = solid punch
+const HOVER_PITCH_MIN := 1.08
+const HOVER_PITCH_MAX := 1.28
+const CLICK_PITCH_MIN := 0.88
+const CLICK_PITCH_MAX := 1.08
 
 static func setup_ui_audio(root_node: Node) -> void:
-	if not root_node or not root_node.is_inside_tree():
+	if not root_node:
 		return
 
 	var helper = root_node.get_node_or_null("UIAudioHelper")
-
 	if not helper:
 		var script = load("res://scripts/ui/ui_audio_helper.gd")
 		if script:
@@ -17,19 +20,17 @@ static func setup_ui_audio(root_node: Node) -> void:
 			helper.name = "UIAudioHelper"
 			root_node.add_child(helper)
 
-	if helper and helper.has_method("bind_buttons_recursive"):
-		helper.bind_buttons_recursive(root_node)
-
+	if helper and helper.has_method("bind_buttons_deferred"):
+		helper.bind_buttons_deferred(root_node)
 
 func _ready() -> void:
 	process_mode = PROCESS_MODE_ALWAYS
 
-	audio_player = AudioStreamPlayer.new()
-	audio_player.stream = click_sound
-	audio_player.bus = &"Master"
-
-	add_child(audio_player)
-
+func bind_buttons_deferred(root_node: Node) -> void:
+	# Wait one frame so we're fully mounted inside the scene tree
+	if is_inside_tree():
+		await get_tree().process_frame
+	bind_buttons_recursive(root_node)
 
 func bind_buttons_recursive(node: Node) -> void:
 	if not node:
@@ -38,32 +39,29 @@ func bind_buttons_recursive(node: Node) -> void:
 	if node is BaseButton:
 		if not node.has_meta("audio_bound"):
 			node.set_meta("audio_bound", true)
-
-			# Button click
-			node.pressed.connect(func():
-				play_click_sfx(1.0)
-			)
-
-			# Mouse hover
-			node.mouse_entered.connect(func():
-				play_click_sfx(1.2)
-			)
+			node.pressed.connect(func(): play_click_sfx(false))
+			node.mouse_entered.connect(func(): play_click_sfx(true))
 
 	for child in node.get_children():
 		bind_buttons_recursive(child)
 
-
-func play_click_sfx(base_pitch: float = 1.0) -> void:
-	if not audio_player or not click_sound:
+func play_click_sfx(is_hover: bool = false) -> void:
+	if not is_inside_tree() or not click_sound:
 		return
 
-	# Small random pitch variation
-	var pitch_variation := randf_range(0.96, 1.04)
+	# Polyphonic player: spawns an independent player per sound so fast hovers/clicks don't cut off
+	var player = AudioStreamPlayer.new()
+	player.stream = click_sound
+	player.bus = &"Master"
+	player.process_mode = PROCESS_MODE_ALWAYS
 
-	# Apply variation around the requested base pitch
-	audio_player.pitch_scale = base_pitch * pitch_variation
+	if is_hover:
+		player.pitch_scale = randf_range(HOVER_PITCH_MIN, HOVER_PITCH_MAX)
+		player.volume_db = -8.0
+	else:
+		player.pitch_scale = randf_range(CLICK_PITCH_MIN, CLICK_PITCH_MAX)
+		player.volume_db = -4.0
 
-	# Very subtle volume variation
-	audio_player.volume_db = randf_range(-1.0, 0.5)
-
-	audio_player.play()
+	add_child(player)
+	player.finished.connect(player.queue_free)
+	player.play()
