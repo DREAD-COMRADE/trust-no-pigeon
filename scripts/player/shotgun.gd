@@ -113,6 +113,8 @@ func add_shells(count: int) -> void:
 	if ammo < MAX_CAPACITY and not is_reloading:
 		start_reload()
 
+var empty_sound_stream: AudioStream = preload("res://assets/Audio/empty_gunshot.mp3")
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_active or (get_tree() and get_tree().paused):
 		return
@@ -128,9 +130,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				shoot()
 			get_viewport().set_input_as_handled()
 
-	# Manual Reload Key (R)
+	# Manual Reload Key (R) - only reloads if reserve ammo is available
 	if event is InputEventKey and event.keycode == KEY_R and event.pressed and not event.echo:
-		if not is_reloading and ammo < MAX_CAPACITY and (reserve_ammo > 0 or ammo < MAX_CAPACITY):
+		if not is_reloading and ammo < MAX_CAPACITY and reserve_ammo > 0:
 			start_reload()
 			get_viewport().set_input_as_handled()
 
@@ -166,7 +168,8 @@ func _process(delta: float) -> void:
 		muzzle_flash.visible = false
 
 func start_reload() -> void:
-	if is_reloading or ammo >= MAX_CAPACITY:
+	# If gun and reserve storage are empty, do not reload
+	if is_reloading or ammo >= MAX_CAPACITY or reserve_ammo <= 0:
 		return
 
 	is_reloading = true
@@ -179,12 +182,17 @@ func _cancel_reload() -> void:
 	reload_timer = 0.0
 
 func _process_reload(delta: float) -> void:
+	# Stop reload immediately if reserve runs out
+	if reserve_ammo <= 0:
+		is_reloading = false
+		reload_completed.emit()
+		return
+
 	reload_timer -= delta
 	if reload_timer <= 0.0:
 		# Single shell inserted into tubular magazine
 		ammo += 1
-		if reserve_ammo > 0:
-			reserve_ammo -= 1
+		reserve_ammo -= 1
 
 		ammo_changed.emit(ammo)
 		shell_inserted.emit(ammo)
@@ -197,7 +205,7 @@ func _process_reload(delta: float) -> void:
 		recoil_offset.y -= 0.01
 
 		# Check if magazine is fully loaded (6 rounds total) or out of reserve ammo
-		if ammo >= MAX_CAPACITY:
+		if ammo >= MAX_CAPACITY or reserve_ammo <= 0:
 			is_reloading = false
 			reload_completed.emit()
 		else:
@@ -209,9 +217,25 @@ func _play_shell_load_sound() -> void:
 		shell_load_sound.pitch_scale = randf_range(0.85, 1.05)
 		shell_load_sound.play()
 
+func _play_dry_fire_sound() -> void:
+	if not empty_sound_stream or not is_inside_tree():
+		return
+	var player = AudioStreamPlayer3D.new()
+	player.stream = empty_sound_stream
+	player.volume_db = 1.0
+	player.pitch_scale = randf_range(0.95, 1.05)
+	add_child(player)
+	player.finished.connect(player.queue_free)
+	player.play()
+
 func shoot() -> void:
-	if not can_fire or ammo <= 0 or (get_tree() and get_tree().paused):
-		if ammo <= 0 and not is_reloading:
+	if not can_fire or (get_tree() and get_tree().paused):
+		return
+
+	# When player tries to shoot an empty gun, play dry-fire empty gunshot sound
+	if ammo <= 0:
+		_play_dry_fire_sound()
+		if reserve_ammo > 0 and not is_reloading:
 			start_reload()
 		return
 
@@ -219,6 +243,7 @@ func shoot() -> void:
 	fire_timer = fire_rate
 	ammo -= 1
 	ammo_changed.emit(ammo)
+
 
 	if shoot_sound:
 		shoot_sound.pitch_scale = randf_range(0.96, 1.04)

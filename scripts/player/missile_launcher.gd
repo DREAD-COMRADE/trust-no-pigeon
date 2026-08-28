@@ -32,14 +32,31 @@ func _ready() -> void:
 func on_ammo_added() -> void:
 	ammo_changed.emit(ammo)
 
+var empty_sound_stream: AudioStream = preload("res://assets/Audio/empty_gunshot.mp3")
+
+func _play_dry_fire_sound() -> void:
+	if not empty_sound_stream or not is_inside_tree():
+		return
+	var player = AudioStreamPlayer3D.new()
+	player.stream = empty_sound_stream
+	player.volume_db = 1.0
+	player.pitch_scale = randf_range(0.95, 1.05)
+	add_child(player)
+	player.finished.connect(player.queue_free)
+	player.play()
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_active or (get_tree() and get_tree().paused):
 		return
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and ammo > 0 and not has_fired:
-			fire_missile()
+		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+			if ammo > 0 and not has_fired:
+				fire_missile()
+			else:
+				_play_dry_fire_sound()
 			get_viewport().set_input_as_handled()
+
 
 func _process(delta: float) -> void:
 	if not is_active or (get_tree() and get_tree().paused):

@@ -79,9 +79,27 @@ func _process(delta: float) -> void:
 	if muzzle_flash and muzzle_flash.visible:
 		muzzle_flash.visible = false
 
-func shoot() -> void:
-	if not is_active or not can_fire or (get_tree() and get_tree().paused) or init_grace_timer > 0.0:
+
+var empty_sound_stream: AudioStream = preload("res://assets/Audio/empty_gunshot.mp3")
+
+func _play_dry_fire_sound() -> void:
+	if not empty_sound_stream or not is_inside_tree():
 		return
+	var player = AudioStreamPlayer3D.new()
+	player.stream = empty_sound_stream
+	player.volume_db = 1.0
+	player.pitch_scale = randf_range(0.95, 1.05)
+	add_child(player)
+	player.finished.connect(player.queue_free)
+	player.play()
+
+func shoot() -> void:
+	if not is_active or (get_tree() and get_tree().paused) or init_grace_timer > 0.0:
+		return
+
+	if not can_fire:
+		return
+
 
 	can_fire = false
 	fire_timer = fire_rate
