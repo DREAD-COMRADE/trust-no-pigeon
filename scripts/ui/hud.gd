@@ -44,7 +44,7 @@ func _ready() -> void:
 	if restart_button:
 		restart_button.pressed.connect(_on_restart_pressed)
 
-	update_weapon_ui(0, 2, 0)
+	update_weapon_ui(0, 6, 0, 18)
 
 	# Bind UI click audio
 	var helper_script = load("res://scripts/ui/ui_audio_helper.gd")
@@ -91,7 +91,7 @@ func update_run_time(time_seconds: float, next_event_seconds: float) -> void:
 		var n_secs: int = n_total % 60
 		next_event_label.text = "NEXT EVENT %02d:%02d" % [n_mins, n_secs]
 
-func update_weapon_ui(slot: int, shotgun_ammo: int, rocket_ammo: int) -> void:
+func update_weapon_ui(slot: int, shotgun_ammo: int, rocket_ammo: int, shotgun_reserve: int = 0) -> void:
 	cur_active_slot = slot
 
 	if gun_label:
@@ -102,11 +102,11 @@ func update_weapon_ui(slot: int, shotgun_ammo: int, rocket_ammo: int) -> void:
 			gun_label.modulate = Color(0.6, 0.6, 0.6, 0.7)
 
 	if shotgun_label:
-		shotgun_label.text = "[2] SHOTGUN  %d" % shotgun_ammo
+		shotgun_label.text = "[2] SHOTGUN  %d/%d" % [shotgun_ammo, shotgun_reserve]
 		if slot == 1:
-			shotgun_label.modulate = Color(0.3, 1.0, 0.4, 1.0) if shotgun_ammo > 0 else Color(1.0, 0.4, 0.4, 1.0)
+			shotgun_label.modulate = Color(0.3, 1.0, 0.4, 1.0) if (shotgun_ammo > 0 or shotgun_reserve > 0) else Color(1.0, 0.4, 0.4, 1.0)
 		else:
-			shotgun_label.modulate = Color(0.85, 0.75, 0.3, 0.8) if shotgun_ammo > 0 else Color(0.5, 0.5, 0.5, 0.5)
+			shotgun_label.modulate = Color(0.85, 0.75, 0.3, 0.8) if (shotgun_ammo > 0 or shotgun_reserve > 0) else Color(0.5, 0.5, 0.5, 0.5)
 
 	if rocket_label:
 		rocket_label.text = "[3] ROCKET  %d" % rocket_ammo
@@ -114,6 +114,7 @@ func update_weapon_ui(slot: int, shotgun_ammo: int, rocket_ammo: int) -> void:
 			rocket_label.modulate = Color(0.3, 1.0, 0.4, 1.0) if rocket_ammo > 0 else Color(1.0, 0.4, 0.4, 1.0)
 		else:
 			rocket_label.modulate = Color(1.0, 0.65, 0.2, 0.8) if rocket_ammo > 0 else Color(0.5, 0.5, 0.5, 0.5)
+
 
 func show_event_banner(title: String) -> void:
 	if not event_toast or not event_toast_label:

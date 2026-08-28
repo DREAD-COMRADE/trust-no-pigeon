@@ -87,9 +87,11 @@ func _refresh_hud_weapons() -> void:
 		return
 	var slot = player.current_slot if player else 0
 	var s_ammo = shotgun.ammo if shotgun else 0
+	var s_reserve = shotgun.reserve_ammo if (shotgun and "reserve_ammo" in shotgun) else 0
 	var r_ammo = missile_launcher.ammo if missile_launcher else 0
 	if hud.has_method("update_weapon_ui"):
-		hud.update_weapon_ui(slot, s_ammo, r_ammo)
+		hud.update_weapon_ui(slot, s_ammo, r_ammo, s_reserve)
+
 
 func _on_score_updated(current: int, high: int) -> void:
 	if hud:
