@@ -73,32 +73,33 @@ func take_hit(damage: int = 1) -> void:
 
 	health -= damage
 
+	var cam = get_viewport().get_camera_3d() if get_viewport() else null
+	var target_parent = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_tree().root
+
 	# First hit effect (sparks / smoke)
 	if health > 0:
 		if beacon_light:
 			beacon_light.light_color = Color(1.0, 0.2, 0.1, 1.0)
 			beacon_light.light_energy = 15.0
 
-		var camera = get_viewport().get_camera_3d() if get_viewport() else null
-		if camera and camera.has_method("add_trauma"):
-			camera.add_trauma(0.12)
+		if cam and cam.has_method("add_trauma"):
+			cam.add_trauma(0.12)
 
 		if explosion_scene and is_inside_tree():
 			var fx = explosion_scene.instantiate()
-			get_tree().root.add_child(fx)
+			target_parent.add_child(fx)
 			fx.global_position = global_position if is_inside_tree() else position
 		return
 
 	# Fatal hit (drone destroyed)
 	is_destroyed = true
 
-	var camera = get_viewport().get_camera_3d() if get_viewport() else null
-	if camera and camera.has_method("add_trauma"):
-		camera.add_trauma(0.25)
+	if cam and cam.has_method("add_trauma"):
+		cam.add_trauma(0.25)
 
 	if explosion_scene and is_inside_tree():
 		var fx = explosion_scene.instantiate()
-		get_tree().root.add_child(fx)
+		target_parent.add_child(fx)
 		fx.global_position = global_position if is_inside_tree() else position
 
 	# Award player ammo

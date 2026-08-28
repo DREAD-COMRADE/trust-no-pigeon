@@ -77,16 +77,17 @@ func update_aggression(level: int, status_text: String) -> void:
 		else:
 			aggression_label.modulate = Color(0.4, 0.9, 0.4, 1.0)
 
+@warning_ignore("integer_division")
 func update_run_time(time_seconds: float, next_event_seconds: float) -> void:
 	if time_label:
 		var total_secs: int = int(time_seconds)
-		var mins: int = total_secs / 60
+		var mins: int = int(float(total_secs) / 60.0)
 		var secs: int = total_secs % 60
 		time_label.text = "TIME %02d:%02d" % [mins, secs]
 
 	if next_event_label:
 		var n_total: int = int(next_event_seconds)
-		var n_mins: int = n_total / 60
+		var n_mins: int = int(float(n_total) / 60.0)
 		var n_secs: int = n_total % 60
 		next_event_label.text = "NEXT EVENT %02d:%02d" % [n_mins, n_secs]
 

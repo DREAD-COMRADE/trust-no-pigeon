@@ -230,14 +230,15 @@ func take_missile_hit() -> void:
 	# Rocket hit during VULNERABLE state: TAKE DAMAGE!
 	health -= 1
 
+	var cam = get_viewport().get_camera_3d() if get_viewport() else null
+
 	if health > 0:
 		if dome_light:
 			dome_light.light_energy = 35.0
 			dome_light.light_color = Color(1.0, 0.1, 0.1, 1.0)
 
-		var camera = get_viewport().get_camera_3d() if get_viewport() else null
-		if camera and camera.has_method("add_trauma"):
-			camera.add_trauma(0.5)
+		if cam and cam.has_method("add_trauma"):
+			cam.add_trauma(0.5)
 
 		_notify_hud("💥 DIRECT HIT ON UFO! [%d HITS LEFT]" % health)
 		ufo_damaged.emit(health)
@@ -247,9 +248,8 @@ func take_missile_hit() -> void:
 	current_state = State.DESTROYED
 	_notify_hud("💥 UFO DESTROYED! +2500 PTS!")
 
-	var camera = get_viewport().get_camera_3d() if get_viewport() else null
-	if camera and camera.has_method("add_trauma"):
-		camera.add_trauma(0.9)
+	if cam and cam.has_method("add_trauma"):
+		cam.add_trauma(0.9)
 
 	if explosion_scene and is_inside_tree():
 		var fx = explosion_scene.instantiate()
