@@ -12,6 +12,10 @@ signal drone_destroyed(rocket_ammo: int, shotgun_ammo: int)
 @onready var rotors: Node3D = $Visual/Rotors if has_node("Visual/Rotors") else null
 @onready var beacon_light: OmniLight3D = $Visual/BeaconLight if has_node("Visual/BeaconLight") else null
 
+var fly_sound_stream: AudioStream = preload("res://assets/Audio/Drone_fly.mp3")
+var loot_sound_stream: AudioStream = preload("res://assets/Audio/Loot.mp3")
+var flight_audio: AudioStreamPlayer3D
+
 var health: int = 2
 var start_pos: Vector3
 var target_pos: Vector3
@@ -23,6 +27,17 @@ func _ready() -> void:
 	add_to_group("drones")
 	add_to_group("targets")
 	health = max_health
+
+	# Looping 3D drone engine/propeller sound
+	if fly_sound_stream:
+		flight_audio = AudioStreamPlayer3D.new()
+		flight_audio.name = "FlightAudio"
+		flight_audio.stream = fly_sound_stream
+		flight_audio.unit_size = 18.0
+		flight_audio.max_distance = 100.0
+		flight_audio.volume_db = 2.0
+		flight_audio.autoplay = true
+		add_child(flight_audio)
 
 func setup(from: Vector3, to: Vector3, rockets: int = 3, shells: int = 4) -> void:
 	start_pos = from
@@ -93,6 +108,20 @@ func take_hit(damage: int = 1) -> void:
 
 	# Fatal hit (drone destroyed)
 	is_destroyed = true
+
+	if flight_audio and is_instance_valid(flight_audio):
+		flight_audio.stop()
+
+	# Play Loot Collection Sound
+	if loot_sound_stream:
+		var loot_asp = AudioStreamPlayer.new()
+		loot_asp.stream = loot_sound_stream
+		loot_asp.volume_db = 2.0
+		loot_asp.pitch_scale = randf_range(0.98, 1.02)
+		var p_root = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_tree().root
+		p_root.add_child(loot_asp)
+		loot_asp.play()
+		loot_asp.finished.connect(loot_asp.queue_free)
 
 	if cam and cam.has_method("add_trauma"):
 		cam.add_trauma(0.25)
