@@ -15,11 +15,23 @@ signal ammo_updated(weapon_name: String, ammo: int)
 @export var ads_fov: float = 45.0
 @export var ads_speed: float = 14.0
 
+# Weapon swap animation tunables
+@export var holster_duration: float = 0.18    # How long the old weapon slides down
+@export var draw_duration: float = 0.25       # How long the new weapon rises up
+@export var swap_drop_amount: float = 0.55    # How far (Y) weapon dips off screen when holstering
+
 var pitch: float = 0.0
 var yaw: float = 0.0
 var mouse_delta: Vector2 = Vector2.ZERO
 var is_aiming: bool = false
 var current_slot: int = 0 # 0 = Gun, 1 = Shotgun, 2 = Rocket
+
+# Internal swap state
+var _is_swapping: bool = false
+var _swap_timer: float = 0.0
+var _swap_phase: int = 0  # 0 = holster, 1 = draw
+var _pending_slot: int = -1
+var _swap_offset: float = 0.0  # Y offset applied to current weapon during anim
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -34,7 +46,7 @@ func _ready() -> void:
 	if not missile_launcher and has_node("Camera3D/MissileLauncher"):
 		missile_launcher = $Camera3D/MissileLauncher
 
-	# Initialize weapon references
+	# Initialize weapon camera references
 	if gun and "camera" in gun:
 		gun.camera = camera
 	if shotgun and "camera" in shotgun:
@@ -49,7 +61,7 @@ func _ready() -> void:
 		missile_launcher.ammo_changed.connect(func(a): ammo_updated.emit("ROCKET", a))
 
 	# Equip initial primary weapon (Gun)
-	switch_to_slot(0)
+	_do_switch_to_slot(0) # Skip animation on first equip
 
 func _unhandled_input(event: InputEvent) -> void:
 	if is_inside_tree() and get_tree() and get_tree().paused:
@@ -127,6 +139,61 @@ func _process(delta: float) -> void:
 
 	mouse_delta = mouse_delta.lerp(Vector2.ZERO, delta * 12.0)
 
+	# Weapon swap animation tick
+	_tick_swap_anim(delta)
+
+func _tick_swap_anim(delta: float) -> void:
+	if not _is_swapping:
+		return
+
+	_swap_timer -= delta
+
+	if _swap_phase == 0:
+		# Phase 0: Holster — smoothly push current weapon down off screen
+		var t = clamp(1.0 - (_swap_timer / holster_duration), 0.0, 1.0)
+		_swap_offset = _ease_in(t) * swap_drop_amount
+		_apply_swap_offset(get_active_weapon(), _swap_offset)
+
+		if _swap_timer <= 0.0:
+			# Mid-swap: hide current, show next, snap to draw-from position
+			_apply_swap_offset(get_active_weapon(), 0.0)
+			_do_switch_to_slot(_pending_slot)
+			# Snap new weapon to below-frame start
+			_snap_weapon_to_draw_start(get_active_weapon())
+			_swap_phase = 1
+			_swap_timer = draw_duration
+	else:
+		# Phase 1: Draw — new weapon rises into hip position
+		var t = clamp(1.0 - (_swap_timer / draw_duration), 0.0, 1.0)
+		_swap_offset = (1.0 - _ease_out(t)) * swap_drop_amount
+		_apply_swap_offset(get_active_weapon(), _swap_offset)
+
+		if _swap_timer <= 0.0:
+			_apply_swap_offset(get_active_weapon(), 0.0)
+			_is_swapping = false
+
+func _snap_weapon_to_draw_start(wep: Node3D) -> void:
+	if not wep:
+		return
+	# Snap it below view so it rises up during draw phase
+	var base_pos = wep.position
+	base_pos.y -= swap_drop_amount
+	wep.position = base_pos
+
+func _apply_swap_offset(wep: Node3D, y_offset: float) -> void:
+	if not wep:
+		return
+	# Add the swap drop offset on top of the weapon's current hip/ads base position
+	# We do this by adjusting position.y directly; each weapon's _process handles sway/recoil
+	# We store the base and just override the y offset
+	wep.position.y += y_offset
+
+func _ease_in(t: float) -> float:
+	return t * t
+
+func _ease_out(t: float) -> float:
+	return 1.0 - (1.0 - t) * (1.0 - t)
+
 func cycle_weapon(dir: int) -> void:
 	var new_slot = (current_slot + dir) % 3
 	if new_slot < 0:
@@ -134,9 +201,32 @@ func cycle_weapon(dir: int) -> void:
 	switch_to_slot(new_slot)
 
 func switch_to_slot(slot: int) -> void:
+	if slot == current_slot and not _is_swapping:
+		return
+	if _is_swapping and slot == _pending_slot:
+		return
+
+	# If already swapping, snap instantly to pending then queue new
+	if _is_swapping:
+		_apply_swap_offset(get_active_weapon(), 0.0)
+		_do_switch_to_slot(_pending_slot)
+
+	# Start holster phase
+	_pending_slot = slot
+	_is_swapping = true
+	_swap_phase = 0
+	_swap_timer = holster_duration
+	_swap_offset = 0.0
+
+	# Lock weapon input immediately
+	var cur_wep = get_active_weapon()
+	if cur_wep and "is_active" in cur_wep:
+		cur_wep.is_active = false
+
+func _do_switch_to_slot(slot: int) -> void:
 	current_slot = slot
 
-	# Hide all weapons first
+	# Hide all weapons
 	if gun:
 		gun.visible = false
 		if "is_active" in gun:
@@ -182,7 +272,6 @@ func switch_to_slot(slot: int) -> void:
 
 	weapon_switched.emit(slot, wep_name, ammo_val)
 
-
 func get_active_weapon() -> Node3D:
 	match current_slot:
 		0:
@@ -215,4 +304,3 @@ func add_shotgun_ammo(count: int) -> void:
 		if shotgun.has_method("on_ammo_added"):
 			shotgun.on_ammo_added()
 		ammo_updated.emit("SHOTGUN", shotgun.ammo)
-
