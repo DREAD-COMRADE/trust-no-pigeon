@@ -47,13 +47,18 @@ func _ready() -> void:
 
 func on_ammo_added() -> void:
 	ammo_changed.emit(ammo)
-	# Only reload if the bore is currently empty and not already reloading/firing
-	if ammo > 0 and not is_bore_loaded and not is_reloading and not has_fired:
+	# If currently holding the launcher and bore is empty, start reload
+	if is_active and ammo > 0 and not is_bore_loaded and not is_reloading and not has_fired:
+		start_reload()
+
+func on_equipped() -> void:
+	# When weapon is equipped, if ammo is available but not yet loaded in bore, start reload
+	if is_active and ammo > 0 and not is_bore_loaded and not is_reloading and not has_fired:
 		start_reload()
 
 func start_reload() -> void:
-	# If bore is already loaded, reloading or empty, do nothing
-	if is_reloading or ammo <= 0 or is_bore_loaded:
+	# If inactive, bore is already loaded, reloading or empty, do nothing
+	if not is_active or is_reloading or ammo <= 0 or is_bore_loaded:
 		return
 
 	is_reloading = true
@@ -68,11 +73,12 @@ func start_reload() -> void:
 	# Delayed audio playback: allows player weapon adjustment into stance first
 	if reload_sound_delay > 0.0 and is_inside_tree():
 		get_tree().create_timer(reload_sound_delay).timeout.connect(func():
-			if is_reloading and is_inside_tree():
+			if is_active and is_reloading and is_inside_tree():
 				play_reload_sound()
 		)
 	else:
 		play_reload_sound()
+
 
 func play_reload_sound() -> void:
 	if not reload_sound_stream or not is_inside_tree():

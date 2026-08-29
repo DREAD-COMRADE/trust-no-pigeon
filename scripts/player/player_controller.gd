@@ -176,9 +176,12 @@ func switch_to_slot(slot: int) -> void:
 					missile_launcher.is_active = true
 				if "ammo" in missile_launcher:
 					ammo_val = missile_launcher.ammo
+				if missile_launcher.has_method("on_equipped"):
+					missile_launcher.on_equipped()
 			wep_name = "ROCKET"
 
 	weapon_switched.emit(slot, wep_name, ammo_val)
+
 
 func get_active_weapon() -> Node3D:
 	match current_slot:
