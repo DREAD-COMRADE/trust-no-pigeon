@@ -39,13 +39,13 @@ const MECHANICAL_CYCLE_TIME: float = 0.12 # 0.11 - 0.13s (450-500 theoretical RP
 const HUMAN_PRACTICAL_FIRE_RATE: float = 0.25 # ~240 RPM practical click registration limit
 
 # --- 🎯 Bullet Spread & Damage Drop-Off Specs ---
-const STANDARD_PELLET_COUNT: int = 9 # Standard 2.75" 00-Buckshot
-const BASE_SPREAD_DEGREES: float = 2.85 # 2.5° to 3.0° random distribution cone
-const PUSH_PULL_BRACE_SPREAD_MULT: float = 0.70 # 30% spread reduction in Aim/Brace state
+const STANDARD_PELLET_COUNT: int = 12        # Upgraded to 12-pellet spread for flock coverage
+const BASE_SPREAD_DEGREES: float = 8.0       # Widened cone (was 2.85°) — fans out across pigeon groups
+const PUSH_PULL_BRACE_SPREAD_MULT: float = 0.55 # 45% tighter in Aim/Brace state
 
-const DAMAGE_DROP_FULL_RANGE: float = 10.0 # 100% damage: 0 to 10m
-const DAMAGE_DROP_MAX_RANGE: float = 34.0  # Linear decay: 11 to 34m
-const DAMAGE_DROP_MIN_THRESHOLD: float = 0.10 # 10% minimum damage threshold: 35m+
+const DAMAGE_DROP_FULL_RANGE: float = 18.0   # 100% damage: 0 to 18m (was 10m)
+const DAMAGE_DROP_MAX_RANGE: float = 55.0    # Linear decay: 18 to 55m (was 34m)
+const DAMAGE_DROP_MIN_THRESHOLD: float = 0.10 # 10% minimum at 55m+
 
 # --- 🔄 Recoil & Camera Handling Vectors (Bird's Head Grip Profile) ---
 const GAS_PISTON_DAMPENING: float = 0.75 # 25% lower rearward impulse than pump-actions
@@ -294,10 +294,10 @@ func shoot() -> void:
 	var spread_deg = BASE_SPREAD_DEGREES * brace_mult
 	var spread_rad = deg_to_rad(spread_deg)
 
-	var hit_targets: Array[Object] = []
+	var hit_targets: Dictionary = {}  # target -> cumulative dmg_factor from all pellets
 	var space_state = get_world_3d().direct_space_state if is_inside_tree() else null
 
-	# Fire 9-Pellet 00-Buckshot Array
+	# Fire 12-Pellet Spread Array (wider cone covers pigeon flocks)
 	for i in range(pellet_count):
 		# Circular cone distribution
 		var circle_angle = randf() * TAU
@@ -321,7 +321,7 @@ func shoot() -> void:
 				var hit_dist = from.distance_to(result.position)
 
 				# Ballistic Damage Drop-Off Curve:
-				# 0-10m: 100% | 11-34m: Linear Decay | 35m+: 10% Minimum Threshold
+				# 0-18m: 100% | 18-55m: Linear Decay | 55m+: 10% Minimum
 				var dmg_factor: float = 1.0
 				if hit_dist <= DAMAGE_DROP_FULL_RANGE:
 					dmg_factor = 1.0
@@ -333,9 +333,12 @@ func shoot() -> void:
 
 				gun_fired.emit(collider, result.position)
 
-				if collider and not hit_targets.has(collider):
-					hit_targets.append(collider)
-					_apply_damage_to_target(collider, dmg_factor)
+				# Accumulate pellet hits per target (all pellets that land on same pigeon stack up)
+				if collider:
+					if collider in hit_targets:
+						hit_targets[collider] += dmg_factor
+					else:
+						hit_targets[collider] = dmg_factor
 
 		# Spawn visible high-velocity bullet tracer
 		if tracer_scene and is_inside_tree():
@@ -344,21 +347,33 @@ func shoot() -> void:
 			target_parent.add_child(tracer)
 			tracer.setup(spawn_muzzle_pos, target_end_point)
 
-func _apply_damage_to_target(target: Object, dmg_factor: float) -> void:
-	# At full damage (> 0.4), deals lethal damage to pigeons and 2 damage to drones
-	var effective_damage: int = 2 if dmg_factor >= 0.5 else 1
+	# Apply accumulated damage to all targets hit this shot
+	for target in hit_targets:
+		_apply_damage_to_target(target, hit_targets[target])
+
+func _apply_damage_to_target(target: Object, total_dmg_factor: float) -> void:
+	# total_dmg_factor is the SUM of all pellet hits on this target this shot.
+	# 1 pellet at full range  = 1.0
+	# 12 pellets all landing  = up to 12.0 (close range group kill)
+	# Any value >= 0.5 is lethal to a pigeon.
+	# Drones require 2 hits total to destroy; pellet count helps here too.
+
+	var hits_equivalent: int = max(1, int(total_dmg_factor))  # how many pellets worth landed
+	var effective_drone_damage: int = clamp(hits_equivalent, 1, 2)
 
 	if target.has_method("take_hit"):
 		if target is PackageDrone:
-			target.take_hit(effective_damage)
+			target.take_hit(effective_drone_damage)
 		else:
-			# Non-lethal at extreme ranges (35m+) unless player connects multiple shots
-			if dmg_factor > 0.15 or randf() < 0.35:
+			# Pigeon dies if total pellet impact >= 0.5 (i.e. even 1 pellet at close range)
+			# At longer range multiple pellets must stack before kill threshold is met
+			if total_dmg_factor >= 0.5:
 				target.take_hit()
 	elif target.get_parent() and target.get_parent().has_method("take_hit"):
 		var p = target.get_parent()
 		if p is PackageDrone:
-			p.take_hit(effective_damage)
+			p.take_hit(effective_drone_damage)
 		else:
-			if dmg_factor > 0.15 or randf() < 0.35:
+			if total_dmg_factor >= 0.5:
 				p.take_hit()
+
