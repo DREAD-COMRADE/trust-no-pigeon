@@ -15,10 +15,10 @@ signal ammo_updated(weapon_name: String, ammo: int)
 @export var ads_fov: float = 45.0
 @export var ads_speed: float = 14.0
 
-# Weapon swap animation tunables
-@export var holster_duration: float = 0.04
-@export var draw_duration: float = 0.06
-@export var swap_drop_amount: float = 0.05
+# Weapon swap animation tunables (HL2-style: instant holster, tiny draw rise)
+@export var holster_duration: float = 0.01   # Near-instant holster flick
+@export var draw_duration: float = 0.09      # Short smooth rise into view
+@export var swap_drop_amount: float = 0.018  # Tiny drop, barely off screen
 
 var pitch: float = 0.0
 var yaw: float = 0.0
