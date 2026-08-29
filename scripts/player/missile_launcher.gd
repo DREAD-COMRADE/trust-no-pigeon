@@ -26,8 +26,13 @@ var empty_sound_stream: AudioStream = preload("res://assets/Audio/empty_gunshot.
 var ammo: int = 0
 var is_active: bool = false
 var has_fired: bool = false
+var is_bore_loaded: bool = false # Only 1 projectile in bore at any time
 var is_reloading: bool = false
 var reload_timer: float = 0.0
+
+# Randomized reload angles per sequence (15-25° down, 18-25° left)
+var target_down_deg: float = 20.0
+var target_left_deg: float = 22.0
 
 var recoil_offset: Vector3 = Vector3.ZERO
 var recoil_rotation: Vector3 = Vector3.ZERO
@@ -41,14 +46,22 @@ func _ready() -> void:
 
 func on_ammo_added() -> void:
 	ammo_changed.emit(ammo)
-	if not is_reloading and not has_fired:
+	# Only reload if the bore is currently empty and not already reloading/firing
+	if ammo > 0 and not is_bore_loaded and not is_reloading and not has_fired:
 		start_reload()
 
 func start_reload() -> void:
-	if is_reloading or ammo <= 0:
+	# If bore is already loaded, reloading or empty, do nothing
+	if is_reloading or ammo <= 0 or is_bore_loaded:
 		return
+
 	is_reloading = true
 	reload_timer = RELOAD_DURATION
+
+	# Pick organic randomized reload angle ranges
+	target_down_deg = randf_range(15.0, 25.0) # 15° to 25° pointing down
+	target_left_deg = randf_range(18.0, 25.0) # 18° to 25° pointing left
+
 	play_reload_sound()
 	reload_started.emit()
 
@@ -80,7 +93,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-			if ammo > 0 and not has_fired and not is_reloading:
+			if ammo > 0 and is_bore_loaded and not has_fired and not is_reloading:
 				fire_missile()
 			else:
 				_play_dry_fire_sound()
@@ -90,33 +103,47 @@ func _process(delta: float) -> void:
 	if not is_active or (get_tree() and get_tree().paused):
 		return
 
-	# Reload sequence & physical launcher shake / chambering movement
+	# Smooth & Bumpy Procedural Shoulder Reload Animation
 	if is_reloading:
 		reload_timer -= delta
 		var progress = 1.0 - clamp(reload_timer / RELOAD_DURATION, 0.0, 1.0) # 0.0 -> 1.0
 
-		if progress < 0.25:
-			# Phase 1: Launcher dips down & tilts backward to accept missile
-			recoil_offset.y = lerp(recoil_offset.y, -0.06, delta * 8.0)
-			recoil_offset.z = lerp(recoil_offset.z, 0.04, delta * 8.0)
-			recoil_rotation.x = lerp(recoil_rotation.x, deg_to_rad(8.0), delta * 8.0)
-		elif progress < 0.70:
-			# Phase 2: Sliding rocket into launch tube (procedural mechanical shake & vibration)
-			var shake_intensity = sin(progress * PI) * 0.012
-			var shake_x = sin(reload_timer * 40.0) * shake_intensity
-			var shake_y = cos(reload_timer * 35.0) * shake_intensity * 0.6
-			var shake_rot = sin(reload_timer * 30.0) * deg_to_rad(2.0)
-			recoil_offset.x = shake_x
-			recoil_offset.y = -0.05 + shake_y
-			recoil_rotation.z = shake_rot
+		var target_rot = Vector3.ZERO
+		var target_pos_offset = Vector3.ZERO
+
+		if progress < 0.32:
+			# Phase 1: Smoothly lower launcher down (15-25°) and left (18-25°) into reload stance
+			var ease_down = _ease_in_out(progress / 0.32)
+			target_rot.x = -deg_to_rad(target_down_deg) * ease_down
+			target_rot.y = deg_to_rad(target_left_deg) * ease_down
+			target_rot.z = -deg_to_rad(target_left_deg * 0.35) * ease_down
+			target_pos_offset = Vector3(0.04 * ease_down, -0.08 * ease_down, 0.05 * ease_down)
+		elif progress < 0.72:
+			# Phase 2: Rocket slides into bore with gentle mechanical insertion bump
+			var phase_prog = (progress - 0.32) / 0.40 # 0.0 -> 1.0
+			var insertion_bump = sin(phase_prog * PI) * 0.022 # Smooth physical jolt along launch tube
+
+			target_rot.x = -deg_to_rad(target_down_deg) + deg_to_rad(sin(phase_prog * PI) * 2.5)
+			target_rot.y = deg_to_rad(target_left_deg)
+			target_rot.z = -deg_to_rad(target_left_deg * 0.35)
+			target_pos_offset = Vector3(0.04, -0.08 - insertion_bump * 0.5, 0.05 + insertion_bump)
 		else:
-			# Phase 3: Final lock & snap back up to shoulder ready position
-			recoil_offset = recoil_offset.lerp(Vector3.ZERO, delta * 10.0)
-			recoil_rotation = recoil_rotation.lerp(Vector3.ZERO, delta * 10.0)
+			# Phase 3: Smoothly raise & lock launcher back to shoulder crosshair position
+			var ease_up = 1.0 - _ease_in_out((progress - 0.72) / 0.28)
+			target_rot.x = -deg_to_rad(target_down_deg) * ease_up
+			target_rot.y = deg_to_rad(target_left_deg) * ease_up
+			target_rot.z = -deg_to_rad(target_left_deg * 0.35) * ease_up
+			target_pos_offset = Vector3(0.04 * ease_up, -0.08 * ease_up, 0.05 * ease_up)
+
+		recoil_rotation = recoil_rotation.lerp(target_rot, delta * 12.0)
+		recoil_offset = recoil_offset.lerp(target_pos_offset, delta * 12.0)
 
 		if reload_timer <= 0.0:
 			is_reloading = false
+			is_bore_loaded = true
 			has_fired = false
+			recoil_rotation = Vector3.ZERO
+			recoil_offset = Vector3.ZERO
 			reload_completed.emit()
 	else:
 		recoil_offset = recoil_offset.lerp(Vector3.ZERO, delta * 10.0)
@@ -137,11 +164,15 @@ func _process(delta: float) -> void:
 	if muzzle_flash and muzzle_flash.visible:
 		muzzle_flash.visible = false
 
+func _ease_in_out(t: float) -> float:
+	return t * t * (3.0 - 2.0 * t)
+
 func fire_missile() -> void:
-	if ammo <= 0 or has_fired or is_reloading:
+	if ammo <= 0 or has_fired or is_reloading or not is_bore_loaded:
 		return
 
 	has_fired = true
+	is_bore_loaded = false
 	ammo -= 1
 	ammo_changed.emit(ammo)
 
@@ -184,7 +215,7 @@ func fire_missile() -> void:
 
 func _on_missile_detonated(_hit_ufo: bool) -> void:
 	if ammo > 0:
-		start_reload() # Chamber next rocket with 2.48s animation & shake
+		start_reload() # Chamber next rocket into bore
 	else:
 		has_fired = false
 		await get_tree().create_timer(1.2).timeout
