@@ -16,6 +16,8 @@ signal switch_to_gun_requested
 @onready var launch_sound: AudioStreamPlayer3D = $LaunchSound if has_node("LaunchSound") else null
 
 var launch_sound_stream: AudioStream = preload("res://assets/Audio/Rocket_launch.mp3")
+var reload_sound_stream: AudioStream = preload("res://assets/Audio/Rocket_launcher_reload.mp3")
+var empty_sound_stream: AudioStream = preload("res://assets/Audio/empty_gunshot.mp3")
 
 var ammo: int = 0
 var is_active: bool = false
@@ -31,8 +33,18 @@ func _ready() -> void:
 
 func on_ammo_added() -> void:
 	ammo_changed.emit(ammo)
+	play_reload_sound()
 
-var empty_sound_stream: AudioStream = preload("res://assets/Audio/empty_gunshot.mp3")
+func play_reload_sound() -> void:
+	if not reload_sound_stream or not is_inside_tree():
+		return
+	var asp = AudioStreamPlayer3D.new()
+	asp.stream = reload_sound_stream
+	asp.volume_db = 3.0
+	asp.pitch_scale = randf_range(0.97, 1.03)
+	add_child(asp)
+	asp.finished.connect(asp.queue_free)
+	asp.play()
 
 func _play_dry_fire_sound() -> void:
 	if not empty_sound_stream or not is_inside_tree():
@@ -56,7 +68,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			else:
 				_play_dry_fire_sound()
 			get_viewport().set_input_as_handled()
-
 
 func _process(delta: float) -> void:
 	if not is_active or (get_tree() and get_tree().paused):
@@ -92,7 +103,8 @@ func fire_missile() -> void:
 		var asp = AudioStreamPlayer3D.new()
 		asp.stream = launch_sound_stream
 		asp.volume_db = 8.0
-		get_tree().current_scene.add_child(asp)
+		var target_scene = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_tree().root
+		target_scene.add_child(asp)
 		asp.global_position = global_position
 		asp.play()
 		asp.finished.connect(asp.queue_free)
@@ -121,7 +133,9 @@ func fire_missile() -> void:
 
 func _on_missile_detonated(_hit_ufo: bool) -> void:
 	has_fired = false
-	if ammo <= 0:
+	if ammo > 0:
+		play_reload_sound() # Chamber next rocket
+	else:
 		await get_tree().create_timer(0.8).timeout
 		if ammo <= 0:
 			switch_to_gun_requested.emit()

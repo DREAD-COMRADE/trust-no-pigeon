@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b2h054401nd8w" path="res://scripts/player/shotgun.gd" id="1_shotgun"]
 [ext_resource type="AudioStream" uid="uid://cw2r4a42gjh2r" path="res://assets/Audio/ShortGun.mp3" id="2_sound"]
-[ext_resource type="AudioStream" uid="uid://ckkmn3bpaj28" path="res://assets/Audio/menu_click.mp3" id="3_click"]
+[ext_resource type="AudioStream" uid="uid://kqfev7gegjex" path="res://assets/Audio/shotgun_reload.mp3" id="3_kl11p"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_metal"]
 albedo_color = Color(0.12, 0.13, 0.15, 1)
@@ -112,5 +112,5 @@ stream = ExtResource("2_sound")
 volume_db = 2.0
 
 [node name="ShellLoadSound" type="AudioStreamPlayer3D" parent="." unique_id=1435806461]
-stream = ExtResource("3_click")
+stream = ExtResource("3_kl11p")
 volume_db = -3.0
