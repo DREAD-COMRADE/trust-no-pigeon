@@ -16,9 +16,9 @@ signal ammo_updated(weapon_name: String, ammo: int)
 @export var ads_speed: float = 14.0
 
 # Weapon swap animation tunables
-@export var holster_duration: float = 0.18    # How long the old weapon slides down
-@export var draw_duration: float = 0.25       # How long the new weapon rises up
-@export var swap_drop_amount: float = 0.55    # How far (Y) weapon dips off screen when holstering
+@export var holster_duration: float = 0.10    # How long the old weapon slides down
+@export var draw_duration: float = 0.14       # How long the new weapon rises up
+@export var swap_drop_amount: float = 0.12    # How far (Y) weapon dips when holstering
 
 var pitch: float = 0.0
 var yaw: float = 0.0
