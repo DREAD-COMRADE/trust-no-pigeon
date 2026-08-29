@@ -9,7 +9,7 @@ signal shot_fired(from_pos: Vector3, direction_vec: Vector3)
 @export var max_range: float = 150.0
 
 @export var hip_position: Vector3 = Vector3(0.28, -0.28, -0.55)
-@export var ads_position: Vector3 = Vector3(0.0, -0.165, -0.38)
+@export var ads_position: Vector3 = Vector3(0.0, -0.094, 0.017)
 @export var ads_speed: float = 16.0
 
 @onready var shoot_origin: Node3D = $ShootOrigin if has_node("ShootOrigin") else null

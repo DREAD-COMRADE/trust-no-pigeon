@@ -376,4 +376,3 @@ func _apply_damage_to_target(target: Object, total_dmg_factor: float) -> void:
 		else:
 			if total_dmg_factor >= 0.5:
 				p.take_hit()
-
