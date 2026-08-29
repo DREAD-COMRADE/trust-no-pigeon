@@ -13,6 +13,7 @@ const RELOAD_DURATION: float = 2.48 # Matches Rocket_launcher_reload.mp3 length
 @export var hip_position: Vector3 = Vector3(0.32, -0.32, -0.6)
 @export var ads_position: Vector3 = Vector3(0.121, -0.123, -0.066)
 @export var ads_speed: float = 14.0
+@export var reload_sound_delay: float = 0.20 # Tunable delay before audio plays while launcher lowers
 
 @onready var shoot_origin: Node3D = $ShootOrigin if has_node("ShootOrigin") else null
 @onready var visual: Node3D = $Visual if has_node("Visual") else null
@@ -62,8 +63,16 @@ func start_reload() -> void:
 	target_down_deg = randf_range(15.0, 25.0) # 15° to 25° pointing down
 	target_left_deg = randf_range(18.0, 25.0) # 18° to 25° pointing left
 
-	play_reload_sound()
 	reload_started.emit()
+
+	# Delayed audio playback: allows player weapon adjustment into stance first
+	if reload_sound_delay > 0.0 and is_inside_tree():
+		get_tree().create_timer(reload_sound_delay).timeout.connect(func():
+			if is_reloading and is_inside_tree():
+				play_reload_sound()
+		)
+	else:
+		play_reload_sound()
 
 func play_reload_sound() -> void:
 	if not reload_sound_stream or not is_inside_tree():
