@@ -3,6 +3,8 @@ class_name PlayerController
 
 signal weapon_switched(slot: int, weapon_name: String, ammo: int)
 signal ammo_updated(weapon_name: String, ammo: int)
+signal health_changed(current: int, max_health: int)
+signal player_died()
 
 @export var camera: Camera3D
 @export var gun: Node3D
@@ -33,6 +35,13 @@ var _swap_phase: int = 0  # 0 = holster, 1 = draw
 var _pending_slot: int = -1
 var _swap_offset: float = 0.0  # Y offset applied to current weapon during anim
 
+# Player Health (3-life system)
+@export var max_health: int = 3
+var health: int = 3
+var is_dead: bool = false
+var _invincible_timer: float = 0.0  # Brief post-hit invincibility window
+const INVINCIBLE_DURATION: float = 1.2
+
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
@@ -62,6 +71,11 @@ func _ready() -> void:
 
 	# Equip initial primary weapon (Gun)
 	_do_switch_to_slot(0) # Skip animation on first equip
+
+	# Broadcast initial health so HUD renders hearts on scene load
+	health = max_health
+	health_changed.emit(health, max_health)
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if is_inside_tree() and get_tree() and get_tree().paused:
@@ -138,6 +152,9 @@ func _process(delta: float) -> void:
 			active_wep.mouse_delta = mouse_delta
 
 	mouse_delta = mouse_delta.lerp(Vector2.ZERO, delta * 12.0)
+
+	_tick_health(delta)
+
 
 	# Weapon swap animation tick
 	_tick_swap_anim(delta)
@@ -304,3 +321,38 @@ func add_shotgun_ammo(count: int) -> void:
 		if shotgun.has_method("on_ammo_added"):
 			shotgun.on_ammo_added()
 		ammo_updated.emit("SHOTGUN", shotgun.ammo)
+
+# ── Health System ─────────────────────────────────────────────────────────────
+
+func take_damage(amount: int = 1) -> void:
+	if is_dead or _invincible_timer > 0.0:
+		return
+
+	health = max(0, health - amount)
+	_invincible_timer = INVINCIBLE_DURATION
+	health_changed.emit(health, max_health)
+
+	# Camera trauma on hit
+	if camera and camera.has_method("add_trauma"):
+		camera.add_trauma(0.45)
+
+	if health <= 0:
+		is_dead = true
+		player_died.emit()
+
+func heal(amount: int = 1) -> void:
+	if is_dead:
+		return
+	health = min(max_health, health + amount)
+	health_changed.emit(health, max_health)
+
+func replenish_health() -> void:
+	# Fully restore all health (call from pickups, safe zones, etc.)
+	health = max_health
+	is_dead = false
+	health_changed.emit(health, max_health)
+
+func _tick_health(delta: float) -> void:
+	if _invincible_timer > 0.0:
+		_invincible_timer -= delta
+

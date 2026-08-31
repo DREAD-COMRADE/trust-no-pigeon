@@ -32,6 +32,10 @@ func _ready() -> void:
 	if player:
 		player.weapon_switched.connect(_on_player_weapon_switched)
 		player.ammo_updated.connect(_on_player_ammo_updated)
+		if player.has_signal("health_changed"):
+			player.health_changed.connect(_on_player_health_changed)
+		if player.has_signal("player_died"):
+			player.player_died.connect(trigger_game_over)
 
 	if spawner:
 		spawner.score_manager = score_manager
@@ -81,6 +85,11 @@ func _on_player_weapon_switched(_slot: int, _wep_name: String, _ammo: int) -> vo
 
 func _on_player_ammo_updated(_wep_name: String, _ammo: int) -> void:
 	_refresh_hud_weapons()
+
+func _on_player_health_changed(current: int, maximum: int) -> void:
+	if hud and hud.has_method("update_health"):
+		hud.update_health(current, maximum)
+
 
 func _refresh_hud_weapons() -> void:
 	if not hud:

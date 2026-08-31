@@ -3,197 +3,482 @@
 [ext_resource type="Script" uid="uid://bb2bl20qhjde2" path="res://scripts/ui/hud.gd" id="1_hud"]
 [ext_resource type="PackedScene" uid="uid://b5d8g24klmnpq" path="res://scenes/ui/DebugPanel.tscn" id="2_dbg"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
-bg_color = Color(0.06, 0.08, 0.12, 0.8)
+; ── Shared StyleBoxes ─────────────────────────────────────────────────────────
+[sub_resource type="StyleBoxFlat" id="SB_panel"]
+bg_color = Color(0.04, 0.05, 0.07, 0.72)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.3, 0.4, 0.5, 0.4)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-expand_margin_left = 12.0
-expand_margin_top = 8.0
-expand_margin_right = 12.0
-expand_margin_bottom = 8.0
+border_color = Color(1, 1, 1, 0.08)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill"]
-bg_color = Color(0.06, 0.08, 0.12, 0.85)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.4, 0.5, 0.6, 0.5)
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-expand_margin_left = 16.0
-expand_margin_top = 6.0
-expand_margin_right = 16.0
-expand_margin_bottom = 6.0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_toast"]
-bg_color = Color(0.08, 0.1, 0.14, 0.85)
+[sub_resource type="StyleBoxFlat" id="SB_obj_accent"]
+bg_color = Color(0.04, 0.05, 0.07, 0.0)
 border_width_left = 2
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(1, 0.7, 0.2, 0.8)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-expand_margin_left = 14.0
-expand_margin_top = 8.0
-expand_margin_right = 14.0
-expand_margin_bottom = 8.0
+border_color = Color(0.55, 0.75, 1.0, 0.75)
 
+[sub_resource type="StyleBoxFlat" id="SB_hp_bar"]
+bg_color = Color(0.25, 0.55, 1.0, 0.9)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="SB_hp_bar_bg"]
+bg_color = Color(1, 1, 1, 0.12)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="SB_armor_bar"]
+bg_color = Color(0.85, 0.88, 0.92, 0.88)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="SB_toast"]
+bg_color = Color(0.04, 0.05, 0.07, 0.86)
+border_width_left = 2
+border_color = Color(0.3, 0.9, 0.4, 0.9)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="SB_wave_dot_active"]
+bg_color = Color(0.95, 0.35, 0.25, 1.0)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="SB_wave_dot_inactive"]
+bg_color = Color(1, 1, 1, 0.22)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+; ── Root CanvasLayer ──────────────────────────────────────────────────────────
 [node name="HUD" type="CanvasLayer" unique_id=1488812756]
 process_mode = 3
 script = ExtResource("1_hud")
 
-[node name="TopLeftContainer" type="MarginContainer" parent="." unique_id=757566675]
-offset_left = 25.0
-offset_top = 25.0
-offset_right = 240.0
-offset_bottom = 95.0
+; ══════════════════════════════════════════════════════════════════════════════
+; TOP-LEFT  — Objective Panel
+; ══════════════════════════════════════════════════════════════════════════════
+[node name="ObjectivePanel" type="MarginContainer" parent="." unique_id=100000001]
+anchors_preset = 0
+anchor_left = 0.0
+anchor_top = 0.0
+offset_left = 22.0
+offset_top = 22.0
+offset_right = 300.0
+offset_bottom = 110.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
-[node name="ScoreCard" type="PanelContainer" parent="TopLeftContainer" unique_id=1952369022]
+[node name="ObjBg" type="PanelContainer" parent="ObjectivePanel" unique_id=100000002]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+theme_override_styles/panel = SubResource("SB_panel")
 
-[node name="VBox" type="VBoxContainer" parent="TopLeftContainer/ScoreCard" unique_id=405793802]
+[node name="ObjVBox" type="VBoxContainer" parent="ObjectivePanel/ObjBg" unique_id=100000003]
 layout_mode = 2
-theme_override_constants/separation = 4
-alignment = 1
+theme_override_constants/separation = 5
 
-[node name="ScoreLabel" type="Label" parent="TopLeftContainer/ScoreCard/VBox" unique_id=1865340058]
+[node name="ObjHeader" type="HBoxContainer" parent="ObjectivePanel/ObjBg/ObjVBox" unique_id=100000004]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "SCORE: 0"
+theme_override_constants/separation = 6
 
-[node name="HighScoreLabel" type="Label" parent="TopLeftContainer/ScoreCard/VBox" unique_id=501954162]
-modulate = Color(0.8, 0.8, 0.8, 0.9)
+[node name="ObjTitle" type="Label" parent="ObjectivePanel/ObjBg/ObjVBox/ObjHeader" unique_id=100000005]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "HIGH: 0"
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(1, 1, 1, 0.5)
+text = "OBJECTIVE ←"
 
-[node name="TopCenterContainer" type="MarginContainer" parent="." unique_id=2002678318]
+[node name="ObjAccentRow" type="HBoxContainer" parent="ObjectivePanel/ObjBg/ObjVBox" unique_id=100000006]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ObjAccent" type="PanelContainer" parent="ObjectivePanel/ObjBg/ObjVBox/ObjAccentRow" unique_id=100000007]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("SB_obj_accent")
+size_flags_vertical = 3
+
+[node name="ObjTextVBox" type="VBoxContainer" parent="ObjectivePanel/ObjBg/ObjVBox/ObjAccentRow" unique_id=100000008]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="ObjLine1" type="Label" parent="ObjectivePanel/ObjBg/ObjVBox/ObjAccentRow/ObjTextVBox" unique_id=100000009]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1.0)
+text = "Survive the Pigeon Swarm"
+
+[node name="ObjLine2" type="Label" parent="ObjectivePanel/ObjBg/ObjVBox/ObjAccentRow/ObjTextVBox" unique_id=100000010]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.7, 0.75, 0.8, 0.8)
+text = "Waves: 0 / 5"
+
+; ══════════════════════════════════════════════════════════════════════════════
+; TOP-CENTER — Compass Bar
+; ══════════════════════════════════════════════════════════════════════════════
+[node name="TopCenterPill" type="MarginContainer" parent="." unique_id=200000001]
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -220.0
-offset_top = 25.0
+offset_top = 22.0
 offset_right = 220.0
-offset_bottom = 75.0
+offset_bottom = 56.0
 grow_horizontal = 2
 
-[node name="CenterPill" type="PanelContainer" parent="TopCenterContainer" unique_id=679139445]
+[node name="CenterBg" type="PanelContainer" parent="TopCenterPill" unique_id=200000002]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
+theme_override_styles/panel = SubResource("SB_panel")
 
-[node name="HBox" type="HBoxContainer" parent="TopCenterContainer/CenterPill" unique_id=223516069]
+[node name="CenterHBox" type="HBoxContainer" parent="TopCenterPill/CenterBg" unique_id=200000003]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 alignment = 1
 
-[node name="TimeLabel" type="Label" parent="TopCenterContainer/CenterPill/HBox" unique_id=1878612871]
-modulate = Color(0.9, 0.95, 1, 1)
+[node name="NextEventLabel" type="Label" parent="TopCenterPill/CenterBg/CenterHBox" unique_id=200000006]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "TIME 00:00"
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(1, 0.78, 0.35, 0.75)
+text = ""
 
-[node name="VSeparator1" type="VSeparator" parent="TopCenterContainer/CenterPill/HBox" unique_id=2000284362]
+[node name="Sep1" type="VSeparator" parent="TopCenterPill/CenterBg/CenterHBox" unique_id=200000005]
 layout_mode = 2
+modulate = Color(1, 1, 1, 0.12)
 
-[node name="NextEventLabel" type="Label" parent="TopCenterContainer/CenterPill/HBox" unique_id=296088993]
-modulate = Color(1, 0.85, 0.4, 1)
+[node name="CompassLabel" type="Label" parent="TopCenterPill/CenterBg/CenterHBox" unique_id=200000009]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "NEXT EVENT 00:20"
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.88, 0.9, 0.95, 0.92)
+text = "N"
+custom_minimum_size = Vector2(260, 0)
+horizontal_alignment = 1
+clip_text = true
 
-[node name="VSeparator2" type="VSeparator" parent="TopCenterContainer/CenterPill/HBox" unique_id=366406488]
+[node name="Sep2" type="VSeparator" parent="TopCenterPill/CenterBg/CenterHBox" unique_id=200000007]
 layout_mode = 2
+modulate = Color(1, 1, 1, 0.12)
 
-[node name="AggressionLabel" type="Label" parent="TopCenterContainer/CenterPill/HBox" unique_id=409971976]
-modulate = Color(0.4, 0.9, 0.4, 1)
+[node name="AggressionLabel" type="Label" parent="TopCenterPill/CenterBg/CenterHBox" unique_id=200000008]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.4, 0.9, 0.45, 0.75)
 text = "NORMAL"
 
-[node name="BottomRightContainer" type="MarginContainer" parent="." unique_id=60855592]
-anchors_preset = 3
+
+
+; ══════════════════════════════════════════════════════════════════════════════
+; TOP-RIGHT — Score
+; ══════════════════════════════════════════════════════════════════════════════
+[node name="ScorePanel" type="MarginContainer" parent="." unique_id=300000001]
+anchors_preset = 1
 anchor_left = 1.0
-anchor_top = 1.0
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -220.0
-offset_top = -140.0
-offset_right = -25.0
-offset_bottom = -25.0
+offset_left = -200.0
+offset_top = 22.0
+offset_right = -22.0
+offset_bottom = 55.0
 grow_horizontal = 0
-grow_vertical = 0
 
-[node name="WeaponCard" type="PanelContainer" parent="BottomRightContainer" unique_id=639464077]
+[node name="ScoreBg" type="PanelContainer" parent="ScorePanel" unique_id=300000002]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+theme_override_styles/panel = SubResource("SB_panel")
 
-[node name="VBox" type="VBoxContainer" parent="BottomRightContainer/WeaponCard" unique_id=500687912]
+[node name="ScoreHBox" type="HBoxContainer" parent="ScorePanel/ScoreBg" unique_id=300000003]
 layout_mode = 2
 theme_override_constants/separation = 6
-alignment = 1
+alignment = 2
 
-[node name="GunLabel" type="Label" parent="BottomRightContainer/WeaponCard/VBox" unique_id=1081895158]
-modulate = Color(0.3, 1, 0.4, 1)
+[node name="ScoreIcon" type="Label" parent="ScorePanel/ScoreBg/ScoreHBox" unique_id=300000004]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "[1] GUN  ∞"
-horizontal_alignment = 2
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(1.0, 0.82, 0.2, 1.0)
+text = "⬡"
 
-[node name="ShotgunLabel" type="Label" parent="BottomRightContainer/WeaponCard/VBox" unique_id=1027655605]
-modulate = Color(0.85, 0.75, 0.3, 0.8)
+[node name="ScoreLabel" type="Label" parent="ScorePanel/ScoreBg/ScoreHBox" unique_id=300000005]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "[2] SHOTGUN  2"
-horizontal_alignment = 2
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1.0)
+text = "0"
 
-[node name="RocketLabel" type="Label" parent="BottomRightContainer/WeaponCard/VBox" unique_id=635243766]
-modulate = Color(0.5, 0.5, 0.5, 0.5)
+[node name="HighScoreLabel" type="Label" parent="ScorePanel/ScoreBg/ScoreHBox" unique_id=300000006]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "[3] ROCKET  0"
-horizontal_alignment = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 0.6)
+text = "  HI: 0"
 
-[node name="EventToast" type="MarginContainer" parent="." unique_id=862318200]
+; ══════════════════════════════════════════════════════════════════════════════
+; TOP-RIGHT (below score) — Feedback Toast
+; ══════════════════════════════════════════════════════════════════════════════
+[node name="EventToast" type="MarginContainer" parent="." unique_id=400000001]
 visible = false
 modulate = Color(1, 1, 1, 0)
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -340.0
-offset_top = 25.0
-offset_right = -25.0
-offset_bottom = 75.0
+offset_left = -300.0
+offset_top = 62.0
+offset_right = -22.0
+offset_bottom = 100.0
 grow_horizontal = 0
 
-[node name="ToastPanel" type="PanelContainer" parent="EventToast" unique_id=1196015514]
+[node name="ToastPanel" type="PanelContainer" parent="EventToast" unique_id=400000002]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_toast")
+theme_override_styles/panel = SubResource("SB_toast")
 
-[node name="HBox" type="HBoxContainer" parent="EventToast/ToastPanel" unique_id=1195054753]
+[node name="ToastHBox" type="HBoxContainer" parent="EventToast/ToastPanel" unique_id=400000003]
 layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="ToastIcon" type="Label" parent="EventToast/ToastPanel/ToastHBox" unique_id=400000004]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.3, 0.9, 0.4, 1)
+text = "✕"
+
+[node name="ToastLabel" type="Label" parent="EventToast/ToastPanel/ToastHBox" unique_id=400000005]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.92, 0.95, 0.92, 1)
+text = "DRONE DESTROYED"
+
+[node name="ToastPoints" type="Label" parent="EventToast/ToastPanel/ToastHBox" unique_id=400000006]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.3, 0.9, 0.4, 1)
+text = "+25"
+
+; ══════════════════════════════════════════════════════════════════════════════
+; BOTTOM-LEFT — Player Status (HP + Armor bars)
+; ══════════════════════════════════════════════════════════════════════════════
+[node name="PlayerStatusPanel" type="MarginContainer" parent="." unique_id=500000001]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 22.0
+offset_top = -110.0
+offset_right = 260.0
+offset_bottom = -22.0
+grow_vertical = 0
+
+[node name="StatusBg" type="PanelContainer" parent="PlayerStatusPanel" unique_id=500000002]
+layout_mode = 2
+theme_override_styles/panel = SubResource("SB_panel")
+
+[node name="StatusVBox" type="VBoxContainer" parent="PlayerStatusPanel/StatusBg" unique_id=500000003]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+; — HP Row
+[node name="HPRow" type="HBoxContainer" parent="PlayerStatusPanel/StatusBg/StatusVBox" unique_id=500000010]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HPIcon" type="Label" parent="PlayerStatusPanel/StatusBg/StatusVBox/HPRow" unique_id=500000011]
+layout_mode = 2
+custom_minimum_size = Vector2(18, 0)
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.35, 0.6, 1.0, 1.0)
+text = "🛡"
+
+[node name="HPValueLabel" type="Label" parent="PlayerStatusPanel/StatusBg/StatusVBox/HPRow" unique_id=500000012]
+layout_mode = 2
+custom_minimum_size = Vector2(28, 0)
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.35, 0.75, 1.0, 1.0)
+text = "50"
+
+[node name="HPBarBg" type="PanelContainer" parent="PlayerStatusPanel/StatusBg/StatusVBox/HPRow" unique_id=500000013]
+layout_mode = 2
+custom_minimum_size = Vector2(140, 6)
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("SB_hp_bar_bg")
+
+[node name="HPBar" type="PanelContainer" parent="PlayerStatusPanel/StatusBg/StatusVBox/HPRow/HPBarBg" unique_id=500000014]
+layout_mode = 1
+anchor_right = 0.5
+anchor_bottom = 1.0
+theme_override_styles/panel = SubResource("SB_hp_bar")
+
+; — Armor Row
+[node name="ArmorRow" type="HBoxContainer" parent="PlayerStatusPanel/StatusBg/StatusVBox" unique_id=500000020]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ArmorIcon" type="Label" parent="PlayerStatusPanel/StatusBg/StatusVBox/ArmorRow" unique_id=500000021]
+layout_mode = 2
+custom_minimum_size = Vector2(18, 0)
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.85, 0.9, 0.92, 0.9)
+text = "✚"
+
+[node name="ArmorValueLabel" type="Label" parent="PlayerStatusPanel/StatusBg/StatusVBox/ArmorRow" unique_id=500000022]
+layout_mode = 2
+custom_minimum_size = Vector2(28, 0)
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.88, 0.92, 0.95, 0.9)
+text = "100"
+
+[node name="ArmorBarBg" type="PanelContainer" parent="PlayerStatusPanel/StatusBg/StatusVBox/ArmorRow" unique_id=500000023]
+layout_mode = 2
+custom_minimum_size = Vector2(140, 6)
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("SB_hp_bar_bg")
+
+[node name="ArmorBar" type="PanelContainer" parent="PlayerStatusPanel/StatusBg/StatusVBox/ArmorRow/ArmorBarBg" unique_id=500000024]
+layout_mode = 1
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_styles/panel = SubResource("SB_armor_bar")
+
+; ══════════════════════════════════════════════════════════════════════════════
+; BOTTOM-CENTER — Health Hearts (3-life system)
+; ══════════════════════════════════════════════════════════════════════════════
+[node name="HealthHeartsPanel" type="MarginContainer" parent="." unique_id=600000001]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -80.0
+offset_top = -65.0
+offset_right = 80.0
+offset_bottom = -22.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="HeartsBg" type="PanelContainer" parent="HealthHeartsPanel" unique_id=600000002]
+layout_mode = 2
+theme_override_styles/panel = SubResource("SB_panel")
+
+[node name="HeartsRow" type="HBoxContainer" parent="HealthHeartsPanel/HeartsBg" unique_id=600000003]
+layout_mode = 2
+theme_override_constants/separation = 8
 alignment = 1
 
-[node name="ToastLabel" type="Label" parent="EventToast/ToastPanel/HBox" unique_id=1708301440]
-modulate = Color(1, 0.9, 0.3, 1)
+[node name="Heart1" type="Label" parent="HealthHeartsPanel/HeartsBg/HeartsRow" unique_id=600000010]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "⚠️ EVENT: GOVERNMENT HAS NOTICED"
-vertical_alignment = 1
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(1.0, 0.25, 0.25, 1.0)
+text = "❤"
 
+[node name="Heart2" type="Label" parent="HealthHeartsPanel/HeartsBg/HeartsRow" unique_id=600000011]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(1.0, 0.25, 0.25, 1.0)
+text = "❤"
+
+[node name="Heart3" type="Label" parent="HealthHeartsPanel/HeartsBg/HeartsRow" unique_id=600000012]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(1.0, 0.25, 0.25, 1.0)
+text = "❤"
+
+
+
+; ══════════════════════════════════════════════════════════════════════════════
+; BOTTOM-RIGHT — Weapon & Ammo
+; ══════════════════════════════════════════════════════════════════════════════
+[node name="WeaponPanel" type="MarginContainer" parent="." unique_id=700000001]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -230.0
+offset_top = -120.0
+offset_right = -22.0
+offset_bottom = -22.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="WeaponBg" type="PanelContainer" parent="WeaponPanel" unique_id=700000002]
+layout_mode = 2
+theme_override_styles/panel = SubResource("SB_panel")
+
+[node name="WeaponVBox" type="VBoxContainer" parent="WeaponPanel/WeaponBg" unique_id=700000003]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+; — Active Ammo Row
+[node name="AmmoRow" type="HBoxContainer" parent="WeaponPanel/WeaponBg/WeaponVBox" unique_id=700000010]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 2
+
+[node name="AmmoLoaded" type="Label" parent="WeaponPanel/WeaponBg/WeaponVBox/AmmoRow" unique_id=700000011]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1.0)
+text = "∞"
+
+[node name="AmmoSlash" type="Label" parent="WeaponPanel/WeaponBg/WeaponVBox/AmmoRow" unique_id=700000012]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 0.7)
+text = "/"
+vertical_alignment = 2
+
+[node name="AmmoReserve" type="Label" parent="WeaponPanel/WeaponBg/WeaponVBox/AmmoRow" unique_id=700000013]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.65, 0.65, 0.65, 0.85)
+text = "∞"
+vertical_alignment = 2
+
+[node name="WeaponIcon" type="Label" parent="WeaponPanel/WeaponBg/WeaponVBox/AmmoRow" unique_id=700000014]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.75, 0.78, 0.82, 0.9)
+text = "🔫"
+
+; — Weapon Slot Row (1 2 3)
+[node name="SlotRow" type="HBoxContainer" parent="WeaponPanel/WeaponBg/WeaponVBox" unique_id=700000020]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 2
+
+[node name="SlotLabel1" type="Label" parent="WeaponPanel/WeaponBg/WeaponVBox/SlotRow" unique_id=700000021]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.4, 0.95, 0.5, 1.0)
+text = "1"
+
+[node name="SlotLabel2" type="Label" parent="WeaponPanel/WeaponBg/WeaponVBox/SlotRow" unique_id=700000022]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 0.55)
+text = "2"
+
+[node name="SlotLabel3" type="Label" parent="WeaponPanel/WeaponBg/WeaponVBox/SlotRow" unique_id=700000023]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 0.55)
+text = "3"
+
+; ══════════════════════════════════════════════════════════════════════════════
+; Debug Panel + Game Over (preserved from original)
+; ══════════════════════════════════════════════════════════════════════════════
 [node name="DebugPanel" parent="." unique_id=1313506476 instance=ExtResource("2_dbg")]
 visible = false
 
@@ -204,7 +489,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 1)
+color = Color(0, 0, 0, 0.92)
 
 [node name="VBox" type="VBoxContainer" parent="GameOverPanel" unique_id=1512309142]
 layout_mode = 1
