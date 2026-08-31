@@ -27,4 +27,4 @@ stream = ExtResource("2_ue6ds")
 volume_db = 80.0
 
 [node name="Marker3D" type="Marker3D" parent="." unique_id=1616554130]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.093979076, -0.017263532)
+transform = Transform3D(1, 0, 0, 0, 0.9999024, 0.040252876, 0, -0.0139621785, 2.8827126, 0, 0.103665054, -0.006687974)

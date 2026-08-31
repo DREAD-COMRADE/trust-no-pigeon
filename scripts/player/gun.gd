@@ -9,7 +9,7 @@ signal shot_fired(from_pos: Vector3, direction_vec: Vector3)
 @export var max_range: float = 150.0
 
 @export var hip_position: Vector3 = Vector3(0.28, -0.28, -0.55)
-@export var ads_position: Vector3 = Vector3(0.0, -0.094, 0.017)
+@export var ads_position: Vector3 = Vector3(0.0, -0.094, -0.007)
 @export var ads_speed: float = 16.0
 
 @onready var shoot_origin: Node3D = $ShootOrigin if has_node("ShootOrigin") else null
@@ -27,6 +27,11 @@ var recoil_rotation: Vector3 = Vector3.ZERO
 var is_aiming: bool = false
 var mouse_delta: Vector2 = Vector2.ZERO
 
+# NEW: Keeps track of smooth iron-sight tilt independently
+var current_ads_tilt_x: float = 0.0 
+
+var empty_sound_stream: AudioStream = preload("res://assets/Audio/empty_gunshot.mp3")
+
 
 func _ready() -> void:
 	position = hip_position
@@ -40,6 +45,7 @@ func _ready() -> void:
 	if muzzle_flash:
 		muzzle_flash.visible = false
 
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_active or (get_tree() and get_tree().paused) or init_grace_timer > 0.0:
 		return
@@ -49,6 +55,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 			shoot()
 			get_viewport().set_input_as_handled()
+
 
 func _process(delta: float) -> void:
 	if init_grace_timer > 0.0:
@@ -66,6 +73,10 @@ func _process(delta: float) -> void:
 	var target_pos = ads_position if is_aiming else hip_position
 	position = position.lerp(target_pos, delta * ads_speed)
 
+	# Smoothly interpolate the iron sight alignment angle (-0.85 degrees on X)
+	var target_tilt = deg_to_rad(-0.85) if is_aiming else 0.0
+	current_ads_tilt_x = lerp(current_ads_tilt_x, target_tilt, delta * ads_speed)
+
 	# Weapon sway & recoil recovery
 	var sway_amount = 0.0008 if not is_aiming else 0.0002
 	var sway_rot = Vector3(-mouse_delta.y * sway_amount, -mouse_delta.x * sway_amount, 0.0)
@@ -74,13 +85,15 @@ func _process(delta: float) -> void:
 		recoil_offset = recoil_offset.lerp(Vector3.ZERO, delta * 15.0)
 		recoil_rotation = recoil_rotation.lerp(Vector3.ZERO, delta * 18.0)
 		visual.position = original_visual_pos + recoil_offset
-		visual.rotation = sway_rot + recoil_rotation
+		
+		# Combine the baseline sway, the active recoil, AND our forced iron-sight tilt
+		var final_rotation = sway_rot + recoil_rotation
+		final_rotation.x += current_ads_tilt_x
+		visual.rotation = final_rotation
 
 	if muzzle_flash and muzzle_flash.visible:
 		muzzle_flash.visible = false
 
-
-var empty_sound_stream: AudioStream = preload("res://assets/Audio/empty_gunshot.mp3")
 
 func _play_dry_fire_sound() -> void:
 	if not empty_sound_stream or not is_inside_tree():
@@ -93,13 +106,13 @@ func _play_dry_fire_sound() -> void:
 	player.finished.connect(player.queue_free)
 	player.play()
 
+
 func shoot() -> void:
 	if not is_active or (get_tree() and get_tree().paused) or init_grace_timer > 0.0:
 		return
 
 	if not can_fire:
 		return
-
 
 	can_fire = false
 	fire_timer = fire_rate
@@ -135,11 +148,9 @@ func shoot() -> void:
 		if player_ctrl and player_ctrl.has_method("add_recoil"):
 			player_ctrl.add_recoil(0.7 * ads_mult, 0.3 * ads_mult)
 
-
 	var from = cam_node.global_position if cam_node else global_position
 	var dir = -cam_node.global_transform.basis.z if cam_node else -global_transform.basis.z
 	var to = from + dir * max_range
-
 
 	shot_fired.emit(from, dir)
 

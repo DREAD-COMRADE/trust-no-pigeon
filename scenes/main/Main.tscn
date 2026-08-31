@@ -14,7 +14,6 @@
 [ext_resource type="PackedScene" uid="uid://bh2cpk0t0vmvd" path="res://scenes/systems/PigeonSpawner.tscn" id="6_spawn"]
 [ext_resource type="PackedScene" uid="uid://kvdfwecxylrv" path="res://scenes/ui/HUD.tscn" id="7_hud"]
 [ext_resource type="PackedScene" uid="uid://cawpwyml73u4w" path="res://scenes/pigeons/GovernmentPigeon_v2.tscn" id="11_p5fgu"]
-[ext_resource type="AudioStream" uid="uid://y8f24iim5aw8" path="res://assets/Audio/Main_theme.mp3" id="13_2tpxt"]
 [ext_resource type="PackedScene" uid="uid://bfmst0751e0rw" path="res://assets/props/wall.glb" id="16_hjnkw"]
 [ext_resource type="PackedScene" uid="uid://xigid02mhoy3" path="res://assets/props/watertank.glb" id="17_hjnkw"]
 [ext_resource type="PackedScene" path="res://scenes/systems/PigeonSpawnZone.tscn" id="18_sz"]
@@ -26,10 +25,8 @@
 [ext_resource type="Script" uid="uid://b5sotk6jh8fbk" path="res://scripts/player/player_controller.gd" id="24_pc"]
 [ext_resource type="PackedScene" uid="uid://df2m5ax8y73kp" path="res://scenes/player/Shotgun.tscn" id="25_shg"]
 [ext_resource type="Script" uid="uid://n0ota8jr01au" path="res://scripts/objects/projector_light.gd" id="26_prj"]
-[ext_resource type="PackedScene" path="res://scenes/ui/PauseMenu.tscn" id="27_pm"]
+[ext_resource type="PackedScene" uid="uid://dbt3yjguv41og" path="res://scenes/ui/PauseMenu.tscn" id="27_pm"]
 [ext_resource type="PackedScene" path="res://scenes/systems/MusicManager.tscn" id="28_mm"]
-
-
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
 sky_top_color = Color(0.35, 0.65, 0.95, 1)
@@ -452,6 +449,11 @@ spot_angle = 16.0
 script = ExtResource("26_prj")
 sweep_speed = 0.45
 
+[node name="Camera3D2" type="Camera3D" parent="Environment" unique_id=1047526548]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9139391, 0.47783518)
+visible = false
+current = true
+
 [node name="Player" type="Node3D" parent="." unique_id=1289402751]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 script = ExtResource("24_pc")
@@ -461,8 +463,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.31343818, 0.47783518)
 current = true
 script = ExtResource("2_cam")
 
-[node name="Gun" parent="Player/Camera3D" unique_id=162831126 instance=ExtResource("3_gun")]
+[node name="Gun" parent="Player/Camera3D" unique_id=162831126 node_paths=PackedStringArray("camera") instance=ExtResource("3_gun")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, -0.28, -0.55)
+camera = NodePath("..")
+ads_position = Vector3(0, -0.11, -0.265)
 
 [node name="Shotgun" parent="Player/Camera3D" unique_id=162831127 instance=ExtResource("25_shg")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, -0.3, -0.52)
@@ -506,11 +510,9 @@ day_night_manager = NodePath("../DayNightManager")
 
 [node name="HUD" parent="Systems" unique_id=32960323 instance=ExtResource("7_hud")]
 
-[node name="PauseMenu" parent="Systems" instance=ExtResource("27_pm")]
+[node name="PauseMenu" parent="Systems" unique_id=2098422906 instance=ExtResource("27_pm")]
 
-
-[node name="MusicManager" parent="Systems" instance=ExtResource("28_mm")]
-
+[node name="MusicManager" parent="Systems" unique_id=1486337634 instance=ExtResource("28_mm")]
 
 [node name="wall" parent="." unique_id=131994988 instance=ExtResource("16_hjnkw")]
 transform = Transform3D(15.604369, 0, 0, 0, 1, 0, 0, 0, 1, -3.071775, -0.06954861, -1.9290485)
