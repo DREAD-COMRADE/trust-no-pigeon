@@ -3,9 +3,14 @@ extends CanvasLayer
 @warning_ignore("unused_signal")
 signal restart_requested
 
-# ── Swappable Panel References (override in Inspector to swap your own scenes) ──
-# Each of these points to a top-level panel node in HUD.tscn.
-# You can hide/replace any of them without touching the others.
+# ── Weapon Icon Textures (Configured or loaded automatically) ───────────────
+@export_group("Weapon Textures")
+@export var weapon_icon_pistol: Texture2D = preload("res://assets/icons/weapons/Pistol_icon.png")
+@export var weapon_icon_shotgun: Texture2D = preload("res://assets/icons/weapons/shortgun_icon.png")
+@export var weapon_icon_rocket: Texture2D = preload("res://assets/icons/weapons/Rocket_launcher_icon.png")
+@export_group("")
+
+# ── Swappable Panel References ──────────────────────────────────────────────
 @export_group("Swappable Panels")
 @export var objective_panel_path: NodePath = ^"ObjectivePanel"
 @export var compass_panel_path: NodePath = ^"TopCenterPill"
@@ -16,57 +21,61 @@ signal restart_requested
 @export var weapon_panel_path: NodePath = ^"WeaponPanel"
 @export_group("")
 
-# ── Camera ref for compass (auto-resolved from scene) ─────────────────────────
+# ── Camera ref for compass ───────────────────────────────────────────────────
 var _camera: Camera3D
 
 # ── Node references ───────────────────────────────────────────────────────────
 # Objective
-@onready var obj_line1: Label = get_node_or_null("ObjectivePanel/ObjBg/ObjVBox/ObjAccentRow/ObjTextVBox/ObjLine1")
-@onready var obj_line2: Label = get_node_or_null("ObjectivePanel/ObjBg/ObjVBox/ObjAccentRow/ObjTextVBox/ObjLine2")
+@onready var obj_line1: Label = get_node_or_null("ObjectivePanel/ObjVBox/ObjAccentRow/ObjTextVBox/ObjLine1")
+@onready var obj_line2: Label = get_node_or_null("ObjectivePanel/ObjVBox/ObjAccentRow/ObjTextVBox/ObjLine2")
 
 # Compass (top-center)
-@onready var compass_label: Label     = get_node_or_null("TopCenterPill/CenterBg/CenterHBox/CompassLabel")
-@onready var next_event_label: Label  = get_node_or_null("TopCenterPill/CenterBg/CenterHBox/NextEventLabel")
-@onready var aggression_label: Label  = get_node_or_null("TopCenterPill/CenterBg/CenterHBox/AggressionLabel")
+@onready var compass_label: Label = get_node_or_null("TopCenterPill/CenterHBox/CompassLabel")
 
 # Score (top-right)
-@onready var score_label: Label      = get_node_or_null("ScorePanel/ScoreBg/ScoreHBox/ScoreLabel")
-@onready var high_score_label: Label = get_node_or_null("ScorePanel/ScoreBg/ScoreHBox/HighScoreLabel")
+@onready var score_label: Label = get_node_or_null("ScorePanel/ScoreHBox/ScoreLabel")
+@onready var high_score_label: Label = get_node_or_null("ScorePanel/ScoreHBox/HighScoreLabel")
 
-# Toast (top-right feedback)
-@onready var event_toast: Control      = get_node_or_null("EventToast")
-@onready var event_toast_label: Label  = get_node_or_null("EventToast/ToastPanel/ToastHBox/ToastLabel")
+# Toast (top-right feedback popup)
+@onready var event_toast: Control = get_node_or_null("EventToast")
+@onready var event_toast_label: Label = get_node_or_null("EventToast/ToastPanel/ToastHBox/ToastLabel")
 @onready var event_toast_points: Label = get_node_or_null("EventToast/ToastPanel/ToastHBox/ToastPoints")
 
-# Player Status (bottom-left bars)
-@onready var hp_bar: PanelContainer    = get_node_or_null("PlayerStatusPanel/StatusBg/StatusVBox/HPRow/HPBarBg/HPBar")
-@onready var armor_bar: PanelContainer = get_node_or_null("PlayerStatusPanel/StatusBg/StatusVBox/ArmorRow/ArmorBarBg/ArmorBar")
-@onready var hp_value_label: Label     = get_node_or_null("PlayerStatusPanel/StatusBg/StatusVBox/HPRow/HPValueLabel")
-@onready var armor_value_label: Label  = get_node_or_null("PlayerStatusPanel/StatusBg/StatusVBox/ArmorRow/ArmorValueLabel")
+# Player Status (bottom-left)
+@onready var shield_bar: PanelContainer = get_node_or_null("PlayerStatusPanel/StatusVBox/ShieldRow/ShieldBarBg/ShieldBar")
+@onready var hp_bar: PanelContainer = get_node_or_null("PlayerStatusPanel/StatusVBox/HPRow/HPBarBg/HPBar")
+@onready var shield_value_label: Label = get_node_or_null("PlayerStatusPanel/StatusVBox/ShieldRow/ShieldValueLabel")
+@onready var hp_value_label: Label = get_node_or_null("PlayerStatusPanel/StatusVBox/HPRow/HPValueLabel")
 
 # Health Hearts (bottom-center)
-@onready var heart1: Label = get_node_or_null("HealthHeartsPanel/HeartsBg/HeartsRow/Heart1")
-@onready var heart2: Label = get_node_or_null("HealthHeartsPanel/HeartsBg/HeartsRow/Heart2")
-@onready var heart3: Label = get_node_or_null("HealthHeartsPanel/HeartsBg/HeartsRow/Heart3")
+@onready var heart1: Label = get_node_or_null("HealthHeartsPanel/HeartsVBox/HeartsRow/Heart1")
+@onready var heart2: Label = get_node_or_null("HealthHeartsPanel/HeartsVBox/HeartsRow/Heart2")
+@onready var heart3: Label = get_node_or_null("HealthHeartsPanel/HeartsVBox/HeartsRow/Heart3")
+@onready var wave_label: Label = get_node_or_null("HealthHeartsPanel/HeartsVBox/WaveLabel")
 
 # Weapon & Ammo (bottom-right)
-@onready var ammo_loaded_label: Label  = get_node_or_null("WeaponPanel/WeaponBg/WeaponVBox/AmmoRow/AmmoLoaded")
-@onready var ammo_slash_label: Label   = get_node_or_null("WeaponPanel/WeaponBg/WeaponVBox/AmmoRow/AmmoSlash")
-@onready var ammo_reserve_label: Label = get_node_or_null("WeaponPanel/WeaponBg/WeaponVBox/AmmoRow/AmmoReserve")
-@onready var weapon_icon_label: Label  = get_node_or_null("WeaponPanel/WeaponBg/WeaponVBox/AmmoRow/WeaponIcon")
-@onready var slot_label1: Label = get_node_or_null("WeaponPanel/WeaponBg/WeaponVBox/SlotRow/SlotLabel1")
-@onready var slot_label2: Label = get_node_or_null("WeaponPanel/WeaponBg/WeaponVBox/SlotRow/SlotLabel2")
-@onready var slot_label3: Label = get_node_or_null("WeaponPanel/WeaponBg/WeaponVBox/SlotRow/SlotLabel3")
+@onready var ammo_loaded_label: Label = get_node_or_null("WeaponPanel/WeaponVBox/AmmoRow/AmmoLoaded")
+@onready var ammo_slash_label: Label = get_node_or_null("WeaponPanel/WeaponVBox/AmmoRow/AmmoSlash")
+@onready var ammo_reserve_label: Label = get_node_or_null("WeaponPanel/WeaponVBox/AmmoRow/AmmoReserve")
+@onready var weapon_icon: TextureRect = get_node_or_null("WeaponPanel/WeaponVBox/AmmoRow/WeaponIcon")
+
+# Slot Selector Underlines
+@onready var slot_label1: Label = get_node_or_null("WeaponPanel/WeaponVBox/SlotRow/Slot1VBox/SlotLabel1")
+@onready var underline1: Panel = get_node_or_null("WeaponPanel/WeaponVBox/SlotRow/Slot1VBox/Underline1")
+@onready var slot_label2: Label = get_node_or_null("WeaponPanel/WeaponVBox/SlotRow/Slot2VBox/SlotLabel2")
+@onready var underline2: Panel = get_node_or_null("WeaponPanel/WeaponVBox/SlotRow/Slot2VBox/Underline2")
+@onready var slot_label3: Label = get_node_or_null("WeaponPanel/WeaponVBox/SlotRow/Slot3VBox/SlotLabel3")
+@onready var underline3: Panel = get_node_or_null("WeaponPanel/WeaponVBox/SlotRow/Slot3VBox/Underline3")
 
 # Debug & Game Over
-@onready var debug_panel: Control      = $DebugPanel if has_node("DebugPanel") else null
-@onready var game_over_panel: Control  = $GameOverPanel
-@onready var final_score_label: Label  = get_node_or_null("GameOverPanel/VBox/ScoreHBox/ScoreVBox/FinalScoreLabel")
+@onready var debug_panel: Control = $DebugPanel if has_node("DebugPanel") else null
+@onready var game_over_panel: Control = $GameOverPanel
+@onready var final_score_label: Label = get_node_or_null("GameOverPanel/VBox/ScoreHBox/ScoreVBox/FinalScoreLabel")
 @onready var high_score_value_label: Label = get_node_or_null("GameOverPanel/VBox/ScoreHBox/HighScoreVBox/HighScoreValueLabel")
-@onready var gov_kills_label: Label    = get_node_or_null("GameOverPanel/VBox/StatsVBox/GovKillsLabel")
-@onready var accuracy_label: Label     = get_node_or_null("GameOverPanel/VBox/StatsVBox/AccuracyLabel")
-@onready var message_label: Label      = get_node_or_null("GameOverPanel/VBox/MessageLabel")
-@onready var restart_button: Button    = get_node_or_null("GameOverPanel/VBox/RestartButton")
+@onready var gov_kills_label: Label = get_node_or_null("GameOverPanel/VBox/StatsVBox/GovKillsLabel")
+@onready var accuracy_label: Label = get_node_or_null("GameOverPanel/VBox/StatsVBox/AccuracyLabel")
+@onready var message_label: Label = get_node_or_null("GameOverPanel/VBox/MessageLabel")
+@onready var restart_button: Button = get_node_or_null("GameOverPanel/VBox/RestartButton")
 
 # ── Internal state ────────────────────────────────────────────────────────────
 var toast_tween: Tween
@@ -75,14 +84,6 @@ var cur_active_slot: int = 0
 var game_over_bad_stream: AudioStream = preload("res://assets/Audio/GAME_OVER.mp3")
 var game_over_good_stream: AudioStream = preload("res://assets/Audio/Game_over_2.mp3")
 var game_over_audio: AudioStreamPlayer
-
-# Compass direction table (yaw in degrees → label string)
-const COMPASS_DIRS: Array = [
-	[0,   "N"], [22,  "NNE"], [45, "NE"], [67,  "ENE"],
-	[90,  "E"], [112, "ESE"], [135,"SE"], [157, "SSE"],
-	[180, "S"], [202, "SSW"], [225,"SW"], [247, "WSW"],
-	[270, "W"], [292, "WNW"], [315,"NW"], [337, "NNW"], [360, "N"]
-]
 
 # ── Ready ─────────────────────────────────────────────────────────────────────
 func _ready() -> void:
@@ -99,7 +100,8 @@ func _ready() -> void:
 	if helper_script:
 		helper_script.setup_ui_audio(self)
 
-	# Default weapon display
+	# Initial setup
+	update_score(0, 0)
 	update_weapon_ui(0, 6, 0, 18)
 	_update_hearts(3, 3)
 
@@ -116,49 +118,51 @@ func _process(_delta: float) -> void:
 	if not compass_label:
 		return
 	if not _camera:
-		# Try to find camera lazily
 		if get_tree() and get_tree().current_scene:
 			var cam = get_tree().current_scene.find_child("Camera3D", true, false)
 			if cam is Camera3D:
 				_camera = cam
 		return
 
-	# Build scrolling compass string from camera yaw
+	# Calculate 360 heading tape
 	var yaw_deg = fmod(rad_to_deg(-_camera.rotation.y) + 360.0, 360.0)
-	compass_label.text = _build_compass_string(yaw_deg)
+	compass_label.text = _build_compass_tape(yaw_deg)
 
-func _build_compass_string(yaw_deg: float) -> String:
-	# Show a window of directions centered on the current heading.
-	# We generate a band of cardinal/intercardinal labels spaced ~45° apart.
-	const WINDOW: float = 90.0   # degrees visible either side
-	const TICK_EVERY: float = 22.5  # label every 22.5 degrees
+func _build_compass_tape(yaw_deg: float) -> String:
+	# Format matches reference tape: e.g. 6   NW   330   345   N   15   30   NE   45
+	const STEP: float = 15.0
+	const WINDOW: float = 75.0
 
-	var entries: Array = []
+	var tape_items: Array = []
 	var start_deg = yaw_deg - WINDOW
 	var end_deg = yaw_deg + WINDOW
 
-	var angle = floor(start_deg / TICK_EVERY) * TICK_EVERY
+	var angle = floor(start_deg / STEP) * STEP
 	while angle <= end_deg:
-		var norm = fmod(angle + 360.0, 360.0)
-		var label = _deg_to_dir(norm)
-		var weight = abs(angle - yaw_deg)  # 0 = center
-		# Center marker
-		if weight < 4.0:
-			entries.append("[ %s ]" % label)
-		elif weight < 14.0:
-			entries.append(label)
+		var norm = int(fmod(angle + 360.0, 360.0))
+		var label = _deg_to_bearing_label(norm)
+		var diff = abs(angle - yaw_deg)
+
+		if diff < 6.0:
+			tape_items.append("│ %s │" % label)
 		else:
-			entries.append(label.to_lower())
-		angle += TICK_EVERY
+			tape_items.append(label)
 
-	return "  ".join(entries)
+		angle += STEP
 
-func _deg_to_dir(deg: float) -> String:
-	# Snap to nearest compass point
-	var snapped = round(deg / 22.5) * 22.5
-	var idx = int(fmod(snapped, 360.0) / 22.5) % 16
-	const DIRS = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"]
-	return DIRS[idx]
+	return "      ".join(tape_items)
+
+func _deg_to_bearing_label(deg: int) -> String:
+	match deg:
+		0, 360: return "N"
+		45: return "NE"
+		90: return "E"
+		135: return "SE"
+		180: return "S"
+		225: return "SW"
+		270: return "W"
+		315: return "NW"
+		_: return str(deg)
 
 # ── Input ─────────────────────────────────────────────────────────────────────
 func _unhandled_input(event: InputEvent) -> void:
@@ -175,31 +179,36 @@ func _unhandled_input(event: InputEvent) -> void:
 # ── Score ─────────────────────────────────────────────────────────────────────
 func update_score(score: int, high_score: int) -> void:
 	if score_label:
-		score_label.text = str(score)
+		# Format with comma separators (e.g. 1,250)
+		score_label.text = _format_number_commas(score)
 	if high_score_label:
-		high_score_label.text = "  HI: " + str(high_score)
+		high_score_label.text = "HI: " + _format_number_commas(high_score)
 
-# ── Aggression ────────────────────────────────────────────────────────────────
-func update_aggression(level: int, status_text: String) -> void:
-	if aggression_label:
-		aggression_label.text = status_text
-		aggression_label.modulate = Color(1.0, 0.3, 0.3, 0.9) if level > 0 else Color(0.4, 0.9, 0.4, 0.9)
+func _format_number_commas(num: int) -> String:
+	var s = str(abs(num))
+	var res = ""
+	var cnt = 0
+	for i in range(s.length() - 1, -1, -1):
+		res = s[i] + res
+		cnt += 1
+		if cnt % 3 == 0 and i > 0:
+			res = "," + res
+	return ("-" if num < 0 else "") + res
 
-# ── Timer / Event ─────────────────────────────────────────────────────────────
+# ── Aggression / Event ────────────────────────────────────────────────────────
+func update_aggression(_level: int, _status_text: String) -> void:
+	pass # Minimal HUD keeps center clear
+
 @warning_ignore("integer_division")
-func update_run_time(time_seconds: float, next_event_seconds: float) -> void:
-	if next_event_label:
-		var n_total: int = int(next_event_seconds)
-		var n_mins: int = int(float(n_total) / 60.0)
-		var n_secs: int = n_total % 60
-		next_event_label.text = "NEXT %02d:%02d" % [n_mins, n_secs]
+func update_run_time(_time_seconds: float, _next_event_seconds: float) -> void:
+	pass
 
 # ── Health Hearts ─────────────────────────────────────────────────────────────
 func _update_hearts(current: int, maximum: int) -> void:
-	const FULL  = "❤"
+	const FULL = "❤"
 	const EMPTY = "♡"
-	const FULL_COLOR  = Color(1.0, 0.22, 0.22, 1.0)
-	const EMPTY_COLOR = Color(1.0, 1.0, 1.0, 0.2)
+	const FULL_COLOR = Color(1.0, 0.22, 0.22, 1.0)
+	const EMPTY_COLOR = Color(1.0, 1.0, 1.0, 0.25)
 
 	var hearts = [heart1, heart2, heart3]
 	for i in range(hearts.size()):
@@ -215,61 +224,76 @@ func _update_hearts(current: int, maximum: int) -> void:
 func update_health(current: int, maximum: int) -> void:
 	_update_hearts(current, maximum)
 
-# ── Player Status Bars (armor / HP percent bars) ──────────────────────────────
-func update_player_status(hp: int, max_hp: int, armor: int, max_armor: int) -> void:
-	# HP bar fill (anchor_right = hp ratio)
+# ── Player Status Bars (Shield & HP) ──────────────────────────────────────────
+func update_player_status(hp: int, max_hp: int, shield: int, max_shield: int) -> void:
 	if hp_bar:
 		var ratio = clamp(float(hp) / float(max(1, max_hp)), 0.0, 1.0)
 		hp_bar.anchor_right = ratio
 	if hp_value_label:
 		hp_value_label.text = str(hp)
 
-	# Armor bar fill
-	if armor_bar:
-		var ratio = clamp(float(armor) / float(max(1, max_armor)), 0.0, 1.0)
-		armor_bar.anchor_right = ratio
-	if armor_value_label:
-		armor_value_label.text = str(armor)
+	if shield_bar:
+		var ratio = clamp(float(shield) / float(max(1, max_shield)), 0.0, 1.0)
+		shield_bar.anchor_right = ratio
+	if shield_value_label:
+		shield_value_label.text = str(shield)
 
-# ── Weapon & Ammo ─────────────────────────────────────────────────────────────
+# ── Weapon & Ammo (Segmented Layout with Icons & Underline) ───────────────────
 func update_weapon_ui(slot: int, shotgun_ammo: int, rocket_ammo: int, shotgun_reserve: int = 0) -> void:
 	cur_active_slot = slot
 
-	# Active slot highlights
-	const ACTIVE_COLOR   = Color(0.95, 0.95, 0.95, 1.0)
-	const INACTIVE_COLOR = Color(0.5, 0.5, 0.5, 0.45)
-	const EMPTY_COLOR    = Color(1.0, 0.35, 0.35, 0.9)
+	const ACTIVE_LABEL_COLOR = Color(1.0, 1.0, 1.0, 1.0)
+	const INACTIVE_LABEL_COLOR = Color(0.6, 0.62, 0.65, 0.5)
 
-	if slot_label1: slot_label1.modulate = ACTIVE_COLOR if slot == 0 else INACTIVE_COLOR
-	if slot_label2: slot_label2.modulate = ACTIVE_COLOR if slot == 1 else INACTIVE_COLOR
-	if slot_label3: slot_label3.modulate = ACTIVE_COLOR if slot == 2 else INACTIVE_COLOR
+	# Update 1 2 3 slot labels & active underlines
+	if slot_label1: slot_label1.modulate = ACTIVE_LABEL_COLOR if slot == 0 else INACTIVE_LABEL_COLOR
+	if underline1: underline1.modulate.a = 1.0 if slot == 0 else 0.0
+
+	if slot_label2: slot_label2.modulate = ACTIVE_LABEL_COLOR if slot == 1 else INACTIVE_LABEL_COLOR
+	if underline2: underline2.modulate.a = 1.0 if slot == 1 else 0.0
+
+	if slot_label3: slot_label3.modulate = ACTIVE_LABEL_COLOR if slot == 2 else INACTIVE_LABEL_COLOR
+	if underline3: underline3.modulate.a = 1.0 if slot == 2 else 0.0
 
 	match slot:
-		0: # Gun — infinite
-			if ammo_loaded_label:  ammo_loaded_label.text = "∞"
-			if ammo_slash_label:   ammo_slash_label.visible = false
-			if ammo_reserve_label: ammo_reserve_label.visible = false
-			if weapon_icon_label:  weapon_icon_label.text = "🔫"
+		0: # Pistol (Gun)
+			if ammo_loaded_label:
+				ammo_loaded_label.text = "12"
+				ammo_loaded_label.modulate = ACTIVE_LABEL_COLOR
+			if ammo_slash_label: ammo_slash_label.visible = true
+			if ammo_reserve_label:
+				ammo_reserve_label.visible = true
+				ammo_reserve_label.text = "36"
+				ammo_reserve_label.modulate = Color(0.7, 0.72, 0.76, 0.8)
+			if weapon_icon and weapon_icon_pistol:
+				weapon_icon.texture = weapon_icon_pistol
+				weapon_icon.custom_minimum_size = Vector2(44, 26)
+
 		1: # Shotgun
 			if ammo_loaded_label:
 				ammo_loaded_label.text = str(shotgun_ammo)
-				ammo_loaded_label.modulate = EMPTY_COLOR if shotgun_ammo == 0 else ACTIVE_COLOR
-			if ammo_slash_label:   ammo_slash_label.visible = true
+				ammo_loaded_label.modulate = Color(1.0, 0.35, 0.35, 1.0) if shotgun_ammo == 0 else ACTIVE_LABEL_COLOR
+			if ammo_slash_label: ammo_slash_label.visible = true
 			if ammo_reserve_label:
 				ammo_reserve_label.visible = true
 				ammo_reserve_label.text = str(shotgun_reserve)
-				ammo_reserve_label.modulate = EMPTY_COLOR if shotgun_reserve == 0 else INACTIVE_COLOR
-			if weapon_icon_label:  weapon_icon_label.text = "⌂"
-		2: # Rocket
+				ammo_reserve_label.modulate = Color(1.0, 0.35, 0.35, 0.8) if shotgun_reserve == 0 else Color(0.7, 0.72, 0.76, 0.8)
+			if weapon_icon and weapon_icon_shotgun:
+				weapon_icon.texture = weapon_icon_shotgun
+				weapon_icon.custom_minimum_size = Vector2(52, 24)
+
+		2: # Rocket Launcher
 			if ammo_loaded_label:
 				ammo_loaded_label.text = str(rocket_ammo)
-				ammo_loaded_label.modulate = EMPTY_COLOR if rocket_ammo == 0 else ACTIVE_COLOR
-			if ammo_slash_label:   ammo_slash_label.visible = false
+				ammo_loaded_label.modulate = Color(1.0, 0.35, 0.35, 1.0) if rocket_ammo == 0 else ACTIVE_LABEL_COLOR
+			if ammo_slash_label: ammo_slash_label.visible = false
 			if ammo_reserve_label: ammo_reserve_label.visible = false
-			if weapon_icon_label:  weapon_icon_label.text = "🚀"
+			if weapon_icon and weapon_icon_rocket:
+				weapon_icon.texture = weapon_icon_rocket
+				weapon_icon.custom_minimum_size = Vector2(56, 26)
 
-# ── Toast / Feedback ──────────────────────────────────────────────────────────
-func show_event_banner(title: String, points_text: String = "") -> void:
+# ── Toast / Feedback Popup ────────────────────────────────────────────────────
+func show_event_banner(title: String, points_text: String = "+ 25") -> void:
 	if not event_toast or not event_toast_label:
 		return
 
@@ -284,9 +308,9 @@ func show_event_banner(title: String, points_text: String = "") -> void:
 	event_toast.visible = true
 
 	toast_tween = create_tween()
-	toast_tween.tween_property(event_toast, "modulate:a", 1.0, 0.15)
-	toast_tween.tween_interval(1.8)
-	toast_tween.tween_property(event_toast, "modulate:a", 0.0, 0.35)
+	toast_tween.tween_property(event_toast, "modulate:a", 1.0, 0.12)
+	toast_tween.tween_interval(1.4)
+	toast_tween.tween_property(event_toast, "modulate:a", 0.0, 0.3)
 	toast_tween.tween_callback(func(): event_toast.visible = false)
 
 # ── Objective ─────────────────────────────────────────────────────────────────
@@ -308,9 +332,9 @@ func show_game_over(final_score: int, high_score: int, gov_kills: int, total_kil
 		if mm and mm.has_method("stop_music"):
 			mm.stop_music()
 
-	if final_score_label:      final_score_label.text = str(final_score)
-	if high_score_value_label: high_score_value_label.text = str(high_score)
-	if gov_kills_label:        gov_kills_label.text = "SURVEILLANCE PIGEONS KILLED: " + str(gov_kills)
+	if final_score_label: final_score_label.text = _format_number_commas(final_score)
+	if high_score_value_label: high_score_value_label.text = _format_number_commas(high_score)
+	if gov_kills_label: gov_kills_label.text = "SURVEILLANCE PIGEONS KILLED: " + str(gov_kills)
 
 	var accuracy_pct = int((float(total_kills) / float(max(1, shots_fired))) * 100.0)
 	if accuracy_label:
