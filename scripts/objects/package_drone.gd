@@ -165,4 +165,3 @@ func take_hit(damage: int = 1) -> void:
 	drone_destroyed.emit(rocket_ammo_reward, shotgun_ammo_reward)
 	if is_inside_tree():
 		queue_free()
-

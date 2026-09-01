@@ -84,9 +84,15 @@ var hint_tween: Tween
 @onready var message_label: Label = get_node_or_null("GameOverPanel/VBox/MessageLabel")
 @onready var restart_button: Button = get_node_or_null("GameOverPanel/VBox/RestartButton")
 
+# Damage Screen Flash
+@onready var damage_vignette: ColorRect = get_node_or_null("DamageVignette")
+var vignette_tween: Tween
+var last_recorded_health: int = 3
+
 # ── Internal state ────────────────────────────────────────────────────────────
 var toast_tween: Tween
 var cur_active_slot: int = 0
+
 
 var game_over_bad_stream: AudioStream = preload("res://assets/Audio/GAME_OVER.mp3")
 var game_over_good_stream: AudioStream = preload("res://assets/Audio/Game_over_2.mp3")
@@ -214,8 +220,8 @@ func update_run_time(_time_seconds: float, _next_event_seconds: float) -> void:
 func _update_hearts(current: int, maximum: int) -> void:
 	const FULL = "❤"
 	const EMPTY = "♡"
-	const FULL_COLOR = Color(1.0, 0.22, 0.22, 1.0)
-	const EMPTY_COLOR = Color(1.0, 1.0, 1.0, 0.25)
+	const FULL_COLOR = Color(1.0, 0.2, 0.2, 1.0)
+	const EMPTY_COLOR = Color(1.0, 1.0, 1.0, 0.20)
 
 	var hearts = [heart1, heart2, heart3]
 	for i in range(hearts.size()):
@@ -229,7 +235,37 @@ func _update_hearts(current: int, maximum: int) -> void:
 				h.visible = false
 
 func update_health(current: int, maximum: int) -> void:
+	if current < last_recorded_health:
+		_trigger_damage_flash()
+
+	last_recorded_health = current
 	_update_hearts(current, maximum)
+
+	# Keep bottom-left HP & Shield status bars in sync with 3-heart system
+	var ratio = clamp(float(current) / float(max(1, maximum)), 0.0, 1.0)
+	if hp_bar:
+		hp_bar.anchor_right = ratio
+	if hp_value_label:
+		var display_hp = int(ratio * 100.0)
+		hp_value_label.text = str(display_hp)
+
+	if shield_bar:
+		shield_bar.anchor_right = ratio
+	if shield_value_label:
+		var display_shield = int(ratio * 50.0)
+		shield_value_label.text = str(display_shield)
+
+func _trigger_damage_flash() -> void:
+	if not damage_vignette:
+		return
+	if vignette_tween and vignette_tween.is_valid():
+		vignette_tween.kill()
+
+	damage_vignette.visible = true
+	vignette_tween = create_tween()
+	vignette_tween.tween_property(damage_vignette, "modulate:a", 1.0, 0.04)
+	vignette_tween.tween_property(damage_vignette, "modulate:a", 0.0, 0.35)
+	vignette_tween.tween_callback(func(): damage_vignette.visible = false)
 
 # ── Player Status Bars (Shield & HP) ──────────────────────────────────────────
 func update_player_status(hp: int, max_hp: int, shield: int, max_shield: int) -> void:
@@ -244,6 +280,7 @@ func update_player_status(hp: int, max_hp: int, shield: int, max_shield: int) ->
 		shield_bar.anchor_right = ratio
 	if shield_value_label:
 		shield_value_label.text = str(shield)
+
 
 # ── Weapon & Ammo (Segmented Layout with Icons & Underline) ───────────────────
 func update_weapon_ui(slot: int, shotgun_ammo: int, rocket_ammo: int, shotgun_reserve: int = 0) -> void:

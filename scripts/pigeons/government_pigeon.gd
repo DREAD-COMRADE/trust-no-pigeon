@@ -186,4 +186,3 @@ func _explode_on_player() -> void:
 			main.trigger_game_over()
 
 	queue_free()
-
