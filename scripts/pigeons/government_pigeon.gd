@@ -165,7 +165,7 @@ func _on_hit() -> void:
 func _explode_on_player() -> void:
 	current_state = State.DYING
 
-	var camera = get_viewport().get_camera_3d()
+	var camera = get_viewport().get_camera_3d() if get_viewport() else null
 	var spawn_pos = camera.global_position if camera else global_position
 
 	if player_explosion_scene:
@@ -174,12 +174,16 @@ func _explode_on_player() -> void:
 		parent_node.add_child(fx)
 		fx.global_position = spawn_pos
 
-
 	if camera and camera.has_method("add_trauma"):
-		camera.add_trauma(1.0)
+		camera.add_trauma(0.65)
 
 	var main = get_tree().current_scene
-	if main and main.has_method("trigger_game_over"):
-		main.trigger_game_over()
+	if main:
+		var player_node = main.find_child("Player", true, false)
+		if player_node and player_node.has_method("take_damage"):
+			player_node.take_damage(1)
+		elif main.has_method("trigger_game_over"):
+			main.trigger_game_over()
 
 	queue_free()
+

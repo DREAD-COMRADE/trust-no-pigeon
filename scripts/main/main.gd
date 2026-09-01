@@ -58,10 +58,13 @@ func _ready() -> void:
 
 	if hud:
 		hud.restart_requested.connect(restart_game)
+		if hud.has_method("queue_tutorial_hints"):
+			hud.queue_tutorial_hints()
 
 	_on_score_updated(0, 0)
 	_on_aggression_changed(0, "NORMAL")
 	_refresh_hud_weapons()
+
 
 func _clean_up_spawned_objects() -> void:
 	var groups = ["ufo", "drones", "missiles", "tracers", "government_pigeons", "pigeons"]
@@ -70,9 +73,8 @@ func _clean_up_spawned_objects() -> void:
 			if is_instance_valid(node) and node != self and not is_ancestor_of(node):
 				node.queue_free()
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.keycode == KEY_T and event.pressed:
-		get_tree().change_scene_to_file("res://scenes/main/TargetPractice.tscn")
+func _unhandled_input(_event: InputEvent) -> void:
+	pass
 
 func _on_shot_fired(from_pos: Vector3, dir_vec: Vector3) -> void:
 	var gov_pigeons = get_tree().get_nodes_in_group("government_pigeons")

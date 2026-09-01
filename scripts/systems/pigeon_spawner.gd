@@ -135,7 +135,7 @@ func _instantiate_pigeon(is_gov: bool) -> void:
 	var start_pos = positions[0]
 	var target_pos = positions[1]
 
-	var speed_mult = speed_multiplier
+	var speed_mult = speed_multiplier * SettingsManager.get_difficulty_speed_mult()
 	if is_gov and aggression_manager:
 		speed_mult *= aggression_manager.get_attack_speed_multiplier()
 	if is_night_active:
@@ -146,6 +146,7 @@ func _instantiate_pigeon(is_gov: bool) -> void:
 	pigeon.setup(start_pos, target_pos, speed_mult)
 
 	pigeon.pigeon_killed.connect(_on_pigeon_killed)
+
 
 func _get_spawn_and_kill_positions() -> Array[Vector3]:
 	var start_pos: Vector3 = Vector3(-26.0 if randf() > 0.5 else 26.0, randf_range(3.0, 12.0), randf_range(-6.0, -28.0))

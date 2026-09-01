@@ -16,6 +16,16 @@ var fly_sound_stream: AudioStream = preload("res://assets/Audio/Drone_fly.mp3")
 var loot_sound_stream: AudioStream = preload("res://assets/Audio/Loot.mp3")
 var flight_audio: AudioStreamPlayer3D
 
+# Planned Random Pool: 5 takes -> 2 have medkit, 3 do not
+static var _medkit_pool: Array[bool] = []
+
+static func _draw_from_medkit_pool() -> bool:
+	if _medkit_pool.is_empty():
+		_medkit_pool = [true, true, false, false, false]
+		_medkit_pool.shuffle()
+	return _medkit_pool.pop_back()
+
+var contains_medkit: bool = false
 var health: int = 2
 var start_pos: Vector3
 var target_pos: Vector3
@@ -27,6 +37,8 @@ func _ready() -> void:
 	add_to_group("drones")
 	add_to_group("targets")
 	health = max_health
+	contains_medkit = _draw_from_medkit_pool()
+
 
 	# Looping 3D drone engine/propeller sound
 	if fly_sound_stream:
@@ -131,7 +143,7 @@ func take_hit(damage: int = 1) -> void:
 		target_parent.add_child(fx)
 		fx.global_position = global_position if is_inside_tree() else position
 
-	# Award player ammo
+	# Award player ammo & medkit
 	var main = get_tree().current_scene if (is_inside_tree() and get_tree()) else null
 	if main:
 		var player_ctrl = main.find_child("Player", true, false)
@@ -140,11 +152,17 @@ func take_hit(damage: int = 1) -> void:
 				player_ctrl.add_rocket_ammo(rocket_ammo_reward)
 			if player_ctrl.has_method("add_shotgun_ammo"):
 				player_ctrl.add_shotgun_ammo(shotgun_ammo_reward)
+			if contains_medkit and player_ctrl.has_method("heal"):
+				player_ctrl.heal(1)
 
 		var hud = main.find_child("HUD", true, false)
 		if hud and hud.has_method("show_event_banner"):
-			hud.show_event_banner("SUPPLY SECURED: +%d ROCKETS, +%d SHOTGUN" % [rocket_ammo_reward, shotgun_ammo_reward])
+			if contains_medkit:
+				hud.show_event_banner("SUPPLY SECURED: +%d ROCKETS, +%d SHELLS, +1 MEDKIT 💖" % [rocket_ammo_reward, shotgun_ammo_reward], "+ 50")
+			else:
+				hud.show_event_banner("SUPPLY SECURED: +%d ROCKETS, +%d SHELLS" % [rocket_ammo_reward, shotgun_ammo_reward], "+ 25")
 
 	drone_destroyed.emit(rocket_ammo_reward, shotgun_ammo_reward)
 	if is_inside_tree():
 		queue_free()
+

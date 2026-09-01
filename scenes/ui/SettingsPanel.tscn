@@ -7,6 +7,22 @@
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yopgx"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_bg"]
+bg_color = Color(0.06, 0.08, 0.1, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+expand_margin_left = 14.0
+expand_margin_top = 14.0
+expand_margin_right = 14.0
+expand_margin_bottom = 14.0
+
 [node name="SettingsPanel" type="Control" unique_id=1954626923]
 process_mode = 3
 layout_mode = 3
@@ -18,7 +34,7 @@ grow_vertical = 2
 script = ExtResource("1_sett")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=847105168]
-modulate = Color(0.096204735, 0.09620475, 0.096204735, 0.92941177)
+modulate = Color(0.08, 0.08, 0.09, 0.95)
 position = Vector2(575, 468)
 scale = Vector2(3.357143, 3.357143)
 texture = ExtResource("2_cjf3c")
@@ -37,7 +53,7 @@ theme_override_constants/margin_bottom = 40
 
 [node name="VBoxMain" type="VBoxContainer" parent="Margin" unique_id=436321059]
 layout_mode = 2
-theme_override_constants/separation = 30
+theme_override_constants/separation = 24
 
 [node name="HeaderHBox" type="HBoxContainer" parent="Margin/VBoxMain" unique_id=177646799]
 layout_mode = 2
@@ -52,53 +68,57 @@ text = "[b]TRUST [color=#cc2222]NO[/color] PIGEON[/b]"
 [node name="HBox" type="HBoxContainer" parent="Margin/VBoxMain" unique_id=1683477577]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 60
+theme_override_constants/separation = 50
 
 [node name="LeftNav" type="PanelContainer" parent="Margin/VBoxMain/HBox" unique_id=173449639]
-custom_minimum_size = Vector2(240, 0)
+custom_minimum_size = Vector2(230, 0)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxEmpty_8hc44")
 
 [node name="VBox" type="VBoxContainer" parent="Margin/VBoxMain/HBox/LeftNav" unique_id=11519136]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 alignment = 1
 
 [node name="BtnGameplay" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=687622690]
-custom_minimum_size = Vector2(0, 45)
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 17
 text = "GAMEPLAY"
 
 [node name="BtnControls" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=2082860018]
-custom_minimum_size = Vector2(0, 45)
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 17
 text = "CONTROLS"
 
 [node name="BtnAudio" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=1443893904]
-custom_minimum_size = Vector2(0, 45)
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 17
 text = "AUDIO"
 
 [node name="BtnVideo" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=730472107]
-custom_minimum_size = Vector2(0, 45)
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 17
 text = "VIDEO"
 
 [node name="BtnAccessibility" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=622570886]
-custom_minimum_size = Vector2(0, 45)
+custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 17
 text = "ACCESSIBILITY"
 
-[node name="BtnBack" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=182818748]
-custom_minimum_size = Vector2(0, 45)
+[node name="Spacer" type="Control" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=11519137]
+custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+
+[node name="BtnBack" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=182818748]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
 text = "⬅ BACK"
 
 [node name="RightPanel" type="PanelContainer" parent="Margin/VBoxMain/HBox" unique_id=1111560931]
@@ -107,93 +127,380 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxEmpty_yopgx")
 
-[node name="VBox" type="VBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel" unique_id=248675341]
-layout_mode = 2
-theme_override_constants/separation = 24
-alignment = 1
-
-[node name="AudioSection" type="VBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/VBox" unique_id=370837575]
+; ══════════════════════════════════════════════════════════════════════════════
+; 1. GAMEPLAY SECTION
+; ══════════════════════════════════════════════════════════════════════════════
+[node name="GameplaySection" type="VBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel" unique_id=1111560932]
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 16
+alignment = 1
 
-[node name="MasterHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection" unique_id=98529812]
+[node name="DiffHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/GameplaySection" unique_id=1111560933]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/MasterHBox" unique_id=222702535]
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/GameplaySection/DiffHBox" unique_id=1111560934]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "DIFFICULTY LEVEL"
+
+[node name="DifficultyOption" type="OptionButton" parent="Margin/VBoxMain/HBox/RightPanel/GameplaySection/DiffHBox" unique_id=1111560935]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ShakeHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/GameplaySection" unique_id=1111560936]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/GameplaySection/ShakeHBox" unique_id=1111560937]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "CAMERA TRAUMA / SHAKE"
+
+[node name="ShakeSlider" type="HSlider" parent="Margin/VBoxMain/HBox/RightPanel/GameplaySection/ShakeHBox" unique_id=1111560938]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 100.0
+value = 100.0
+
+[node name="ShakeValue" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/GameplaySection/ShakeHBox" unique_id=1111560939]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "100%"
+horizontal_alignment = 2
+
+[node name="FovHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/GameplaySection" unique_id=1111560940]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/GameplaySection/FovHBox" unique_id=1111560941]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "FIELD OF VIEW (FOV)"
+
+[node name="FovSlider" type="HSlider" parent="Margin/VBoxMain/HBox/RightPanel/GameplaySection/FovHBox" unique_id=1111560942]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 60.0
+max_value = 100.0
+value = 75.0
+
+[node name="FovValue" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/GameplaySection/FovHBox" unique_id=1111560943]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "75°"
+horizontal_alignment = 2
+
+; ══════════════════════════════════════════════════════════════════════════════
+; 2. CONTROLS SECTION
+; ══════════════════════════════════════════════════════════════════════════════
+[node name="ControlsSection" type="VBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel" unique_id=1111560950]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="HipSensHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection" unique_id=1111560951]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection/HipSensHBox" unique_id=1111560952]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "HIP SENSITIVITY"
+
+[node name="HipSensSlider" type="HSlider" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection/HipSensHBox" unique_id=1111560953]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 0.02
+max_value = 0.5
+step = 0.01
+value = 0.15
+
+[node name="HipSensValue" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection/HipSensHBox" unique_id=1111560954]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "0.15"
+horizontal_alignment = 2
+
+[node name="AdsSensHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection" unique_id=1111560955]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection/AdsSensHBox" unique_id=1111560956]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "AIM (ADS) SENSITIVITY"
+
+[node name="AdsSensSlider" type="HSlider" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection/AdsSensHBox" unique_id=1111560957]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 0.01
+max_value = 0.3
+step = 0.01
+value = 0.07
+
+[node name="AdsSensValue" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection/AdsSensHBox" unique_id=1111560958]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "0.07"
+horizontal_alignment = 2
+
+[node name="InvertYHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection" unique_id=1111560959]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection/InvertYHBox" unique_id=1111560960]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "INVERT Y-AXIS"
+
+[node name="InvertYCheck" type="CheckButton" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection/InvertYHBox" unique_id=1111560961]
+layout_mode = 2
+text = "OFF"
+
+[node name="KeybindCard" type="PanelContainer" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection" unique_id=1111560962]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card_bg")
+
+[node name="KeybindVBox" type="VBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection/KeybindCard" unique_id=1111560963]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Key1" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection/KeybindCard/KeybindVBox" unique_id=1111560964]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 0.85)
+text = "[ LEFT MOUSE ] ─────── Fire / Shoot Active Weapon"
+
+[node name="Key2" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection/KeybindCard/KeybindVBox" unique_id=1111560965]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 0.85)
+text = "[ RIGHT MOUSE ] ────── Hold To Aim Down Sights (ADS)"
+
+[node name="Key3" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection/KeybindCard/KeybindVBox" unique_id=1111560966]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 0.85)
+text = "[ 1 / 2 / 3 ] / [ WHEEL ] ─ Switch Equipped Weapon"
+
+[node name="Key4" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection/KeybindCard/KeybindVBox" unique_id=1111560967]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 0.85)
+text = "[ R ] ────────────────── Reload Shotgun Shells / Chamber Rocket"
+
+[node name="Key5" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/ControlsSection/KeybindCard/KeybindVBox" unique_id=1111560968]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 0.85)
+text = "[ ESC ] ──────────────── Pause Game / Show Cursor"
+
+; ══════════════════════════════════════════════════════════════════════════════
+; 3. AUDIO SECTION
+; ══════════════════════════════════════════════════════════════════════════════
+[node name="AudioSection" type="VBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel" unique_id=370837575]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="MasterHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection" unique_id=98529812]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection/MasterHBox" unique_id=222702535]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "MASTER VOLUME"
 
-[node name="MasterSlider" type="HSlider" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/MasterHBox" unique_id=1101051384]
+[node name="MasterSlider" type="HSlider" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection/MasterHBox" unique_id=1101051384]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 value = 80.0
 
-[node name="MasterValue" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/MasterHBox" unique_id=1036484053]
+[node name="MasterValue" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection/MasterHBox" unique_id=1036484053]
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "80%"
 horizontal_alignment = 2
 
-[node name="MusicHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection" unique_id=691583783]
+[node name="MusicHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection" unique_id=691583783]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/MusicHBox" unique_id=958424163]
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection/MusicHBox" unique_id=958424163]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "MUSIC VOLUME"
 
-[node name="MusicSlider" type="HSlider" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/MusicHBox" unique_id=1205389570]
+[node name="MusicSlider" type="HSlider" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection/MusicHBox" unique_id=1205389570]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 value = 60.0
 
-[node name="MusicValue" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/MusicHBox" unique_id=865542875]
+[node name="MusicValue" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection/MusicHBox" unique_id=865542875]
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "60%"
 horizontal_alignment = 2
 
-[node name="SfxHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection" unique_id=638202421]
+[node name="SfxHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection" unique_id=638202421]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/SfxHBox" unique_id=339973452]
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection/SfxHBox" unique_id=339973452]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "SFX VOLUME"
 
-[node name="SfxSlider" type="HSlider" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/SfxHBox" unique_id=2065946119]
+[node name="SfxSlider" type="HSlider" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection/SfxHBox" unique_id=2065946119]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 value = 75.0
 
-[node name="SfxValue" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VBox/AudioSection/SfxHBox" unique_id=725319130]
+[node name="SfxValue" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection/SfxHBox" unique_id=725319130]
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "75%"
 horizontal_alignment = 2
 
-[node name="HSeparator" type="HSeparator" parent="Margin/VBoxMain/HBox/RightPanel/VBox" unique_id=750696717]
+[node name="MuteHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection" unique_id=638202422]
 layout_mode = 2
 
-[node name="InvertHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/VBox" unique_id=1100418506]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VBox/InvertHBox" unique_id=1470617339]
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection/MuteHBox" unique_id=339973453]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "INVERT Y-AXIS"
+text = "MUTE ALL AUDIO"
 
-[node name="CheckButton" type="CheckButton" parent="Margin/VBoxMain/HBox/RightPanel/VBox/InvertHBox" unique_id=998072350]
+[node name="MuteCheck" type="CheckButton" parent="Margin/VBoxMain/HBox/RightPanel/AudioSection/MuteHBox" unique_id=2065946120]
 layout_mode = 2
 text = "OFF"
+
+; ══════════════════════════════════════════════════════════════════════════════
+; 4. VIDEO SECTION
+; ══════════════════════════════════════════════════════════════════════════════
+[node name="VideoSection" type="VBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel" unique_id=1111560970]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="WindowModeHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/VideoSection" unique_id=1111560971]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VideoSection/WindowModeHBox" unique_id=1111560972]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "DISPLAY MODE"
+
+[node name="WindowModeOption" type="OptionButton" parent="Margin/VBoxMain/HBox/RightPanel/VideoSection/WindowModeHBox" unique_id=1111560973]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VsyncHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/VideoSection" unique_id=1111560974]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VideoSection/VsyncHBox" unique_id=1111560975]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "VERTICAL SYNC (V-SYNC)"
+
+[node name="VsyncCheck" type="CheckButton" parent="Margin/VBoxMain/HBox/RightPanel/VideoSection/VsyncHBox" unique_id=1111560976]
+layout_mode = 2
+button_pressed = true
+text = "ON"
+
+[node name="FpsHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/VideoSection" unique_id=1111560977]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VideoSection/FpsHBox" unique_id=1111560978]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "MAX FPS CAP"
+
+[node name="FpsOption" type="OptionButton" parent="Margin/VBoxMain/HBox/RightPanel/VideoSection/FpsHBox" unique_id=1111560979]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FogHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/VideoSection" unique_id=1111560980]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/VideoSection/FogHBox" unique_id=1111560981]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "ATMOSPHERIC DISTANCE FOG"
+
+[node name="FogCheck" type="CheckButton" parent="Margin/VBoxMain/HBox/RightPanel/VideoSection/FogHBox" unique_id=1111560982]
+layout_mode = 2
+button_pressed = true
+text = "ON"
+
+; ══════════════════════════════════════════════════════════════════════════════
+; 5. ACCESSIBILITY SECTION
+; ══════════════════════════════════════════════════════════════════════════════
+[node name="AccessibilitySection" type="VBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel" unique_id=1111560990]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="HighContrastHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/AccessibilitySection" unique_id=1111560991]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/AccessibilitySection/HighContrastHBox" unique_id=1111560992]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "HIGH CONTRAST HUD"
+
+[node name="HighContrastCheck" type="CheckButton" parent="Margin/VBoxMain/HBox/RightPanel/AccessibilitySection/HighContrastHBox" unique_id=1111560993]
+layout_mode = 2
+text = "OFF"
+
+[node name="FlashHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/AccessibilitySection" unique_id=1111560994]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/AccessibilitySection/FlashHBox" unique_id=1111560995]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "FLASH EFFECT REDUCTION"
+
+[node name="FlashCheck" type="CheckButton" parent="Margin/VBoxMain/HBox/RightPanel/AccessibilitySection/FlashHBox" unique_id=1111560996]
+layout_mode = 2
+text = "OFF"
+
+[node name="HintsHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/AccessibilitySection" unique_id=1111560997]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/AccessibilitySection/HintsHBox" unique_id=1111560998]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "TUTORIAL KEYBIND HINTS"
+
+[node name="HintsCheck" type="CheckButton" parent="Margin/VBoxMain/HBox/RightPanel/AccessibilitySection/HintsHBox" unique_id=1111560999]
+layout_mode = 2
+button_pressed = true
+text = "ON"

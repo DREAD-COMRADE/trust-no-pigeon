@@ -45,6 +45,14 @@ const INVINCIBLE_DURATION: float = 1.2
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
+	# Sync with SettingsManager
+	SettingsManager.init_settings()
+	mouse_sensitivity_hip = SettingsManager.mouse_sens_hip
+	mouse_sensitivity_ads = SettingsManager.mouse_sens_ads
+	hip_fov = SettingsManager.field_of_view
+	max_health = SettingsManager.get_difficulty_max_hearts()
+	health = max_health
+
 	if not camera and has_node("Camera3D"):
 		camera = $Camera3D
 
@@ -73,7 +81,6 @@ func _ready() -> void:
 	_do_switch_to_slot(0) # Skip animation on first equip
 
 	# Broadcast initial health so HUD renders hearts on scene load
-	health = max_health
 	health_changed.emit(health, max_health)
 
 
@@ -101,8 +108,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		mouse_delta = event.relative
 		var sensitivity = mouse_sensitivity_ads if is_aiming else mouse_sensitivity_hip
-		yaw -= event.relative.x * sensitivity
-		pitch -= event.relative.y * sensitivity
+		var y_dir = -1.0 if SettingsManager.invert_y else 1.0
+		var x_dir = -1.0 if SettingsManager.invert_x else 1.0
+
+		yaw -= event.relative.x * sensitivity * x_dir
+		pitch -= event.relative.y * sensitivity * y_dir
 
 		# Clamp rotation so player cannot look behind
 		yaw = clamp(yaw, -90.0, 90.0)
@@ -110,6 +120,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 		if camera:
 			camera.rotation_degrees = Vector3(pitch, yaw, 0.0)
+
 
 	# Number Keys for direct weapon selection
 	if event is InputEventKey and event.pressed:

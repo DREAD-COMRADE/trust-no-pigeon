@@ -8,7 +8,9 @@ var trauma: float = 0.0
 var trauma_power: float = 2.0
 
 func add_trauma(amount: float) -> void:
-	trauma = clamp(trauma + amount, 0.0, 1.0)
+	var mult = SettingsManager.camera_shake_mult if ("camera_shake_mult" in SettingsManager) else 1.0
+	trauma = clamp(trauma + amount * mult, 0.0, 1.0)
+
 
 func _process(delta: float) -> void:
 	if trauma > 0.0:

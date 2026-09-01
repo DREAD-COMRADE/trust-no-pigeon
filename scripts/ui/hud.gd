@@ -41,6 +41,13 @@ var _camera: Camera3D
 @onready var event_toast_label: Label = get_node_or_null("EventToast/ToastPanel/ToastHBox/ToastLabel")
 @onready var event_toast_points: Label = get_node_or_null("EventToast/ToastPanel/ToastHBox/ToastPoints")
 
+# Control Hints / Tutorial Prompts (HL2-style)
+@onready var control_hint: Control = get_node_or_null("ControlHint")
+@onready var hint_action_label: Label = get_node_or_null("ControlHint/HintVBox/HintAction")
+@onready var hint_key_label: Label = get_node_or_null("ControlHint/HintVBox/HintKey")
+var hint_tween: Tween
+
+
 # Player Status (bottom-left)
 @onready var shield_bar: PanelContainer = get_node_or_null("PlayerStatusPanel/StatusVBox/ShieldRow/ShieldBarBg/ShieldBar")
 @onready var hp_bar: PanelContainer = get_node_or_null("PlayerStatusPanel/StatusVBox/HPRow/HPBarBg/HPBar")
@@ -313,12 +320,45 @@ func show_event_banner(title: String, points_text: String = "+ 25") -> void:
 	toast_tween.tween_property(event_toast, "modulate:a", 0.0, 0.3)
 	toast_tween.tween_callback(func(): event_toast.visible = false)
 
+# ── Control Hints / Keybind Prompts (HL2 Style) ──────────────────────────────
+func show_control_hint(action_title: String, key_desc: String, duration: float = 3.8) -> void:
+	if not control_hint or not hint_action_label or not hint_key_label:
+		return
+
+	if hint_tween and hint_tween.is_valid():
+		hint_tween.kill()
+
+	hint_action_label.text = action_title.to_upper()
+	hint_key_label.text = key_desc
+	control_hint.visible = true
+
+	hint_tween = create_tween()
+	hint_tween.tween_property(control_hint, "modulate:a", 1.0, 0.20)
+	hint_tween.tween_interval(duration)
+	hint_tween.tween_property(control_hint, "modulate:a", 0.0, 0.40)
+	hint_tween.tween_callback(func(): control_hint.visible = false)
+
+func queue_tutorial_hints() -> void:
+	# Plays starting contextual tutorial hints on game start
+	await get_tree().create_timer(1.0).timeout
+	show_control_hint("FIRE WEAPON", "PRESS [ LEFT MOUSE BUTTON ] TO SHOOT", 4.0)
+
+	await get_tree().create_timer(5.0).timeout
+	show_control_hint("PRECISION AIM", "HOLD [ RIGHT MOUSE BUTTON ] TO AIM DOWN SIGHTS", 4.0)
+
+	await get_tree().create_timer(5.0).timeout
+	show_control_hint("SWITCH WEAPONS", "PRESS [ 1 / 2 / 3 ] OR USE [ MOUSE WHEEL ]", 4.0)
+
+	await get_tree().create_timer(5.0).timeout
+	show_control_hint("RELOAD WEAPON", "PRESS [ R ] TO RELOAD ACTIVE WEAPON", 4.0)
+
 # ── Objective ─────────────────────────────────────────────────────────────────
 func update_objective(line1: String, line2: String = "") -> void:
 	if obj_line1: obj_line1.text = line1
 	if obj_line2:
 		obj_line2.text = line2
 		obj_line2.visible = line2 != ""
+
 
 # ── Game Over ─────────────────────────────────────────────────────────────────
 func show_game_over(final_score: int, high_score: int, gov_kills: int, total_kills: int, shots_fired: int) -> void:
