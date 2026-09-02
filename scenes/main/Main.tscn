@@ -492,6 +492,7 @@ script = ExtResource("24_pc")
 
 [node name="Camera3D" type="Camera3D" parent="Player" unique_id=1290212114]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.31343818, 0.47783518)
+groups = ["camera_main"]
 current = true
 script = ExtResource("2_cam")
 

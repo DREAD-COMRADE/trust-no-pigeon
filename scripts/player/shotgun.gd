@@ -1,14 +1,6 @@
 extends Node3D
 class_name Shotgun
 
-# ==============================================================================
-# 🛠️ HARDWARE CLASSIFICATION & IDENTITY
-# Manufacturer: O.F. Mossberg & Sons
-# Base Platform: Mossberg 940/990 Gas System
-# Legal Classification: "Other" Firearm (Non-NFA, No Stock, Bird's Head Grip)
-# Action Type: Gas-Operated Semi-Automatic
-# ==============================================================================
-
 signal gun_fired(hit_object, hit_position)
 signal shot_fired(from_pos: Vector3, direction_vec: Vector3)
 signal ammo_changed(ammo_count: int)
@@ -16,48 +8,37 @@ signal reload_started()
 signal reload_completed()
 signal shell_inserted(current_ammo: int)
 
-# --- 📏 Physical Dimensions & Weight Constants ---
-const OVERALL_LENGTH_INCHES: float = 27.125 # 68.90 cm
-const BARREL_LENGTH_INCHES: float = 14.75   # 37.46 cm
-const BASE_WEIGHT_LBS: float = 6.60         # 2.99 kg empty
-const SHELL_WEIGHT_LBS: float = 0.10        # +0.045 kg per shell
-const CHOKE_TYPE: String = "Cylinder Bore"   # Fixed minimum spread cone
+# ── Capacity ───────────────────────────────────────────────────────────────────
+const MAX_CAPACITY: int = 6  # 5 tube + 1 chamber
 
-# --- 🔋 Magazine & Capacity Specs ---
-const TUBE_CAPACITY: int = 5
-const CHAMBER_CAPACITY: int = 1
-const MAX_CAPACITY: int = 6 # 5 (Tube) + 1 (Chamber)
+# ── Reload timing ──────────────────────────────────────────────────────────────
+const EMPTY_CHAMBER_PENALTY: float = 0.80       # Extra delay when chamber is empty
+const EFFECTIVE_SHELL_INSERT_TIME: float = 0.51  # Per-shell insert time (~0.51s)
 
-# --- ⏱️ Reload Timing Variables (with +15% Competition Port Buff) ---
-const EMPTY_CHAMBER_PENALTY: float = 0.80 # Initial bolt slap/rack animation penalty
-const BASE_SHELL_INSERT_TIME: float = 0.60 # 0.55s - 0.65s per shell
-const COMPETITION_PORT_BUFF: float = 0.85 # +15% speed bonus from oversized loader bevel
-const EFFECTIVE_SHELL_INSERT_TIME: float = BASE_SHELL_INSERT_TIME * COMPETITION_PORT_BUFF # ~0.51s
+# ── Fire rate ──────────────────────────────────────────────────────────────────
+const HUMAN_PRACTICAL_FIRE_RATE: float = 0.25
 
-# --- 💥 Fire Rate & Ballistics Specs ---
-const MECHANICAL_CYCLE_TIME: float = 0.12 # 0.11 - 0.13s (450-500 theoretical RPM)
-const HUMAN_PRACTICAL_FIRE_RATE: float = 0.25 # ~240 RPM practical click registration limit
+# ── Spread & pellets ───────────────────────────────────────────────────────────
+const STANDARD_PELLET_COUNT: int = 12
+const BASE_SPREAD_DEGREES: float = 8.0
+const PUSH_PULL_BRACE_SPREAD_MULT: float = 0.55  # ADS tightens spread by 45%
 
-# --- 🎯 Bullet Spread & Damage Drop-Off Specs ---
-const STANDARD_PELLET_COUNT: int = 12        # Upgraded to 12-pellet spread for flock coverage
-const BASE_SPREAD_DEGREES: float = 8.0       # Widened cone (was 2.85°) — fans out across pigeon groups
-const PUSH_PULL_BRACE_SPREAD_MULT: float = 0.55 # 45% tighter in Aim/Brace state
+# ── Damage drop-off ────────────────────────────────────────────────────────────
+const DAMAGE_DROP_FULL_RANGE: float = 18.0       # 100% damage within 18m
+const DAMAGE_DROP_MAX_RANGE: float = 55.0        # Linear decay 18–55m
+const DAMAGE_DROP_MIN_THRESHOLD: float = 0.10    # 10% floor beyond 55m
 
-const DAMAGE_DROP_FULL_RANGE: float = 18.0   # 100% damage: 0 to 18m (was 10m)
-const DAMAGE_DROP_MAX_RANGE: float = 55.0    # Linear decay: 18 to 55m (was 34m)
-const DAMAGE_DROP_MIN_THRESHOLD: float = 0.10 # 10% minimum at 55m+
-
-# --- 🔄 Recoil & Camera Handling Vectors (Bird's Head Grip Profile) ---
-const GAS_PISTON_DAMPENING: float = 0.75 # 25% lower rearward impulse than pump-actions
-const RECOIL_PITCH_KICK_HIP: float = 3.2 # Sharp upward vertical pitch
-const RECOIL_YAW_SNAP_HIP: float = 1.4   # Erratic horizontal snap window
-const PUSH_PULL_RECOIL_MULT: float = 0.70 # 30% reduction when aiming/bracing
-const RECOIL_RECOVERY_SPEED: float = 8.5 # 30% slower settle time for bird's head grip
+# ── Recoil ─────────────────────────────────────────────────────────────────────
+const GAS_PISTON_DAMPENING: float = 0.75
+const RECOIL_PITCH_KICK_HIP: float = 3.2
+const PUSH_PULL_RECOIL_MULT: float = 0.70        # 30% reduction when aiming
+const RECOIL_RECOVERY_SPEED: float = 8.5
 
 @export var camera: Camera3D
 @export var fire_rate: float = HUMAN_PRACTICAL_FIRE_RATE
 @export var pellet_count: int = STANDARD_PELLET_COUNT
 @export var max_range: float = 100.0
+
 
 @export var hip_position: Vector3 = Vector3(0.26, -0.28, -0.48)
 @export var ads_position: Vector3 = Vector3(0.0, -0.17, -0.38)
@@ -91,25 +72,33 @@ var is_reloading: bool = false
 var reload_timer: float = 0.0
 var reload_needs_rack: bool = false
 
+# Cached references — resolved once in _ready()
+var _player_ctrl: PlayerController = null
+
 func _ready() -> void:
 	ammo = clamp(starting_ammo, 0, MAX_CAPACITY)
 	position = hip_position
 	if not camera and get_parent() is Camera3D:
 		camera = get_parent() as Camera3D
+
+	# Cache player controller reference once
+	if camera:
+		var p = camera.get_parent()
+		if p is PlayerController:
+			_player_ctrl = p as PlayerController
+
 	if visual:
 		original_visual_pos = visual.position
 	if muzzle_flash:
 		muzzle_flash.visible = false
 
-func get_total_weight_lbs() -> float:
-	return BASE_WEIGHT_LBS + (ammo * SHELL_WEIGHT_LBS)
 
 func on_ammo_added() -> void:
 	ammo_changed.emit(ammo)
 
 func add_shells(count: int) -> void:
 	reserve_ammo += count
-	# If empty in active magazine, auto trigger reload
+	# If empty, auto trigger reload
 	if ammo < MAX_CAPACITY and not is_reloading:
 		start_reload()
 
@@ -244,51 +233,44 @@ func shoot() -> void:
 	ammo -= 1
 	ammo_changed.emit(ammo)
 
-
 	if shoot_sound:
 		shoot_sound.pitch_scale = randf_range(0.96, 1.04)
 		shoot_sound.play()
 
-	# Recoil calculation: Gas piston reduces raw rearward jerk by 25%
-	# Push-Pull Brace (ADS) applies 30% reduction to total recoil vectors
 	var brace_mult = PUSH_PULL_RECOIL_MULT if is_aiming else 1.0
 
-	# Linear weapon kick (Gas system dampening applied)
+	# Weapon kick
 	recoil_offset.z += 0.14 * GAS_PISTON_DAMPENING * brace_mult
 	recoil_offset.y += 0.04 * brace_mult
 	recoil_offset.x += 0.012 * brace_mult
 
-	# High upward muzzle flip rotation + rightward twist (Bird's head grip torque)
-	var kick_pitch = deg_to_rad(14.0 * brace_mult) # Upward barrel flip (+X angle tilts muzzle up)
-	var kick_yaw = deg_to_rad(randf_range(2.0, 5.0) * brace_mult) # Rightward yaw drift (-Y angle turns muzzle right)
-	var kick_roll = deg_to_rad(randf_range(-2.0, -4.5) * brace_mult) # Clockwise cant to the right
+	var kick_pitch = deg_to_rad(14.0 * brace_mult)
+	var kick_yaw   = deg_to_rad(randf_range(2.0, 5.0) * brace_mult)
+	var kick_roll  = deg_to_rad(randf_range(-2.0, -4.5) * brace_mult)
 	recoil_rotation = Vector3(kick_pitch, -kick_yaw, kick_roll)
 
-	# Camera trauma & Direct Camera Viewport Recoil Pitch Kick
-	var cam_node = camera if camera else (get_parent() if get_parent() is Camera3D else null)
-	if cam_node and cam_node.has_method("add_trauma"):
-		cam_node.add_trauma(0.20 if is_aiming else 0.32)
+	# Camera trauma — use camera directly, no parent walking
+	if camera and camera.has_method("add_trauma"):
+		camera.add_trauma(0.20 if is_aiming else 0.32)
 
-	# Direct camera pitch kick to player controller (kicks camera up & slightly right)
-	var player_ctrl = cam_node.get_parent() if cam_node else null
-	if player_ctrl and player_ctrl.has_method("add_recoil"):
+	# Recoil pitch kick — use cached player controller
+	if _player_ctrl and _player_ctrl.has_method("add_recoil"):
 		var pitch_kick = RECOIL_PITCH_KICK_HIP * brace_mult
 		var yaw_kick = randf_range(0.6, 1.4) * brace_mult
-		player_ctrl.add_recoil(pitch_kick, yaw_kick)
-
+		_player_ctrl.add_recoil(pitch_kick, yaw_kick)
 
 	if muzzle_flash:
 		muzzle_flash.visible = true
 
-	# Projectile Spawn Muzzle Point (14.75" barrel length offset from receiver)
-	var from = cam_node.global_position if cam_node else (global_position if is_inside_tree() else position)
-	var base_dir = -cam_node.global_transform.basis.z if cam_node else (-global_transform.basis.z if is_inside_tree() else Vector3.FORWARD)
-	var right_vec = cam_node.global_transform.basis.x if cam_node else (global_transform.basis.x if is_inside_tree() else Vector3.RIGHT)
-	var up_vec = cam_node.global_transform.basis.y if cam_node else (global_transform.basis.y if is_inside_tree() else Vector3.UP)
+	var from      = camera.global_position if camera else (global_position if is_inside_tree() else position)
+	var base_dir  = -camera.global_transform.basis.z if camera else (-global_transform.basis.z if is_inside_tree() else Vector3.FORWARD)
+	var right_vec = camera.global_transform.basis.x if camera else (global_transform.basis.x if is_inside_tree() else Vector3.RIGHT)
+	var up_vec    = camera.global_transform.basis.y if camera else (global_transform.basis.y if is_inside_tree() else Vector3.UP)
 
 	var spawn_muzzle_pos = shoot_origin.global_position if (shoot_origin and shoot_origin.is_inside_tree()) else from
 
 	shot_fired.emit(from, base_dir)
+
 
 	# Cylinder Bore 2.85° Base Spread Cone (Tighter in ADS / Push-Pull Brace)
 	var spread_deg = BASE_SPREAD_DEGREES * brace_mult

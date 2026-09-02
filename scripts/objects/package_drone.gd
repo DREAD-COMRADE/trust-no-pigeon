@@ -94,6 +94,18 @@ func _process(delta: float) -> void:
 	if cur_pos.distance_to(target_pos) < 2.0:
 		queue_free()
 
+func _get_player() -> PlayerController:
+	for node in get_tree().get_nodes_in_group("player"):
+		if node is PlayerController:
+			return node as PlayerController
+	return null
+
+func _get_hud() -> CanvasLayer:
+	for node in get_tree().get_nodes_in_group("hud"):
+		if node is CanvasLayer:
+			return node as CanvasLayer
+	return null
+
 func take_hit(damage: int = 1) -> void:
 	if is_destroyed:
 		return
@@ -103,28 +115,26 @@ func take_hit(damage: int = 1) -> void:
 	var cam = get_viewport().get_camera_3d() if get_viewport() else null
 	var target_parent = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_tree().root
 
-	# First hit effect (sparks / smoke)
+	# First hit: spark visual, camera nudge
 	if health > 0:
 		if beacon_light:
 			beacon_light.light_color = Color(1.0, 0.2, 0.1, 1.0)
 			beacon_light.light_energy = 15.0
-
 		if cam and cam.has_method("add_trauma"):
 			cam.add_trauma(0.12)
-
 		if explosion_scene and is_inside_tree():
 			var fx = explosion_scene.instantiate()
 			target_parent.add_child(fx)
 			fx.global_position = global_position if is_inside_tree() else position
 		return
 
-	# Fatal hit (drone destroyed)
+	# Fatal hit — drone destroyed
 	is_destroyed = true
 
 	if flight_audio and is_instance_valid(flight_audio):
 		flight_audio.stop()
 
-	# Play Loot Collection Sound
+	# Loot collection sound
 	if loot_sound_stream:
 		var loot_asp = AudioStreamPlayer.new()
 		loot_asp.stream = loot_sound_stream
@@ -143,24 +153,22 @@ func take_hit(damage: int = 1) -> void:
 		target_parent.add_child(fx)
 		fx.global_position = global_position if is_inside_tree() else position
 
-	# Award player ammo & medkit
-	var main = get_tree().current_scene if (is_inside_tree() and get_tree()) else null
-	if main:
-		var player_ctrl = main.find_child("Player", true, false)
-		if player_ctrl:
-			if player_ctrl.has_method("add_rocket_ammo"):
-				player_ctrl.add_rocket_ammo(rocket_ammo_reward)
-			if player_ctrl.has_method("add_shotgun_ammo"):
-				player_ctrl.add_shotgun_ammo(shotgun_ammo_reward)
-			if contains_medkit and player_ctrl.has_method("heal"):
-				player_ctrl.heal(1)
+	# Award player — group-based lookup, no fragile find_child
+	var player_ctrl = _get_player()
+	if player_ctrl:
+		if player_ctrl.has_method("add_rocket_ammo"):
+			player_ctrl.add_rocket_ammo(rocket_ammo_reward)
+		if player_ctrl.has_method("add_shotgun_ammo"):
+			player_ctrl.add_shotgun_ammo(shotgun_ammo_reward)
+		if contains_medkit and player_ctrl.has_method("heal"):
+			player_ctrl.heal(1)
 
-		var hud = main.find_child("HUD", true, false)
-		if hud and hud.has_method("show_event_banner"):
-			if contains_medkit:
-				hud.show_event_banner("SUPPLY SECURED: +%d ROCKETS, +%d SHELLS, +1 MEDKIT 💖" % [rocket_ammo_reward, shotgun_ammo_reward], "+ 50")
-			else:
-				hud.show_event_banner("SUPPLY SECURED: +%d ROCKETS, +%d SHELLS" % [rocket_ammo_reward, shotgun_ammo_reward], "+ 25")
+	var hud = _get_hud()
+	if hud and hud.has_method("show_event_banner"):
+		if contains_medkit:
+			hud.show_event_banner("SUPPLY SECURED: +%d ROCKETS, +%d SHELLS, +1 MEDKIT 💖" % [rocket_ammo_reward, shotgun_ammo_reward], "+ 50")
+		else:
+			hud.show_event_banner("SUPPLY SECURED: +%d ROCKETS, +%d SHELLS" % [rocket_ammo_reward, shotgun_ammo_reward], "+ 25")
 
 	drone_destroyed.emit(rocket_ammo_reward, shotgun_ammo_reward)
 	if is_inside_tree():

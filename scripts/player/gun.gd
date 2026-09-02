@@ -20,15 +20,16 @@ signal shot_fired(from_pos: Vector3, direction_vec: Vector3)
 var is_active: bool = true
 var can_fire: bool = true
 var fire_timer: float = 0.0
-var init_grace_timer: float = 0.3 # Prevents accidental firing on scene load
+var init_grace_timer: float = 0.3  # Prevents accidental firing on scene load
 var original_visual_pos: Vector3
 var recoil_offset: Vector3 = Vector3.ZERO
 var recoil_rotation: Vector3 = Vector3.ZERO
 var is_aiming: bool = false
 var mouse_delta: Vector2 = Vector2.ZERO
+var current_ads_tilt_x: float = 0.0
 
-# NEW: Keeps track of smooth iron-sight tilt independently
-var current_ads_tilt_x: float = 0.0 
+# Cached references — resolved once in _ready(), not on every shot
+var _player_ctrl: PlayerController = null
 
 var empty_sound_stream: AudioStream = preload("res://assets/Audio/empty_gunshot.mp3")
 
@@ -39,6 +40,12 @@ func _ready() -> void:
 
 	if not camera and get_parent() is Camera3D:
 		camera = get_parent() as Camera3D
+
+	# Cache player controller reference once
+	if camera:
+		var p = camera.get_parent()
+		if p is PlayerController:
+			_player_ctrl = p as PlayerController
 
 	if visual:
 		original_visual_pos = visual.position
@@ -120,36 +127,31 @@ func shoot() -> void:
 	if shoot_sound:
 		shoot_sound.play()
 
-	# Record shot statistic
-	var main = get_tree().current_scene
-	if main and main.has_node("Systems/ScoreManager"):
-		var sm = main.get_node("Systems/ScoreManager")
-		if sm and sm.has_method("record_shot"):
+	# Record shot — find ScoreManager via group
+	for sm in get_tree().get_nodes_in_group("score_manager"):
+		if sm.has_method("record_shot"):
 			sm.record_shot()
+			break
 
-	# Recoil effect (Upward kick + slight rightward drift)
+	# Recoil
 	var ads_mult = 0.65 if is_aiming else 1.0
 	recoil_offset.z += 0.08 * ads_mult
 	recoil_offset.y += 0.02 * ads_mult
 	recoil_offset.x += 0.006 * ads_mult
 	recoil_rotation = Vector3(deg_to_rad(7.5 * ads_mult), deg_to_rad(-2.0 * ads_mult), deg_to_rad(-1.5 * ads_mult))
 
-	# Muzzle flash
 	if muzzle_flash:
 		muzzle_flash.visible = true
 
-	# Camera nudge
 	if camera and camera.has_method("add_trauma"):
 		camera.add_trauma(0.08 if is_aiming else 0.14)
 
-	var cam_node = camera if camera else (get_parent() if get_parent() is Camera3D else null)
-	if cam_node:
-		var player_ctrl = cam_node.get_parent() if cam_node else null
-		if player_ctrl and player_ctrl.has_method("add_recoil"):
-			player_ctrl.add_recoil(0.7 * ads_mult, 0.3 * ads_mult)
+	# Camera recoil kick — use cached player controller
+	if _player_ctrl and _player_ctrl.has_method("add_recoil"):
+		_player_ctrl.add_recoil(0.7 * ads_mult, 0.3 * ads_mult)
 
-	var from = cam_node.global_position if cam_node else global_position
-	var dir = -cam_node.global_transform.basis.z if cam_node else -global_transform.basis.z
+	var from = camera.global_position if camera else global_position
+	var dir = -camera.global_transform.basis.z if camera else -global_transform.basis.z
 	var to = from + dir * max_range
 
 	shot_fired.emit(from, dir)
@@ -164,15 +166,11 @@ func shoot() -> void:
 	if result:
 		var collider = result.collider
 		gun_fired.emit(collider, result.position)
-		if collider.has_method("take_hit"):
-			if collider is PackageDrone:
-				collider.take_hit(1)
+		var hit_node = collider if collider.has_method("take_hit") else (collider.get_parent() if collider.get_parent() and collider.get_parent().has_method("take_hit") else null)
+		if hit_node:
+			if hit_node is PackageDrone:
+				hit_node.take_hit(1)
 			else:
-				collider.take_hit()
-		elif collider.get_parent() and collider.get_parent().has_method("take_hit"):
-			if collider.get_parent() is PackageDrone:
-				collider.get_parent().take_hit(1)
-			else:
-				collider.get_parent().take_hit()
+				hit_node.take_hit()
 	else:
 		gun_fired.emit(null, Vector3.ZERO)

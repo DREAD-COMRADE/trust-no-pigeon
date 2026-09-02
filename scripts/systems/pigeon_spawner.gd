@@ -26,6 +26,7 @@ var is_night_active: bool = false
 var spawn_timer: float = 0.0
 var is_active: bool = true
 var is_wave_spawning: bool = false
+var _cached_difficulty_speed: float = 1.0  # Cached per-wave, avoids repeated SettingsManager calls
 
 func _ready() -> void:
 	spawn_timer = 1.0
@@ -36,6 +37,8 @@ func _process(delta: float) -> void:
 
 	spawn_timer -= delta
 	if spawn_timer <= 0.0 and not is_wave_spawning:
+		# Cache difficulty speed mult once per wave, not per pigeon
+		_cached_difficulty_speed = SettingsManager.get_difficulty_speed_mult()
 		trigger_spawn_wave()
 		var base_interval = aggression_manager.get_spawn_interval() if aggression_manager else 2.0
 		if is_night_active:
@@ -135,7 +138,7 @@ func _instantiate_pigeon(is_gov: bool) -> void:
 	var start_pos = positions[0]
 	var target_pos = positions[1]
 
-	var speed_mult = speed_multiplier * SettingsManager.get_difficulty_speed_mult()
+	var speed_mult = speed_multiplier * _cached_difficulty_speed
 	if is_gov and aggression_manager:
 		speed_mult *= aggression_manager.get_attack_speed_multiplier()
 	if is_night_active:

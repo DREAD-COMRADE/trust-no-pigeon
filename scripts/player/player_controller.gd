@@ -44,6 +44,7 @@ const INVINCIBLE_DURATION: float = 1.2
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	add_to_group("player")  # Enables group-based lookup from pigeons/drones
 
 	# Sync with SettingsManager
 	SettingsManager.init_settings()

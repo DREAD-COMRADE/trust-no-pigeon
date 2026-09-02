@@ -87,7 +87,7 @@ var hint_tween: Tween
 # Damage Screen Flash
 @onready var damage_vignette: ColorRect = get_node_or_null("DamageVignette")
 var vignette_tween: Tween
-var last_recorded_health: int = 3
+var last_recorded_health: int = -1  # -1 = uninitialized; set on first update_health() call
 
 # ── Internal state ────────────────────────────────────────────────────────────
 var toast_tween: Tween
@@ -100,6 +100,8 @@ var game_over_audio: AudioStreamPlayer
 
 # ── Ready ─────────────────────────────────────────────────────────────────────
 func _ready() -> void:
+	add_to_group("hud")  # Enables group-based lookup from drones/pigeons
+
 	game_over_panel.visible = false
 	if event_toast:
 		event_toast.modulate.a = 0.0
@@ -113,33 +115,43 @@ func _ready() -> void:
 	if helper_script:
 		helper_script.setup_ui_audio(self)
 
-	# Initial setup
+	# Initial setup — hearts will be re-initialized by player's health_changed signal
 	update_score(0, 0)
 	update_weapon_ui(0, 6, 0, 18)
-	_update_hearts(3, 3)
+	# Don't hardcode hearts here; wait for update_health() call from PlayerController
 
-	# Auto-resolve camera for compass
+	# Auto-resolve camera for compass (group-based, not find_child)
 	await get_tree().process_frame
-	var scene = get_tree().current_scene
-	if scene:
-		var cam = scene.find_child("Camera3D", true, false)
+	for cam in get_tree().get_nodes_in_group("camera_main"):
 		if cam is Camera3D:
 			_camera = cam
+			break
+	# Fallback: use viewport camera
+	if not _camera:
+		var vp = get_viewport()
+		if vp:
+			_camera = vp.get_camera_3d()
 
 # ── Process — Compass ─────────────────────────────────────────────────────────
 func _process(_delta: float) -> void:
 	if not compass_label:
 		return
-	if not _camera:
-		if get_tree() and get_tree().current_scene:
-			var cam = get_tree().current_scene.find_child("Camera3D", true, false)
+	if not _camera or not is_instance_valid(_camera):
+		# Re-resolve camera if lost
+		for cam in get_tree().get_nodes_in_group("camera_main"):
 			if cam is Camera3D:
 				_camera = cam
+				break
+		if not _camera:
+			var vp = get_viewport()
+			if vp:
+				_camera = vp.get_camera_3d()
 		return
 
 	# Calculate 360 heading tape
 	var yaw_deg = fmod(rad_to_deg(-_camera.rotation.y) + 360.0, 360.0)
 	compass_label.text = _build_compass_tape(yaw_deg)
+
 
 func _build_compass_tape(yaw_deg: float) -> String:
 	# Format matches reference tape: e.g. 6   NW   330   345   N   15   30   NE   45
@@ -235,7 +247,8 @@ func _update_hearts(current: int, maximum: int) -> void:
 				h.visible = false
 
 func update_health(current: int, maximum: int) -> void:
-	if current < last_recorded_health:
+	# Skip damage flash on the first call (initial health broadcast)
+	if last_recorded_health != -1 and current < last_recorded_health:
 		_trigger_damage_flash()
 
 	last_recorded_health = current

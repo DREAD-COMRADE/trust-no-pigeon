@@ -10,6 +10,9 @@ var total_kills: int = 0
 var government_kills: int = 0
 var shots_fired: int = 0
 
+func _ready() -> void:
+	add_to_group("score_manager")
+
 func reset() -> void:
 	current_score = 0
 	total_kills = 0
