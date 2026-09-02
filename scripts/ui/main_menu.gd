@@ -17,6 +17,18 @@ extends Control
 @onready var credits_viewport: Control = $CreditsScreen/CreditsViewport if has_node("CreditsScreen/CreditsViewport") else null
 @onready var credits_roll: Control = $CreditsScreen/CreditsViewport/CreditsRoll if has_node("CreditsScreen/CreditsViewport/CreditsRoll") else null
 
+# Menu Music Playlist
+@export var menu_music_playlist: Array[AudioStream] = [
+	preload("res://assets/Audio/Steel_Feathers_Theme5.mp3"),
+	preload("res://assets/Audio/Main_theme.mp3"),
+	preload("res://assets/Audio/Theme1.mp3"),
+	preload("res://assets/Audio/Theme2.mp3"),
+	preload("res://assets/Audio/Theme3.mp3")
+]
+
+@onready var menu_music_player: AudioStreamPlayer = $MenuMusicPlayer if has_node("MenuMusicPlayer") else null
+var _current_music_idx: int = -1
+
 const CREDITS_SCROLL_SPEED := 42.0
 const CREDITS_END_DELAY := 2.5
 
@@ -26,6 +38,9 @@ var credits_end_time := -1.0
 func _ready() -> void:
 	process_mode = PROCESS_MODE_ALWAYS
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+	SettingsManager.init_settings()
+	SettingsManager.register_listener(_update_music_volume)
 
 	if modal_dialog:
 		modal_dialog.visible = false
@@ -52,10 +67,42 @@ func _ready() -> void:
 		btn_quit.pressed.connect(func(): get_tree().quit())
 
 	_update_best_score()
+	_start_menu_music()
 
-	var helper_script = load("res://scripts/ui/ui_audio_helper.gd")
-	if helper_script:
-		helper_script.setup_ui_audio(self)
+	UIAudioHelper.setup_ui_audio(self)
+
+func _exit_tree() -> void:
+	SettingsManager.unregister_listener(_update_music_volume)
+
+func _start_menu_music() -> void:
+	if not menu_music_player or menu_music_playlist.is_empty():
+		return
+	if not menu_music_player.finished.is_connected(_play_next_menu_theme):
+		menu_music_player.finished.connect(_play_next_menu_theme)
+	_play_next_menu_theme()
+
+func _play_next_menu_theme() -> void:
+	if not menu_music_player or menu_music_playlist.is_empty():
+		return
+
+	var next_idx = randi() % menu_music_playlist.size()
+	if menu_music_playlist.size() > 1 and next_idx == _current_music_idx:
+		next_idx = (next_idx + 1) % menu_music_playlist.size()
+
+	_current_music_idx = next_idx
+	menu_music_player.stream = menu_music_playlist[_current_music_idx]
+	_update_music_volume()
+	menu_music_player.play()
+
+func _update_music_volume() -> void:
+	if not menu_music_player:
+		return
+	var music_ratio = (SettingsManager.music_volume / 100.0) if not SettingsManager.is_muted else 0.0
+	if music_ratio <= 0.0:
+		menu_music_player.volume_db = -80.0
+	else:
+		menu_music_player.volume_db = -6.0 + linear_to_db(music_ratio)
+
 
 func _update_best_score() -> void:
 	var high_score = 0

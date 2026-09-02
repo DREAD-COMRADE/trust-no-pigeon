@@ -100,6 +100,20 @@ static func apply_all_settings() -> void:
 	var db_master = linear_to_db(m_vol / 100.0) if m_vol > 0 else -80.0
 	AudioServer.set_bus_volume_db(0, db_master)
 
+	# Notify active scenes/listeners
+	for cb in _settings_listeners:
+		if cb.is_valid():
+			cb.call()
+
+static var _settings_listeners: Array[Callable] = []
+
+static func register_listener(cb: Callable) -> void:
+	if not _settings_listeners.has(cb):
+		_settings_listeners.append(cb)
+
+static func unregister_listener(cb: Callable) -> void:
+	_settings_listeners.erase(cb)
+
 	# Apply Display Mode
 	match window_mode:
 		0:

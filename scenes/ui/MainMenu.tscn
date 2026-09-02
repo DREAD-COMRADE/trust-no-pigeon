@@ -309,8 +309,7 @@ size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 18
 text = "CLOSE"
 
-[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="." unique_id=408920535]
-stream = ExtResource("5_xpiny")
-volume_db = 15.446
-pitch_scale = 0.96
-autoplay = true
+[node name="MenuMusicPlayer" type="AudioStreamPlayer" parent="." unique_id=408920535]
+process_mode = 3
+bus = &"Master"
+

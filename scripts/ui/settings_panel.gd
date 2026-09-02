@@ -225,12 +225,14 @@ func _bind_control_signals() -> void:
 		music_slider.value_changed.connect(func(val):
 			SettingsManager.music_volume = val
 			if music_label: music_label.text = "%d%%" % int(val)
+			SettingsManager.apply_all_settings()
 			SettingsManager.save_to_disk()
 		)
 	if sfx_slider:
 		sfx_slider.value_changed.connect(func(val):
 			SettingsManager.sfx_volume = val
 			if sfx_label: sfx_label.text = "%d%%" % int(val)
+			SettingsManager.apply_all_settings()
 			SettingsManager.save_to_disk()
 		)
 	if mute_check:
@@ -240,6 +242,7 @@ func _bind_control_signals() -> void:
 			SettingsManager.apply_all_settings()
 			SettingsManager.save_to_disk()
 		)
+
 
 	# Video
 	if window_option:
