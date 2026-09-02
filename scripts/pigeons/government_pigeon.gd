@@ -14,7 +14,7 @@ var dodge_timer: float = 0.0
 var dodge_velocity: Vector3 = Vector3.ZERO
 var dodge_cooldown: float = 0.0
 
-# Cached player reference — resolved via group on first attack
+# Cached player reference resolved via group on first attack
 var _cached_player: PlayerController = null
 
 const MIN_ALTITUDE: float = 1.3
@@ -29,7 +29,7 @@ func _ready() -> void:
 func _on_reach_bounds() -> void:
 	super._on_reach_bounds()
 
-# -- Safe lookup helpers --------------------------------------------------------
+# Safe lookup helpers
 
 func _get_player() -> PlayerController:
 	if is_instance_valid(_cached_player):
@@ -48,7 +48,7 @@ func _get_active_camera() -> Camera3D:
 			return cam
 	return null
 
-# -- Near-miss dodge trigger ----------------------------------------------------
+# Near-miss dodge trigger
 
 func check_near_miss_and_dodge(from_pos: Vector3, dir_vec: Vector3) -> void:
 	if current_state == State.DYING or dodge_cooldown > 0.0:
@@ -101,7 +101,7 @@ func start_attack() -> void:
 	target_player_pos = cam.global_position if cam else Vector3(0, 1.6, 0)
 	player_attacked.emit(self)
 
-# -- Process --------------------------------------------------------------------
+# Process
 
 func _process(delta: float) -> void:
 	if dodge_cooldown > 0.0:
@@ -149,7 +149,7 @@ func _process_attacking(delta: float) -> void:
 	else:
 		position = cur_pos
 
-# -- Hit & Explosion ------------------------------------------------------------
+# Hit and explosion
 
 func _on_hit() -> void:
 	if hit_effect_scene:
