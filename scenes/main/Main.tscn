@@ -27,7 +27,8 @@
 [ext_resource type="Script" uid="uid://n0ota8jr01au" path="res://scripts/objects/projector_light.gd" id="26_prj"]
 [ext_resource type="PackedScene" uid="uid://dbt3yjguv41og" path="res://scenes/ui/PauseMenu.tscn" id="27_pm"]
 [ext_resource type="PackedScene" path="res://scenes/systems/MusicManager.tscn" id="28_mm"]
-[ext_resource type="PackedScene" uid="uid://c8qy7p5n1d3mk" path="res://scenes/ui/PerformanceLabHUD.tscn" id="29_perf"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PerformanceLabHUD.tscn" id="29_perf"]
+
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
 sky_top_color = Color(0.18, 0.21, 0.27, 1)
