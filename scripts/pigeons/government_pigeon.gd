@@ -144,8 +144,11 @@ func _process_attacking(delta: float) -> void:
 		if visual:
 			visual.rotation.z = lerp(visual.rotation.z, 0.0, delta * 10.0)
 		var dir = (target_player_pos - cur_pos).normalized()
-		if dir != Vector3.ZERO and is_inside_tree():
-			look_at(cur_pos + dir, Vector3.UP)
+		if dir.length_squared() > 0.01 and is_inside_tree():
+			var up_vec = Vector3.UP
+			if abs(dir.dot(up_vec)) > 0.98:
+				up_vec = Vector3.RIGHT
+			look_at(cur_pos + dir, up_vec)
 		cur_pos += dir * actual_speed * delta
 
 	# Fair-play constraints

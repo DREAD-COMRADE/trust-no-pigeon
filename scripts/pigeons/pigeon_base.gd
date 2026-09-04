@@ -140,13 +140,20 @@ func _update_flight_rotation(delta: float) -> void:
 	if velocity.length_squared() < 0.01:
 		return
 
-	var target_basis = global_transform.looking_at(global_position + velocity, Vector3.UP).basis
-	global_transform.basis = global_transform.basis.slerp(target_basis, delta * 12.0)
+	var forward_dir = velocity.normalized()
+	var up_vec = Vector3.UP
+	if abs(forward_dir.dot(up_vec)) > 0.98:
+		up_vec = Vector3.RIGHT
+	var target_basis = Basis.looking_at(forward_dir, up_vec)
+	global_transform.basis = global_transform.basis.orthonormalized().slerp(target_basis, delta * 12.0)
 
 func _process_attacking(delta: float) -> void:
 	var dir = (target_player_pos - global_position).normalized()
-	if dir != Vector3.ZERO:
-		look_at(global_position + dir, Vector3.UP)
+	if dir.length_squared() > 0.01:
+		var up_vec = Vector3.UP
+		if abs(dir.dot(up_vec)) > 0.98:
+			up_vec = Vector3.RIGHT
+		look_at(global_position + dir, up_vec)
 	global_position += dir * actual_speed * delta
 
 func _process_falling(delta: float) -> void:
@@ -187,10 +194,11 @@ func _on_hit_ground() -> void:
 	if anim_player and anim_player.has_animation("gettingHit_DyingOnTheGround"):
 		play_anim("gettingHit_DyingOnTheGround", 0.1)
 
-	# Smoothly scale down and remove after dying on ground
+	# Safe fade/sink cleanup without zero-scaling transforms
 	var tween = create_tween()
-	tween.tween_interval(0.9)
-	tween.tween_property(self, "scale", Vector3.ZERO, 0.35)
+	tween.tween_interval(1.0)
+	if visual:
+		tween.tween_property(visual, "position:y", visual.position.y - 0.4, 0.3)
 	tween.tween_callback(queue_free)
 
 func _on_reach_bounds() -> void:
