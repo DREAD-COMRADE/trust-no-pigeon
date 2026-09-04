@@ -12,6 +12,8 @@ class_name PerformanceLabHUD
 @onready var record_status_label: Label = $LabPanel/Margin/VBox/ControlsHBox/RecordStatusLabel
 @onready var btn_warmup: Button = $LabPanel/Margin/VBox/ControlsHBox/BtnWarmup
 @onready var btn_export: Button = $LabPanel/Margin/VBox/ControlsHBox/BtnExport
+@onready var btn_open_folder: Button = $LabPanel/Margin/VBox/ControlsHBox/BtnOpenFolder if has_node("LabPanel/Margin/VBox/ControlsHBox/BtnOpenFolder") else null
+
 
 # Stats Display
 @onready var stats_grid_label: RichTextLabel = $LabPanel/Margin/VBox/StatsSection/StatsText
@@ -55,6 +57,14 @@ func _ready() -> void:
 
 	if btn_export:
 		btn_export.pressed.connect(_on_export_pressed)
+
+	if btn_open_folder:
+		btn_open_folder.pressed.connect(func():
+			var global_path = ProjectSettings.globalize_path("user://perf_reports")
+			DirAccess.make_dir_recursive_absolute(global_path)
+			OS.shell_open(global_path)
+		)
+
 
 	# Marker buttons
 	if btn_m_baseline: btn_m_baseline.pressed.connect(func(): perf_lab.set_marker("BASELINE"))

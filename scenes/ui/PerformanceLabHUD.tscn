@@ -116,10 +116,17 @@ theme_override_font_sizes/font_size = 13
 text = "🔥 WARM SHADERS"
 
 [node name="BtnExport" type="Button" parent="LabPanel/Margin/VBox/ControlsHBox" unique_id=987123471]
+custom_minimum_size = Vector2(120, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "📄 EXPORT"
+
+[node name="BtnOpenFolder" type="Button" parent="LabPanel/Margin/VBox/ControlsHBox" unique_id=987123472]
 custom_minimum_size = Vector2(130, 34)
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
-text = "📄 EXPORT REPORT"
+text = "📂 OPEN FOLDER"
+
 
 [node name="StatsSection" type="VBoxContainer" parent="LabPanel/Margin/VBox" unique_id=987123472]
 layout_mode = 2
