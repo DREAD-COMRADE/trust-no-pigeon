@@ -32,20 +32,31 @@ script = ExtResource("1_perf")
 offset_left = 20.0
 offset_top = 10.0
 offset_right = 880.0
-offset_bottom = 34.0
+offset_bottom = 54.0
 theme_override_styles/panel = SubResource("SB_live_pill")
 
 [node name="Margin" type="MarginContainer" parent="LivePill" unique_id=987123458]
 layout_mode = 2
 theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 3
+theme_override_constants/margin_top = 4
 theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 3
+theme_override_constants/margin_bottom = 4
 
-[node name="LiveLabel" type="Label" parent="LivePill/Margin" unique_id=987123459]
+[node name="VBox" type="VBoxContainer" parent="LivePill/Margin" unique_id=987123459]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="LiveLabel" type="Label" parent="LivePill/Margin/VBox" unique_id=987123460]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
 text = "FPS: 144 | Frame: 6.94 ms | CPU: 2.15 ms | GPU: 3.82 ms | Draw: 35 | RAM: 410MB | VRAM: 215MB | Objs: 160"
+
+[node name="LiveSubsystemLabel" type="Label" parent="LivePill/Margin/VBox" unique_id=987123461]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.85, 0.95, 0.85)
+theme_override_font_sizes/font_size = 11
+text = "CPU Subsystems: Physics: 0.2ms | Scripts: 1.4ms | Render Prep: 0.5ms | Animation: N/A | Other: 0.1ms"
+
 
 [node name="LabPanel" type="PanelContainer" parent="." unique_id=987123460]
 visible = false

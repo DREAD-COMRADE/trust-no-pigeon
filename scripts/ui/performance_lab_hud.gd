@@ -2,7 +2,8 @@ extends CanvasLayer
 class_name PerformanceLabHUD
 
 @onready var live_pill: PanelContainer = $LivePill
-@onready var live_label: Label = $LivePill/Margin/LiveLabel
+@onready var live_label: Label = $LivePill/Margin/VBox/LiveLabel if has_node("LivePill/Margin/VBox/LiveLabel") else ($LivePill/Margin/LiveLabel if has_node("LivePill/Margin/LiveLabel") else null)
+@onready var live_subsystem_label: Label = $LivePill/Margin/VBox/LiveSubsystemLabel if has_node("LivePill/Margin/VBox/LiveSubsystemLabel") else null
 
 @onready var lab_panel: PanelContainer = $LabPanel
 @onready var close_btn: Button = $LabPanel/Margin/VBox/Header/CloseBtn
@@ -34,7 +35,6 @@ var update_timer: float = 0.0
 func _ready() -> void:
 	process_mode = PROCESS_MODE_ALWAYS
 
-	# Ensure PerformanceLab engine node exists
 	perf_lab = PerformanceLab.instance
 	if not perf_lab:
 		perf_lab = PerformanceLab.new()
@@ -121,10 +121,18 @@ func _update_live_hud() -> void:
 	var objs = int(Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME))
 
 	var fps_color = "#44ff88" if fps >= 58 else ("#ffcc00" if fps >= 30 else "#ff4444")
-	live_label.text = "FPS: %d | Frame Time: %.2f ms | CPU: %.2f ms | GPU: %s | Draw: %d | RAM: %dMB | VRAM: %dMB | Objs: %d" % [
+	live_label.text = "FPS: %d | Frame: %.2f ms | CPU Frame: %.2f ms | GPU: %s | Draw: %d | RAM: %dMB | VRAM: %dMB | Objs: %d" % [
 		fps, ft_ms, cpu_ms, gpu_str, draw_calls, mem_mb, vram_mb, objs
 	]
 	live_label.modulate = Color(fps_color)
+
+	if live_subsystem_label:
+		live_subsystem_label.text = "⚙️ CPU: Physics: %.1fms | Scripts: %.1fms | Render Prep: %.1fms | Animation: N/A | Other: %.1fms" % [
+			perf_lab.live_cpu_physics_ms,
+			perf_lab.live_cpu_scripts_ms,
+			perf_lab.live_cpu_render_prep_ms,
+			perf_lab.live_cpu_other_ms
+		]
 
 func _on_toggle_record_pressed() -> void:
 	if not perf_lab:
@@ -156,7 +164,6 @@ func _on_spike_detected(s: Dictionary) -> void:
 		return
 	var first_tag = " [color=#ffcc00][b]⚠ FIRST-USE / SHADER COMPILATION HITCH[/b][/color]" if s.get("is_first_use", false) else ""
 	var gpu_part = ("GPU: [b]%.1fms[/b]" % s.gpu_frame_time_ms) if s.get("gpu_frame_time_ms") != null else "GPU: N/A"
-
 	var b_color = "#ff5555" if s.bottleneck == "CPU BOUND" else ("#ffaa00" if s.bottleneck == "GPU BOUND" else "#44ff88")
 
 	var line = "[color=#ff4444]🔴 Spike:[/color] Frame: [b]%.1fms[/b] | CPU: [b]%.1fms[/b] | %s | [color=%s][b][%s][/b][/color] (at %.2fs, frame %d) [%s]%s\n" % [
@@ -169,6 +176,12 @@ func _on_spike_detected(s: Dictionary) -> void:
 		s.get("frame", 0),
 		s.get("marker", "IDLE"),
 		first_tag
+	]
+	line += "   [color=#88bbdd]└─ CPU Subsystems:[/color] Physics: %.1fms | Scripts: %.1fms | Render Prep: %.1fms | Animation: N/A | Other: %.1fms\n" % [
+		s.get("physics_ms", 0.0),
+		s.get("scripts_ms", 0.0),
+		s.get("render_prep_ms", 0.0),
+		s.get("other_ms", 0.0)
 	]
 	spikes_log_label.append_text(line)
 
@@ -204,13 +217,15 @@ func _update_comparison_display() -> void:
 	var prev_low = prev.get("low_1_percent_fps", 0.0)
 	var cur_ft = cur.get("avg_frame_time_ms", 0.0)
 	var prev_ft = prev.get("avg_frame_time_ms", 0.0)
-	var cur_worst = cur.get("worst_frame_time_ms", 0.0)
-	var prev_worst = prev.get("worst_frame_time_ms", 0.0)
 
 	var cur_cpu = cur.get("cpu_frame_time_avg_ms", 0.0)
 	var prev_cpu = prev.get("cpu_frame_time_avg_ms", 0.0)
-	var cur_cpu_worst = cur.get("cpu_frame_time_worst_ms", 0.0)
-	var prev_cpu_worst = prev.get("cpu_frame_time_worst_ms", 0.0)
+	var cur_phys = cur.get("cpu_physics_avg_ms", 0.0)
+	var prev_phys = prev.get("cpu_physics_avg_ms", 0.0)
+	var cur_sc = cur.get("cpu_scripts_avg_ms", 0.0)
+	var prev_sc = prev.get("cpu_scripts_avg_ms", 0.0)
+	var cur_rp = cur.get("cpu_render_prep_avg_ms", 0.0)
+	var prev_rp = prev.get("cpu_render_prep_avg_ms", 0.0)
 
 	var cur_gpu = cur.get("gpu_frame_time_avg_ms")
 	var prev_gpu = prev.get("gpu_frame_time_avg_ms")
@@ -226,9 +241,10 @@ func _update_comparison_display() -> void:
 	text += _format_row("Average FPS", "%.1f FPS" % cur_fps, "%.1f FPS" % prev_fps, cur_fps - prev_fps, true)
 	text += _format_row("1% Low FPS (Stutter)", "%.1f FPS" % cur_low, "%.1f FPS" % prev_low, cur_low - prev_low, true)
 	text += _format_row("Avg Frame Time", "%.2f ms" % cur_ft, "%.2f ms" % prev_ft, -(cur_ft - prev_ft), true)
-	text += _format_row("Worst Frame Spike", "%.2f ms" % cur_worst, "%.2f ms" % prev_worst, -(cur_worst - prev_worst), true)
-	text += _format_row("CPU Frame Time (Avg)", "%.2f ms" % cur_cpu, "%.2f ms" % prev_cpu, -(cur_cpu - prev_cpu), true)
-	text += _format_row("CPU Worst Spike", "%.2f ms" % cur_cpu_worst, "%.2f ms" % prev_cpu_worst, -(cur_cpu_worst - prev_cpu_worst), true)
+	text += _format_row("CPU Frame Time (Total)", "%.2f ms" % cur_cpu, "%.2f ms" % prev_cpu, -(cur_cpu - prev_cpu), true)
+	text += _format_row("  ├─ Physics Time", "%.2f ms" % cur_phys, "%.2f ms" % prev_phys, -(cur_phys - prev_phys), true)
+	text += _format_row("  ├─ Scripts / Logic", "%.2f ms" % cur_sc, "%.2f ms" % prev_sc, -(cur_sc - prev_sc), true)
+	text += _format_row("  └─ Render Prep / Scene", "%.2f ms" % cur_rp, "%.2f ms" % prev_rp, -(cur_rp - prev_rp), true)
 
 	if cur_gpu != null:
 		var p_gpu_val = prev_gpu if prev_gpu != null else 0.0
@@ -254,11 +270,14 @@ func _update_comparison_display() -> void:
 				var gpu_s = ("%.1f ms" % ev_data.gpu_frame_time_ms) if ev_data.get("gpu_frame_time_ms") != null else "N/A"
 				var b_col = "#ff5555" if ev_data.bottleneck == "CPU BOUND" else ("#ffaa00" if ev_data.bottleneck == "GPU BOUND" else "#44ff88")
 
-				ev_text += "• [b]%s[/b] (%d samples): Avg Frame: [b]%.1f ms[/b] | CPU: [b]%.1f ms[/b] | GPU: [b]%s[/b] | Bottleneck: [color=%s][b]%s[/b][/color]\n" % [
+				ev_text += "• [b]%s[/b] (%d samples): Frame: [b]%.1f ms[/b] | CPU: [b]%.1f ms[/b] (Phys: %.1fms, Scripts: %.1fms, RenderPrep: %.1fms) | GPU: [b]%s[/b] | [color=%s][b]%s[/b][/color]\n" % [
 					ev_name,
 					ev_data.get("samples", 0),
 					ev_data.get("avg_frame_time_ms", 0.0),
 					ev_data.get("cpu_frame_time_ms", 0.0),
+					ev_data.get("physics_ms", 0.0),
+					ev_data.get("scripts_ms", 0.0),
+					ev_data.get("render_prep_ms", 0.0),
 					gpu_s,
 					b_col,
 					ev_data.get("bottleneck", "UNKNOWN")
