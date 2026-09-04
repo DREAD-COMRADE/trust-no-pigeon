@@ -1,7 +1,7 @@
 extends Area3D
 class_name PigeonBase
 
-enum State { FLYING, ATTACKING, FALLING, DEAD }
+enum State { FLYING, ATTACKING, FALLING, DYING, DEAD }
 
 @export var speed: float = 8.0
 @export var score_value: int = 100
@@ -104,7 +104,7 @@ func _process(delta: float) -> void:
 			_process_attacking(delta)
 		State.FALLING:
 			_process_falling(delta)
-		State.DEAD:
+		State.DYING, State.DEAD:
 			pass
 
 func _animate_wings() -> void:
@@ -198,7 +198,7 @@ func _on_reach_bounds() -> void:
 	queue_free()
 
 func take_hit() -> void:
-	if current_state == State.FALLING or current_state == State.DEAD:
+	if current_state == State.FALLING or current_state == State.DYING or current_state == State.DEAD:
 		return
 
 	# Disable collision shape so the pigeon cannot be shot again
@@ -232,4 +232,3 @@ func take_hit() -> void:
 
 func _on_hit() -> void:
 	pigeon_killed.emit(self, score_value, is_government)
-
