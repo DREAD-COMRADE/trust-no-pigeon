@@ -16,6 +16,7 @@ extends PanelContainer
 @onready var btn_multi_gov: Button = $Margin/VBox/EventGrid/BtnMultiGov if has_node("Margin/VBox/EventGrid/BtnMultiGov") else null
 
 @onready var chk_godmode: CheckBox = $Margin/VBox/MiscHBox/ChkGodMode
+@onready var btn_perflab: Button = $Margin/VBox/MiscHBox/BtnPerfLab if has_node("Margin/VBox/MiscHBox/BtnPerfLab") else null
 
 func _ready() -> void:
 	process_mode = PROCESS_MODE_ALWAYS
@@ -23,6 +24,17 @@ func _ready() -> void:
 
 	if close_button:
 		close_button.pressed.connect(func(): visible = false)
+
+	# Perf Lab button
+	if btn_perflab:
+		btn_perflab.pressed.connect(func():
+			var main = get_tree().current_scene
+			if main:
+				var pl = main.find_child("PerformanceLabHUD", true, false)
+				if pl and pl.has_method("toggle_lab_panel"):
+					pl.toggle_lab_panel()
+		)
+
 
 	# Time buttons
 	if btn_day:

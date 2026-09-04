@@ -143,4 +143,3 @@ func _play_sfx_instance(pitch: float, volume_db: float) -> void:
 	add_child(player)
 	player.finished.connect(player.queue_free)
 	player.play()
-

@@ -77,18 +77,25 @@ func _unhandled_input(_event: InputEvent) -> void:
 	pass
 
 func _on_shot_fired(from_pos: Vector3, dir_vec: Vector3) -> void:
+	if PerformanceLab.instance:
+		PerformanceLab.instance.set_marker("SHOOT")
+
 	var gov_pigeons = get_tree().get_nodes_in_group("government_pigeons")
 	for pigeon in gov_pigeons:
 		if is_instance_valid(pigeon) and pigeon.has_method("check_near_miss_and_dodge"):
 			pigeon.check_near_miss_and_dodge(from_pos, dir_vec)
 
 func _on_player_weapon_switched(_slot: int, _wep_name: String, _ammo: int) -> void:
+	if PerformanceLab.instance:
+		PerformanceLab.instance.set_marker("WEAPON_SWAP_%s" % _wep_name)
 	_refresh_hud_weapons()
 
 func _on_player_ammo_updated(_wep_name: String, _ammo: int) -> void:
 	_refresh_hud_weapons()
 
 func _on_player_health_changed(current: int, maximum: int) -> void:
+	if PerformanceLab.instance and current < 3:
+		PerformanceLab.instance.set_marker("PLAYER_DAMAGE")
 	if hud and hud.has_method("update_health"):
 		hud.update_health(current, maximum)
 
@@ -109,6 +116,8 @@ func _on_score_updated(current: int, high: int) -> void:
 		hud.update_score(current, high)
 
 func _on_gov_pigeon_killed(total_gov: int) -> void:
+	if PerformanceLab.instance:
+		PerformanceLab.instance.set_marker("PIGEON_EXPLODED")
 	if aggression_manager:
 		aggression_manager.on_government_killed(total_gov)
 
@@ -120,9 +129,12 @@ func _on_event_time_updated(current_time: float, next_event_countdown: float) ->
 	if hud and hud.has_method("update_run_time"):
 		hud.update_run_time(current_time, next_event_countdown)
 
-func _on_event_triggered(_event_name: String, banner_title: String) -> void:
+func _on_event_triggered(event_name: String, banner_title: String) -> void:
+	if PerformanceLab.instance:
+		PerformanceLab.instance.set_marker("EVENT_%s" % event_name.to_upper().replace(" ", "_"))
 	if hud and hud.has_method("show_event_banner") and banner_title != "":
 		hud.show_event_banner(banner_title)
+
 
 func _on_weapon_switch_requested(weapon_type: String, ammo_count: int) -> void:
 	if weapon_type == "guided_missile" and player:
