@@ -8,8 +8,9 @@ class_name PerformanceLabHUD
 @onready var lab_panel: PanelContainer = $LabPanel
 @onready var close_btn: Button = $LabPanel/Margin/VBox/Header/CloseBtn
 
-# Recording Controls
+# Recording & Profiling Controls
 @onready var btn_record_toggle: Button = $LabPanel/Margin/VBox/ControlsHBox/BtnRecordToggle
+@onready var btn_profile_toggle: Button = $LabPanel/Margin/VBox/ControlsHBox/BtnProfileToggle if has_node("LabPanel/Margin/VBox/ControlsHBox/BtnProfileToggle") else null
 @onready var record_status_label: Label = $LabPanel/Margin/VBox/ControlsHBox/RecordStatusLabel
 @onready var btn_warmup: Button = $LabPanel/Margin/VBox/ControlsHBox/BtnWarmup
 @onready var btn_export: Button = $LabPanel/Margin/VBox/ControlsHBox/BtnExport
@@ -18,6 +19,7 @@ class_name PerformanceLabHUD
 # Stats Display
 @onready var stats_grid_label: RichTextLabel = $LabPanel/Margin/VBox/StatsSection/StatsText
 @onready var event_summary_label: RichTextLabel = $LabPanel/Margin/VBox/EventSummarySection/EventSummaryText if has_node("LabPanel/Margin/VBox/EventSummarySection/EventSummaryText") else null
+@onready var function_profile_label: RichTextLabel = $LabPanel/Margin/VBox/FunctionProfileSection/FunctionProfileText if has_node("LabPanel/Margin/VBox/FunctionProfileSection/FunctionProfileText") else null
 @onready var spikes_log_label: RichTextLabel = $LabPanel/Margin/VBox/SpikeSection/SpikesText
 @onready var export_status_label: Label = $LabPanel/Margin/VBox/ExportStatusLabel
 
@@ -45,12 +47,17 @@ func _ready() -> void:
 	perf_lab.recording_stopped.connect(_on_recording_stopped)
 	perf_lab.spike_detected.connect(_on_spike_detected)
 	perf_lab.warmup_completed.connect(_on_warmup_completed)
+	perf_lab.profiling_toggled.connect(_on_profiling_toggled)
 
 	if close_btn:
 		close_btn.pressed.connect(func(): lab_panel.visible = false)
 
 	if btn_record_toggle:
 		btn_record_toggle.pressed.connect(_on_toggle_record_pressed)
+
+	if btn_profile_toggle:
+		btn_profile_toggle.pressed.connect(_on_toggle_profiling_pressed)
+		_update_profile_toggle_ui()
 
 	if btn_warmup:
 		btn_warmup.pressed.connect(func(): perf_lab.run_shader_warmup())
@@ -104,7 +111,8 @@ func _process(delta: float) -> void:
 		_update_live_hud()
 
 	if perf_lab and perf_lab.is_recording and record_status_label:
-		record_status_label.text = "🔴 RECORDING [%.1fs] | Active Marker: [%s]" % [perf_lab.record_time, perf_lab.current_marker_name]
+		var prof_tag = " [PROFILER ON]" if perf_lab.is_scope_profiling_enabled else ""
+		record_status_label.text = "🔴 RECORDING [%.1fs] | Active: [%s]%s" % [perf_lab.record_time, perf_lab.current_marker_name, prof_tag]
 
 func _update_live_hud() -> void:
 	if not live_pill.visible or not live_label or not perf_lab:
@@ -142,6 +150,25 @@ func _on_toggle_record_pressed() -> void:
 	else:
 		perf_lab.start_recording()
 
+func _on_toggle_profiling_pressed() -> void:
+	if not perf_lab:
+		return
+	perf_lab.set_scope_profiling_enabled(!perf_lab.is_scope_profiling_enabled)
+	_update_profile_toggle_ui()
+
+func _on_profiling_toggled(_enabled: bool) -> void:
+	_update_profile_toggle_ui()
+
+func _update_profile_toggle_ui() -> void:
+	if not btn_profile_toggle or not perf_lab:
+		return
+	if perf_lab.is_scope_profiling_enabled:
+		btn_profile_toggle.text = "🔬 SCOPE PROFILING: ON"
+		btn_profile_toggle.modulate = Color(0.9, 0.5, 1.0, 1.0)
+	else:
+		btn_profile_toggle.text = "🔬 SCOPE PROFILING: OFF"
+		btn_profile_toggle.modulate = Color(0.85, 0.85, 0.85, 0.8)
+
 func _on_recording_started() -> void:
 	if btn_record_toggle:
 		btn_record_toggle.text = "⏹ STOP BENCHMARK"
@@ -150,6 +177,11 @@ func _on_recording_started() -> void:
 		spikes_log_label.text = "[color=#888888]Live Spike Log initialized...[/color]\n"
 	if event_summary_label:
 		event_summary_label.text = "[color=#888888]Recording event samples...[/color]\n"
+	if function_profile_label:
+		if perf_lab.is_scope_profiling_enabled:
+			function_profile_label.text = "[color=#888888]Recording function scopes...[/color]\n"
+		else:
+			function_profile_label.text = "[color=#888888]Scope profiling is disabled. Toggle [b]SCOPE PROFILING: ON[/b] to track instrumented functions.[/color]\n"
 
 func _on_recording_stopped(_summary: Dictionary) -> void:
 	if btn_record_toggle:
@@ -177,12 +209,20 @@ func _on_spike_detected(s: Dictionary) -> void:
 		s.get("marker", "IDLE"),
 		first_tag
 	]
-	line += "   [color=#88bbdd]└─ CPU Subsystems:[/color] Physics: %.1fms | Scripts: %.1fms | Render Prep: %.1fms | Animation: N/A | Other: %.1fms\n" % [
+	line += "   [color=#88bbdd]└─ CPU Subsystems:[/color] Physics: %.1fms | Scripts: %.1fms | Render Prep: %.1fms | Other: %.1fms\n" % [
 		s.get("physics_ms", 0.0),
 		s.get("scripts_ms", 0.0),
 		s.get("render_prep_ms", 0.0),
 		s.get("other_ms", 0.0)
 	]
+
+	var top_funcs = s.get("top_functions", [])
+	if not top_funcs.is_empty():
+		var func_strs = []
+		for tf in top_funcs:
+			func_strs.append("%s: [b]%.1fms[/b]" % [tf.name, tf.time_ms])
+		line += "   [color=#ddaaff]└─ Instrumented Scopes in Spike:[/color] " + ", ".join(func_strs) + "\n"
+
 	spikes_log_label.append_text(line)
 
 func _on_warmup_completed(res: Dictionary) -> void:
@@ -209,6 +249,8 @@ func _update_comparison_display() -> void:
 		stats_grid_label.text = "[color=#aaaaaa]No benchmark recorded yet. Click [b]Start Benchmark[/b] to record a 10-30s run![/color]"
 		if event_summary_label:
 			event_summary_label.text = "[color=#888888]Event breakdown will appear after your benchmark.[/color]"
+		if function_profile_label:
+			function_profile_label.text = "[color=#888888]Scope profiling results will appear here after recording with SCOPE PROFILING: ON.[/color]"
 		return
 
 	var cur_fps = cur.get("avg_fps", 0.0)
@@ -283,6 +325,24 @@ func _update_comparison_display() -> void:
 					ev_data.get("bottleneck", "UNKNOWN")
 				]
 			event_summary_label.text = ev_text
+
+	# ── Function Profiles Display ────────────────────────────────────────────
+	if function_profile_label:
+		var funcs: Dictionary = cur.get("function_profiles", {})
+		if funcs.is_empty():
+			function_profile_label.text = "[color=#888888]No instrumented function scopes were recorded (Enable [b]SCOPE PROFILING: ON[/b] to track).[/color]"
+		else:
+			var f_text = ""
+			for f_name in funcs.keys():
+				var fd = funcs[f_name]
+				f_text += "• [b]%s[/b] ➔ calls: [b]%d[/b] | total: [color=#ffaa33][b]%.1f ms[/b][/color] | avg: [b]%.3f ms[/b] | worst: [color=#ff5555][b]%.1f ms[/b][/color]\n" % [
+					f_name,
+					fd.get("calls", 0),
+					fd.get("total_ms", 0.0),
+					fd.get("average_ms", 0.0),
+					fd.get("worst_ms", 0.0)
+				]
+			function_profile_label.text = f_text
 
 func _format_row(metric_name: String, cur_str: String, prev_str: String, diff: float, higher_is_better: bool) -> String:
 	var diff_str = ""

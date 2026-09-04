@@ -2,7 +2,7 @@ extends Node
 class_name PerformanceLab
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ⚡ PERFORMANCE LAB V1 (GODOT 4.7 CPU SUBSYSTEM & GPU PROFILER)
+# ⚡ PERFORMANCE LAB V1 (GODOT 4.7 CPU SUBSYSTEM, FUNCTION PROFILER & GPU)
 #
 # TIMING & SUBSYSTEM DEFINITIONS:
 # - Total Frame Time: Full frame duration in ms (wall-clock delta).
@@ -14,12 +14,14 @@ class_name PerformanceLab
 #   ├─ Animation Time: Folded into TIME_PROCESS in Godot 4.7 engine core; marked N/A / null.
 #   └─ Other Time: OS input polling, audio mix tick, frame sync.
 # - GPU Frame Time: Hardware GPU execution time via viewport_get_measured_render_time_gpu.
+# - Function-Level CPU Scope Profiling: Microsecond instrumentation via Profiler.begin_scope / end_scope.
 # ═══════════════════════════════════════════════════════════════════════════════
 
 signal recording_started
 signal recording_stopped(summary: Dictionary)
 signal spike_detected(spike_info: Dictionary)
 signal warmup_completed(results: Dictionary)
+signal profiling_toggled(is_enabled: bool)
 
 static var instance: PerformanceLab = null
 
@@ -38,8 +40,14 @@ var live_gpu_frame_time_ms: float = 0.0
 var live_cpu_physics_ms: float = 0.0
 var live_cpu_scripts_ms: float = 0.0
 var live_cpu_render_prep_ms: float = 0.0
-var live_cpu_animation_ms: Variant = null # Godot 4.7 does not expose separate animation hardware counter
+var live_cpu_animation_ms: Variant = null
 var live_cpu_other_ms: float = 0.0
+
+# ── Function-Level Scope Profiling State ─────────────────────────────────────
+var is_scope_profiling_enabled: bool = false
+var _scope_start_times: Dictionary = {} # scope_name -> int (usec)
+var _scope_data: Dictionary = {}        # scope_name -> { "calls": int, "total_usec": int, "worst_usec": int }
+var _frame_scope_data: Dictionary = {}  # scope_name -> int (usec spent in current frame)
 
 # ── 300-Frame Ring Buffers (Zero Allocations Per Frame) ────────────────────────
 const HISTORY_CAPACITY: int = 300
@@ -96,7 +104,6 @@ const WARMUP_SCENE_PATHS: Array[String] = [
 func _init() -> void:
 	instance = self
 
-	# Pre-allocate 300-frame ring buffers
 	history_frame_time.resize(HISTORY_CAPACITY)
 	history_cpu_time.resize(HISTORY_CAPACITY)
 	history_gpu_time.resize(HISTORY_CAPACITY)
@@ -114,7 +121,6 @@ func _init() -> void:
 func _ready() -> void:
 	process_mode = PROCESS_MODE_ALWAYS
 
-	# Enable hardware render timing on the main viewport in RenderingServer
 	var vp = get_viewport()
 	if vp:
 		_main_vp_rid = vp.get_viewport_rid()
@@ -123,18 +129,50 @@ func _ready() -> void:
 
 	_load_previous_benchmark()
 
+# ── Function Scope Profiling Internals ───────────────────────────────────────
+static func begin_scope(scope_name: String) -> void:
+	if instance and instance.is_scope_profiling_enabled:
+		instance._scope_start_times[scope_name] = Time.get_ticks_usec()
+
+static func end_scope(scope_name: String) -> void:
+	if instance and instance.is_scope_profiling_enabled:
+		var end_time = Time.get_ticks_usec()
+		var start_time = instance._scope_start_times.get(scope_name, -1)
+		if start_time >= 0:
+			instance._record_scope_elapsed(scope_name, end_time - start_time)
+
+func _record_scope_elapsed(scope_name: String, elapsed_usec: int) -> void:
+	var data = _scope_data.get(scope_name)
+	if not data:
+		data = { "calls": 0, "total_usec": 0, "worst_usec": 0 }
+		_scope_data[scope_name] = data
+
+	data["calls"] += 1
+	data["total_usec"] += elapsed_usec
+	if elapsed_usec > data["worst_usec"]:
+		data["worst_usec"] = elapsed_usec
+
+	_frame_scope_data[scope_name] = _frame_scope_data.get(scope_name, 0) + elapsed_usec
+
+func set_scope_profiling_enabled(enabled: bool) -> void:
+	is_scope_profiling_enabled = enabled
+	if not enabled:
+		_scope_start_times.clear()
+	profiling_toggled.emit(enabled)
+
+func reset_scope_data() -> void:
+	_scope_data.clear()
+	_scope_start_times.clear()
+	_frame_scope_data.clear()
+
+# ── Frame Processing ─────────────────────────────────────────────────────────
 func _process(delta: float) -> void:
 	frame_counter += 1
 
-	# Total frame time from engine delta
 	var raw_ft_ms = delta * 1000.0
 
-	# ── CPU Subsystems Measurement (Godot 4.7 APIs) ───────────────────────────
-	# 1. Scripts / Game Loop Time
 	var scripts_ms = Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
-	# 2. Physics Processing Time
 	var physics_ms = Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
-	# 3. Render Preparation / Command Recording Time
 	var cpu_render_ms = 0.0
 	var cpu_setup_ms = 0.0
 	if _main_vp_rid.is_valid():
@@ -142,17 +180,14 @@ func _process(delta: float) -> void:
 		cpu_setup_ms = RenderingServer.get_frame_setup_time_cpu()
 	var render_prep_ms = cpu_render_ms + cpu_setup_ms
 
-	# Total CPU time
 	var cpu_total_ms = scripts_ms + physics_ms + render_prep_ms
 	if cpu_total_ms < 0.01:
 		cpu_total_ms = raw_ft_ms * 0.5
 		scripts_ms = cpu_total_ms * 0.6
 		render_prep_ms = cpu_total_ms * 0.4
 
-	# Other / Unaccounted CPU time (OS events, engine frame synchronization)
 	var other_ms = max(0.0, raw_ft_ms - (scripts_ms + physics_ms + render_prep_ms))
 
-	# ── GPU Frame Time Measurement ───────────────────────────────────────────
 	var gpu_ft_ms = 0.0
 	if _main_vp_rid.is_valid():
 		gpu_ft_ms = RenderingServer.viewport_get_measured_render_time_gpu(_main_vp_rid)
@@ -164,7 +199,6 @@ func _process(delta: float) -> void:
 		if _gpu_check_frames > 60 and not is_gpu_timing_available:
 			is_gpu_timing_available = false
 
-	# Update live cache
 	live_fps = Performance.get_monitor(Performance.TIME_FPS)
 	live_frame_time_ms = raw_ft_ms
 	live_cpu_frame_time_ms = cpu_total_ms
@@ -175,7 +209,7 @@ func _process(delta: float) -> void:
 	live_cpu_render_prep_ms = render_prep_ms
 	live_cpu_other_ms = other_ms
 
-	# ── Update 300-Frame Ring Buffers ─────────────────────────────────────────
+	# Update 300-frame ring buffers
 	history_frame_time[history_head] = raw_ft_ms
 	history_cpu_time[history_head] = cpu_total_ms
 	history_gpu_time[history_head] = gpu_ft_ms if is_gpu_timing_available else 0.0
@@ -187,7 +221,6 @@ func _process(delta: float) -> void:
 	if history_count < HISTORY_CAPACITY:
 		history_count += 1
 
-	# Rolling 30-frame averages for spike detection
 	var window = min(30, history_count)
 	var sum_ft = 0.0
 	var sum_cpu = 0.0
@@ -201,11 +234,11 @@ func _process(delta: float) -> void:
 	rolling_cpu_avg_ms = sum_cpu / max(1, window)
 	rolling_gpu_avg_ms = sum_gpu / max(1, window)
 
-	# ── Spike Detection ───────────────────────────────────────────────────────
+	# Spike Detection
 	if (raw_ft_ms - rolling_avg_ms >= 14.0) or (raw_ft_ms >= 28.0 and raw_ft_ms > rolling_avg_ms * 1.5):
 		_handle_spike(rolling_avg_ms, raw_ft_ms, cpu_total_ms, gpu_ft_ms, physics_ms, scripts_ms, render_prep_ms, other_ms)
 
-	# ── Recording Tick ───────────────────────────────────────────────────────
+	# Recording Tick
 	if is_recording:
 		record_time += delta
 		rec_frame_times.append(raw_ft_ms)
@@ -217,6 +250,9 @@ func _process(delta: float) -> void:
 		rec_other_times.append(other_ms)
 		rec_markers.append(current_marker_name)
 
+	# Clear per-frame function scope measurements
+	_frame_scope_data.clear()
+
 func _handle_spike(before_ms: float, peak_ms: float, cpu_ms: float, gpu_ms: float, physics_ms: float, scripts_ms: float, render_prep_ms: float, other_ms: float) -> void:
 	var is_first_use = false
 	if current_marker_name != "BASELINE" and not first_seen_events.has(current_marker_name):
@@ -224,6 +260,16 @@ func _handle_spike(before_ms: float, peak_ms: float, cpu_ms: float, gpu_ms: floa
 		is_first_use = true
 
 	var bottleneck = classify_bottleneck(cpu_ms, gpu_ms if is_gpu_timing_available else -1.0, peak_ms)
+
+	# Capture top profiled functions during this spike frame
+	var spike_funcs: Array[Dictionary] = []
+	if is_scope_profiling_enabled and not _frame_scope_data.is_empty():
+		for s_name in _frame_scope_data.keys():
+			spike_funcs.append({
+				"name": s_name,
+				"time_ms": snapped(_frame_scope_data[s_name] / 1000.0, 0.1)
+			})
+		spike_funcs.sort_custom(func(a, b): return a["time_ms"] > b["time_ms"])
 
 	var spike = {
 		"time": snapped(record_time if is_recording else (Time.get_ticks_msec() / 1000.0), 0.01),
@@ -235,9 +281,10 @@ func _handle_spike(before_ms: float, peak_ms: float, cpu_ms: float, gpu_ms: floa
 		"gpu_frame_time_ms": snapped(gpu_ms, 0.1) if is_gpu_timing_available else null,
 		"physics_ms": snapped(physics_ms, 0.1),
 		"scripts_ms": snapped(scripts_ms, 0.1),
-		"animation_ms": null, # Unavailable as separate counter in Godot 4.7
+		"animation_ms": null,
 		"render_prep_ms": snapped(render_prep_ms, 0.1),
 		"other_ms": snapped(other_ms, 0.1),
+		"top_functions": spike_funcs,
 		"bottleneck": bottleneck,
 		"is_first_use": is_first_use
 	}
@@ -254,18 +301,15 @@ func classify_bottleneck(cpu_ms: float, gpu_ms: float, total_ms: float) -> Strin
 			return "CPU BOUND"
 		return "UNKNOWN"
 
-	# If both CPU and GPU are elevated
 	if cpu_ms >= 14.0 and gpu_ms >= 14.0:
 		if abs(cpu_ms - gpu_ms) < 4.0:
 			return "CPU + GPU"
 
-	# Clear dominator by ratio (1.4x+) and threshold (>= 8ms)
 	if cpu_ms >= gpu_ms * 1.4 and cpu_ms >= 8.0:
 		return "CPU BOUND"
 	elif gpu_ms >= cpu_ms * 1.4 and gpu_ms >= 8.0:
 		return "GPU BOUND"
 
-	# Absolute delta check
 	if cpu_ms > gpu_ms + 4.0:
 		return "CPU BOUND"
 	elif gpu_ms > cpu_ms + 4.0:
@@ -290,6 +334,7 @@ func start_recording() -> void:
 	rec_other_times.clear()
 	rec_markers.clear()
 	rec_spikes.clear()
+	reset_scope_data()
 	current_marker_name = "BASELINE"
 	recording_started.emit()
 
@@ -334,7 +379,8 @@ func _calculate_benchmark_summary() -> Dictionary:
 			"total_frames": 0,
 			"duration_sec": 0.0,
 			"spikes": [],
-			"event_summaries": {}
+			"event_summaries": {},
+			"function_profiles": {}
 		}
 
 	var total_frames = rec_frame_times.size()
@@ -419,7 +465,6 @@ func _calculate_benchmark_summary() -> Dictionary:
 		sum_1_pct_cpu += sorted_cpu[i]
 	var cpu_1_pct_worst = sum_1_pct_cpu / float(count_1_pct)
 
-	# GPU stats (null if unavailable)
 	var avg_gpu_val = null
 	var worst_gpu_val = null
 	var gpu_1_pct_worst_val = null
@@ -439,7 +484,7 @@ func _calculate_benchmark_summary() -> Dictionary:
 			sum_1_pct_gpu += sorted_gpu[i]
 		gpu_1_pct_worst_val = snapped(sum_1_pct_gpu / float(gpu_count_1_pct), 0.2)
 
-	# ── Event Performance Summary Breakdown ──────────────────────────────────
+	# Event Performance Summary Breakdown
 	var event_groups: Dictionary = {}
 	for i in range(total_frames):
 		var m_name = rec_markers[i] if i < rec_markers.size() else "BASELINE"
@@ -495,6 +540,22 @@ func _calculate_benchmark_summary() -> Dictionary:
 			"bottleneck": e_bottleneck
 		}
 
+	# ── Function Profiles Summary Calculation ────────────────────────────────
+	var function_profiles: Dictionary = {}
+	for s_name in _scope_data.keys():
+		var d = _scope_data[s_name]
+		var calls = d.get("calls", 0)
+		var total_ms = d.get("total_usec", 0) / 1000.0
+		var worst_ms = d.get("worst_usec", 0) / 1000.0
+		var avg_ms = (total_ms / float(calls)) if calls > 0 else 0.0
+
+		function_profiles[s_name] = {
+			"calls": calls,
+			"total_ms": snapped(total_ms, 0.2),
+			"average_ms": snapped(avg_ms, 0.3),
+			"worst_ms": snapped(worst_ms, 0.2)
+		}
+
 	return {
 		"timestamp": Time.get_datetime_string_from_system(),
 		"avg_fps": snapped(avg_fps, 0.1),
@@ -524,7 +585,8 @@ func _calculate_benchmark_summary() -> Dictionary:
 		"ram_mb": snapped(Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0, 0.1),
 		"vram_mb": snapped(Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0, 0.1),
 		"spikes": rec_spikes.duplicate(true),
-		"event_summaries": event_summaries
+		"event_summaries": event_summaries,
+		"function_profiles": function_profiles
 	}
 
 # ── Shader / Pipeline Warmup ─────────────────────────────────────────────────
@@ -638,6 +700,20 @@ func export_report() -> String:
 		f_txt.store_line("  • Animation:            Unavailable (Folded in Scripts/Process in Godot 4.7)")
 		f_txt.store_line("  • Other / OS Events:    Avg: %.2f ms | Worst: %.2f ms" % [benchmark_data.get("cpu_other_avg_ms", 0.0), benchmark_data.get("cpu_other_worst_ms", 0.0)])
 
+		var funcs: Dictionary = benchmark_data.get("function_profiles", {})
+		if not funcs.is_empty():
+			f_txt.store_line("--------------------------------------------------")
+			f_txt.store_line("🔬 CPU FUNCTION PROFILE (%d instrumented scopes):" % funcs.size())
+			for f_name in funcs.keys():
+				var fd = funcs[f_name]
+				f_txt.store_line("  • %s" % f_name)
+				f_txt.store_line("    calls: %d | total: %.2f ms | average: %.3f ms | worst: %.2f ms" % [
+					fd.get("calls", 0),
+					fd.get("total_ms", 0.0),
+					fd.get("average_ms", 0.0),
+					fd.get("worst_ms", 0.0)
+				])
+
 		var gpu_avg = benchmark_data.get("gpu_frame_time_avg_ms")
 		var gpu_worst = benchmark_data.get("gpu_frame_time_worst_ms")
 		var gpu_1_pct = benchmark_data.get("gpu_frame_time_1_percent_low_ms")
@@ -703,6 +779,12 @@ func export_report() -> String:
 					s.get("render_prep_ms", 0.0),
 					s.get("other_ms", 0.0)
 				])
+				var top_funcs = s.get("top_functions", [])
+				if not top_funcs.is_empty():
+					var func_strs = []
+					for tf in top_funcs:
+						func_strs.append("%s: %.1fms" % [tf.name, tf.time_ms])
+					f_txt.store_line("    Top Profiled Scopes in Spike: " + ", ".join(func_strs))
 
 		f_txt.store_line("==================================================")
 		f_txt.close()
