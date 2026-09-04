@@ -51,7 +51,7 @@ func _get_active_camera() -> Camera3D:
 # Near-miss dodge trigger
 
 func check_near_miss_and_dodge(from_pos: Vector3, dir_vec: Vector3) -> void:
-	if current_state == State.DYING or dodge_cooldown > 0.0:
+	if current_state == State.FALLING or current_state == State.DYING or current_state == State.DEAD or dodge_cooldown > 0.0:
 		return
 	var to_pigeon = global_position - from_pos
 	var proj = to_pigeon.dot(dir_vec)
@@ -81,8 +81,14 @@ func trigger_evasive_dodge_and_attack(shot_dir: Vector3) -> void:
 	var dodge_dir = (side_dir * side_sign * 1.2 + Vector3.UP * vertical_sign * 1.0).normalized()
 	dodge_velocity = dodge_dir * (actual_speed * 1.35)
 
+	# Play directional evasive flight animation
+	if side_sign < 0.0:
+		play_anim("turningLeft_flying", 0.08)
+	else:
+		play_anim("turningRight_flying", 0.08)
+
 	if sensor_light:
-		sensor_light.light_energy = 15.0
+		sensor_light.light_energy = 16.0
 		sensor_light.light_color = Color(1.0, 0.0, 0.0, 1.0)
 
 	if current_state != State.ATTACKING:
@@ -96,6 +102,8 @@ func start_attack() -> void:
 	if sensor_light:
 		sensor_light.light_energy = 8.0
 		sensor_light.light_color = Color(1.0, 0.0, 0.0, 1.0)
+
+	play_anim("soaring", 0.15)
 
 	var cam = _get_active_camera()
 	target_player_pos = cam.global_position if cam else Vector3(0, 1.6, 0)
@@ -130,7 +138,9 @@ func _process_attacking(delta: float) -> void:
 		if visual:
 			visual.rotation.z = lerp(visual.rotation.z, 1.2 * sign(dodge_velocity.x if dodge_velocity.x != 0 else 1.0), delta * 15.0)
 	else:
-		is_dodging = false
+		if is_dodging:
+			is_dodging = false
+			play_anim("flying", 0.15)
 		if visual:
 			visual.rotation.z = lerp(visual.rotation.z, 0.0, delta * 10.0)
 		var dir = (target_player_pos - cur_pos).normalized()
@@ -158,10 +168,9 @@ func _on_hit() -> void:
 		parent_node.add_child(fx)
 		fx.global_position = global_position
 	pigeon_killed.emit(self, score_value, is_government)
-	queue_free()
 
 func _explode_on_player() -> void:
-	current_state = State.DYING
+	current_state = State.DEAD
 
 	var cam = _get_active_camera()
 	var spawn_pos = cam.global_position if cam else global_position
