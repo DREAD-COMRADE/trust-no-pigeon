@@ -2,9 +2,8 @@
 
 [ext_resource type="Script" path="res://scripts/ui/performance_lab_hud.gd" id="1_perf"]
 
-
 [sub_resource type="StyleBoxFlat" id="SB_live_pill"]
-bg_color = Color(0.05, 0.07, 0.09, 0.75)
+bg_color = Color(0.05, 0.07, 0.09, 0.85)
 border_width_left = 3
 border_color = Color(0.25, 0.9, 0.45, 0.95)
 corner_radius_top_left = 3
@@ -13,7 +12,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 
 [sub_resource type="StyleBoxFlat" id="SB_lab_panel"]
-bg_color = Color(0.06, 0.08, 0.11, 0.95)
+bg_color = Color(0.06, 0.08, 0.11, 0.96)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
@@ -32,7 +31,7 @@ script = ExtResource("1_perf")
 [node name="LivePill" type="PanelContainer" parent="." unique_id=987123457]
 offset_left = 20.0
 offset_top = 10.0
-offset_right = 620.0
+offset_right = 880.0
 offset_bottom = 34.0
 theme_override_styles/panel = SubResource("SB_live_pill")
 
@@ -46,7 +45,7 @@ theme_override_constants/margin_bottom = 3
 [node name="LiveLabel" type="Label" parent="LivePill/Margin" unique_id=987123459]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "FPS: 144 (6.9ms) | CPU: 1.2ms | Draw: 35 | RAM: 410MB | VRAM: 215MB | Objs: 160"
+text = "FPS: 144 | Frame: 6.94 ms | CPU: 2.15 ms | GPU: 3.82 ms | Draw: 35 | RAM: 410MB | VRAM: 215MB | Objs: 160"
 
 [node name="LabPanel" type="PanelContainer" parent="." unique_id=987123460]
 visible = false
@@ -55,24 +54,24 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -380.0
-offset_top = -280.0
-offset_right = 380.0
-offset_bottom = 280.0
+offset_left = -410.0
+offset_top = -310.0
+offset_right = 410.0
+offset_bottom = 310.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("SB_lab_panel")
 
 [node name="Margin" type="MarginContainer" parent="LabPanel" unique_id=987123461]
 layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
 
 [node name="VBox" type="VBoxContainer" parent="LabPanel/Margin" unique_id=987123462]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="Header" type="HBoxContainer" parent="LabPanel/Margin/VBox" unique_id=987123463]
 layout_mode = 2
@@ -81,8 +80,8 @@ layout_mode = 2
 modulate = Color(0.3, 0.9, 1, 1)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 18
-text = "⚡ PERFORMANCE LAB V1 (DIAGNOSTIC & BENCHMARK ENGINE)"
+theme_override_font_sizes/font_size = 16
+text = "⚡ PERFORMANCE LAB V1 (CPU/GPU BOTTLENECK & BENCHMARK ENGINE)"
 
 [node name="CloseBtn" type="Button" parent="LabPanel/Margin/VBox/Header" unique_id=987123465]
 custom_minimum_size = Vector2(28, 28)
@@ -94,13 +93,13 @@ layout_mode = 2
 
 [node name="ControlsHBox" type="HBoxContainer" parent="LabPanel/Margin/VBox" unique_id=987123467]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="BtnRecordToggle" type="Button" parent="LabPanel/Margin/VBox/ControlsHBox" unique_id=987123468]
-custom_minimum_size = Vector2(210, 34)
+custom_minimum_size = Vector2(200, 32)
 layout_mode = 2
 modulate = Color(0.3, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 text = "⏺ START BENCHMARK (10-30s)"
 
 [node name="RecordStatusLabel" type="Label" parent="LabPanel/Margin/VBox/ControlsHBox" unique_id=987123469]
@@ -110,107 +109,122 @@ theme_override_font_sizes/font_size = 12
 text = "Ready to record"
 
 [node name="BtnWarmup" type="Button" parent="LabPanel/Margin/VBox/ControlsHBox" unique_id=987123470]
-custom_minimum_size = Vector2(140, 34)
+custom_minimum_size = Vector2(130, 32)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 text = "🔥 WARM SHADERS"
 
 [node name="BtnExport" type="Button" parent="LabPanel/Margin/VBox/ControlsHBox" unique_id=987123471]
-custom_minimum_size = Vector2(120, 34)
+custom_minimum_size = Vector2(110, 32)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 text = "📄 EXPORT"
 
 [node name="BtnOpenFolder" type="Button" parent="LabPanel/Margin/VBox/ControlsHBox" unique_id=987123472]
-custom_minimum_size = Vector2(130, 34)
+custom_minimum_size = Vector2(120, 32)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 text = "📂 OPEN FOLDER"
 
-
-[node name="StatsSection" type="VBoxContainer" parent="LabPanel/Margin/VBox" unique_id=987123472]
+[node name="StatsSection" type="VBoxContainer" parent="LabPanel/Margin/VBox" unique_id=987123473]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 2
 
-[node name="SectionTitle1" type="Label" parent="LabPanel/Margin/VBox/StatsSection" unique_id=987123473]
+[node name="SectionTitle1" type="Label" parent="LabPanel/Margin/VBox/StatsSection" unique_id=987123474]
 theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 0.8)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 text = "📊 BENCHMARK COMPARISON (CURRENT VS PREVIOUS):"
 
-[node name="StatsText" type="RichTextLabel" parent="LabPanel/Margin/VBox/StatsSection" unique_id=987123474]
-custom_minimum_size = Vector2(0, 125)
+[node name="StatsText" type="RichTextLabel" parent="LabPanel/Margin/VBox/StatsSection" unique_id=987123475]
+custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
 bbcode_enabled = true
 text = "No benchmark recorded yet. Click [b]Start Benchmark[/b] to record a 10-30s run!"
 
-[node name="SpikeSection" type="VBoxContainer" parent="LabPanel/Margin/VBox" unique_id=987123475]
+[node name="EventSummarySection" type="VBoxContainer" parent="LabPanel/Margin/VBox" unique_id=987123476]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 2
 
-[node name="SectionTitle2" type="Label" parent="LabPanel/Margin/VBox/SpikeSection" unique_id=987123476]
-theme_override_colors/font_color = Color(1, 0.4, 0.4, 0.9)
-theme_override_font_sizes/font_size = 12
-text = "🚨 SPIKE DETECTOR & FIRST-USE PIPELINE CLASSIFIER:"
+[node name="SectionTitleEvent" type="Label" parent="LabPanel/Margin/VBox/EventSummarySection" unique_id=987123477]
+theme_override_colors/font_color = Color(0.4, 0.85, 1.0, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "🎯 EVENT PERFORMANCE BREAKDOWN (MEASURED CPU/GPU COST PER ACTION):"
 
-[node name="SpikesText" type="RichTextLabel" parent="LabPanel/Margin/VBox/SpikeSection" unique_id=987123477]
-custom_minimum_size = Vector2(0, 85)
+[node name="EventSummaryText" type="RichTextLabel" parent="LabPanel/Margin/VBox/EventSummarySection" unique_id=987123478]
+custom_minimum_size = Vector2(0, 75)
 layout_mode = 2
 bbcode_enabled = true
 scroll_following = true
-text = "[color=#888888]Spike detector active — frame jumps >= 14ms will be logged here with root cause markers.[/color]"
+text = "[color=#888888]Event summary will display after benchmark completes (e.g. Baseline, Spawn 100, Explosion).[/color]"
 
-[node name="StressSection" type="VBoxContainer" parent="LabPanel/Margin/VBox" unique_id=987123478]
+[node name="SpikeSection" type="VBoxContainer" parent="LabPanel/Margin/VBox" unique_id=987123479]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 2
 
-[node name="SectionTitle3" type="Label" parent="LabPanel/Margin/VBox/StressSection" unique_id=987123479]
+[node name="SectionTitle2" type="Label" parent="LabPanel/Margin/VBox/SpikeSection" unique_id=987123480]
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "🚨 SPIKE DETECTOR & BOTTLENECK CLASSIFIER (CPU VS GPU):"
+
+[node name="SpikesText" type="RichTextLabel" parent="LabPanel/Margin/VBox/SpikeSection" unique_id=987123481]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 2
+bbcode_enabled = true
+scroll_following = true
+text = "[color=#888888]Spike detector active — frame jumps >= 14ms logged here with measured CPU/GPU root cause.[/color]"
+
+[node name="StressSection" type="VBoxContainer" parent="LabPanel/Margin/VBox" unique_id=987123482]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="SectionTitle3" type="Label" parent="LabPanel/Margin/VBox/StressSection" unique_id=987123483]
 theme_override_colors/font_color = Color(0.9, 0.75, 0.3, 0.9)
-theme_override_font_sizes/font_size = 12
-text = "🧪 TEST MARKERS & STRESS INJECTION (TAGS RUN WITH EXACT TEST PHASE):"
+theme_override_font_sizes/font_size = 11
+text = "🧪 TEST MARKERS & STRESS INJECTION:"
 
-[node name="Grid" type="GridContainer" parent="LabPanel/Margin/VBox/StressSection" unique_id=987123480]
+[node name="Grid" type="GridContainer" parent="LabPanel/Margin/VBox/StressSection" unique_id=987123484]
 layout_mode = 2
-theme_override_constants/h_separation = 8
+theme_override_constants/h_separation = 6
 columns = 6
 
-[node name="BtnBaseline" type="Button" parent="LabPanel/Margin/VBox/StressSection/Grid" unique_id=987123481]
+[node name="BtnBaseline" type="Button" parent="LabPanel/Margin/VBox/StressSection/Grid" unique_id=987123485]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 11
 text = "[BASELINE]"
 
-[node name="BtnSpawn20" type="Button" parent="LabPanel/Margin/VBox/StressSection/Grid" unique_id=987123482]
+[node name="BtnSpawn20" type="Button" parent="LabPanel/Margin/VBox/StressSection/Grid" unique_id=987123486]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 11
 text = "[SPAWN 20]"
 
-[node name="BtnSpawn100" type="Button" parent="LabPanel/Margin/VBox/StressSection/Grid" unique_id=987123483]
+[node name="BtnSpawn100" type="Button" parent="LabPanel/Margin/VBox/StressSection/Grid" unique_id=987123487]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 11
 text = "[SPAWN 100]"
 
-[node name="BtnExplosion" type="Button" parent="LabPanel/Margin/VBox/StressSection/Grid" unique_id=987123484]
+[node name="BtnExplosion" type="Button" parent="LabPanel/Margin/VBox/StressSection/Grid" unique_id=987123488]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 11
 text = "[EXPLOSION]"
 
-[node name="BtnDrone" type="Button" parent="LabPanel/Margin/VBox/StressSection/Grid" unique_id=987123485]
+[node name="BtnDrone" type="Button" parent="LabPanel/Margin/VBox/StressSection/Grid" unique_id=987123489]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 11
 text = "[DRONE]"
 
-[node name="BtnNight" type="Button" parent="LabPanel/Margin/VBox/StressSection/Grid" unique_id=987123486]
+[node name="BtnNight" type="Button" parent="LabPanel/Margin/VBox/StressSection/Grid" unique_id=987123490]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 11
 text = "[NIGHT OPS]"
 
-[node name="ExportStatusLabel" type="Label" parent="LabPanel/Margin/VBox" unique_id=987123487]
+[node name="ExportStatusLabel" type="Label" parent="LabPanel/Margin/VBox" unique_id=987123491]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.65, 0.7, 0.8)
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 10
 text = "Hotkeys: F3 = Toggle Live Performance Pill | F4 = Toggle Performance Lab Dashboard"

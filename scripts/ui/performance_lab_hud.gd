@@ -14,9 +14,9 @@ class_name PerformanceLabHUD
 @onready var btn_export: Button = $LabPanel/Margin/VBox/ControlsHBox/BtnExport
 @onready var btn_open_folder: Button = $LabPanel/Margin/VBox/ControlsHBox/BtnOpenFolder if has_node("LabPanel/Margin/VBox/ControlsHBox/BtnOpenFolder") else null
 
-
 # Stats Display
 @onready var stats_grid_label: RichTextLabel = $LabPanel/Margin/VBox/StatsSection/StatsText
+@onready var event_summary_label: RichTextLabel = $LabPanel/Margin/VBox/EventSummarySection/EventSummaryText if has_node("LabPanel/Margin/VBox/EventSummarySection/EventSummaryText") else null
 @onready var spikes_log_label: RichTextLabel = $LabPanel/Margin/VBox/SpikeSection/SpikesText
 @onready var export_status_label: Label = $LabPanel/Margin/VBox/ExportStatusLabel
 
@@ -34,7 +34,7 @@ var update_timer: float = 0.0
 func _ready() -> void:
 	process_mode = PROCESS_MODE_ALWAYS
 
-	# Ensure PerformanceLab node exists
+	# Ensure PerformanceLab engine node exists
 	perf_lab = PerformanceLab.instance
 	if not perf_lab:
 		perf_lab = PerformanceLab.new()
@@ -64,7 +64,6 @@ func _ready() -> void:
 			DirAccess.make_dir_recursive_absolute(global_path)
 			OS.shell_open(global_path)
 		)
-
 
 	# Marker buttons
 	if btn_m_baseline: btn_m_baseline.pressed.connect(func(): perf_lab.set_marker("BASELINE"))
@@ -105,23 +104,25 @@ func _process(delta: float) -> void:
 		_update_live_hud()
 
 	if perf_lab and perf_lab.is_recording and record_status_label:
-		record_status_label.text = "🔴 RECORDING [%.1fs] | Current Marker: [%s]" % [perf_lab.record_time, perf_lab.current_marker_name]
+		record_status_label.text = "🔴 RECORDING [%.1fs] | Active Marker: [%s]" % [perf_lab.record_time, perf_lab.current_marker_name]
 
 func _update_live_hud() -> void:
-	if not live_pill.visible or not live_label:
+	if not live_pill.visible or not live_label or not perf_lab:
 		return
 
-	var fps = int(Performance.get_monitor(Performance.TIME_FPS))
-	var ft_ms = Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
-	var cpu_ms = Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
+	var fps = int(perf_lab.live_fps)
+	var ft_ms = perf_lab.live_frame_time_ms
+	var cpu_ms = perf_lab.live_cpu_frame_time_ms
+	var gpu_str = ("%.2f ms" % perf_lab.live_gpu_frame_time_ms) if perf_lab.live_gpu_frame_time_ms >= 0.0 else "GPU timing unavailable"
+
 	var draw_calls = int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
 	var mem_mb = int(Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0)
 	var vram_mb = int(Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0)
 	var objs = int(Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME))
 
 	var fps_color = "#44ff88" if fps >= 58 else ("#ffcc00" if fps >= 30 else "#ff4444")
-	live_label.text = "FPS: %d (%.1fms) | CPU: %.1fms | Draw: %d | RAM: %dMB | VRAM: %dMB | Objs: %d" % [
-		fps, ft_ms, cpu_ms, draw_calls, mem_mb, vram_mb, objs
+	live_label.text = "FPS: %d | Frame Time: %.2f ms | CPU: %.2f ms | GPU: %s | Draw: %d | RAM: %dMB | VRAM: %dMB | Objs: %d" % [
+		fps, ft_ms, cpu_ms, gpu_str, draw_calls, mem_mb, vram_mb, objs
 	]
 	live_label.modulate = Color(fps_color)
 
@@ -139,6 +140,8 @@ func _on_recording_started() -> void:
 		btn_record_toggle.modulate = Color(1.0, 0.4, 0.4, 1.0)
 	if spikes_log_label:
 		spikes_log_label.text = "[color=#888888]Live Spike Log initialized...[/color]\n"
+	if event_summary_label:
+		event_summary_label.text = "[color=#888888]Recording event samples...[/color]\n"
 
 func _on_recording_stopped(_summary: Dictionary) -> void:
 	if btn_record_toggle:
@@ -152,9 +155,16 @@ func _on_spike_detected(s: Dictionary) -> void:
 	if not spikes_log_label:
 		return
 	var first_tag = " [color=#ffcc00][b]⚠ FIRST-USE / SHADER COMPILATION HITCH[/b][/color]" if s.get("is_first_use", false) else ""
-	var line = "[color=#ff4444]🔴 Frame Spike:[/color] [b]%.1fms ➔ %.1fms[/b] (at %.2fs, frame %d) [%s]%s\n" % [
-		s.get("before_ms", 0.0),
-		s.get("peak_ms", 0.0),
+	var gpu_part = ("GPU: [b]%.1fms[/b]" % s.gpu_frame_time_ms) if s.get("gpu_frame_time_ms") != null else "GPU: N/A"
+
+	var b_color = "#ff5555" if s.bottleneck == "CPU BOUND" else ("#ffaa00" if s.bottleneck == "GPU BOUND" else "#44ff88")
+
+	var line = "[color=#ff4444]🔴 Spike:[/color] Frame: [b]%.1fms[/b] | CPU: [b]%.1fms[/b] | %s | [color=%s][b][%s][/b][/color] (at %.2fs, frame %d) [%s]%s\n" % [
+		s.get("frame_time_ms", 0.0),
+		s.get("cpu_frame_time_ms", 0.0),
+		gpu_part,
+		b_color,
+		s.get("bottleneck", "UNKNOWN"),
 		s.get("time", 0.0),
 		s.get("frame", 0),
 		s.get("marker", "IDLE"),
@@ -164,7 +174,7 @@ func _on_spike_detected(s: Dictionary) -> void:
 
 func _on_warmup_completed(res: Dictionary) -> void:
 	if export_status_label:
-		export_status_label.text = "Shader Warmup Complete: %d pipelines compiled in %.2fs ✅" % [res.get("compiled", 0), res.get("time_sec", 0.0)]
+		export_status_label.text = "Shader Warmup Complete: %d pipelines precompiled in %.2fs ✅" % [res.get("compiled", 0), res.get("time_sec", 0.0)]
 		export_status_label.modulate = Color(0.3, 1.0, 0.4, 1.0)
 
 func _on_export_pressed() -> void:
@@ -184,6 +194,8 @@ func _update_comparison_display() -> void:
 
 	if cur.is_empty():
 		stats_grid_label.text = "[color=#aaaaaa]No benchmark recorded yet. Click [b]Start Benchmark[/b] to record a 10-30s run![/color]"
+		if event_summary_label:
+			event_summary_label.text = "[color=#888888]Event breakdown will appear after your benchmark.[/color]"
 		return
 
 	var cur_fps = cur.get("avg_fps", 0.0)
@@ -194,6 +206,15 @@ func _update_comparison_display() -> void:
 	var prev_ft = prev.get("avg_frame_time_ms", 0.0)
 	var cur_worst = cur.get("worst_frame_time_ms", 0.0)
 	var prev_worst = prev.get("worst_frame_time_ms", 0.0)
+
+	var cur_cpu = cur.get("cpu_frame_time_avg_ms", 0.0)
+	var prev_cpu = prev.get("cpu_frame_time_avg_ms", 0.0)
+	var cur_cpu_worst = cur.get("cpu_frame_time_worst_ms", 0.0)
+	var prev_cpu_worst = prev.get("cpu_frame_time_worst_ms", 0.0)
+
+	var cur_gpu = cur.get("gpu_frame_time_avg_ms")
+	var prev_gpu = prev.get("gpu_frame_time_avg_ms")
+
 	var cur_draw = cur.get("draw_calls", 0)
 	var prev_draw = prev.get("draw_calls", 0)
 	var cur_ram = cur.get("ram_mb", 0.0)
@@ -206,17 +227,49 @@ func _update_comparison_display() -> void:
 	text += _format_row("1% Low FPS (Stutter)", "%.1f FPS" % cur_low, "%.1f FPS" % prev_low, cur_low - prev_low, true)
 	text += _format_row("Avg Frame Time", "%.2f ms" % cur_ft, "%.2f ms" % prev_ft, -(cur_ft - prev_ft), true)
 	text += _format_row("Worst Frame Spike", "%.2f ms" % cur_worst, "%.2f ms" % prev_worst, -(cur_worst - prev_worst), true)
+	text += _format_row("CPU Frame Time (Avg)", "%.2f ms" % cur_cpu, "%.2f ms" % prev_cpu, -(cur_cpu - prev_cpu), true)
+	text += _format_row("CPU Worst Spike", "%.2f ms" % cur_cpu_worst, "%.2f ms" % prev_cpu_worst, -(cur_cpu_worst - prev_cpu_worst), true)
+
+	if cur_gpu != null:
+		var p_gpu_val = prev_gpu if prev_gpu != null else 0.0
+		text += _format_row("GPU Frame Time (Avg)", "%.2f ms" % cur_gpu, ("%.2f ms" % prev_gpu) if prev_gpu != null else "N/A", -(cur_gpu - p_gpu_val), true)
+	else:
+		text += "[cell]GPU Frame Time (Avg)[/cell][cell]Unavailable[/cell][cell]N/A[/cell][cell]—[/cell]"
+
 	text += _format_row("Draw Calls", "%d" % cur_draw, "%d" % prev_draw, -(cur_draw - prev_draw), true)
 	text += _format_row("RAM Memory", "%.1f MB" % cur_ram, "%.1f MB" % prev_ram, -(cur_ram - prev_ram), true)
 	text += "[/table]"
 
 	stats_grid_label.text = text
 
+	# ── Event Performance Breakdown Display ──────────────────────────────────
+	if event_summary_label:
+		var events: Dictionary = cur.get("event_summaries", {})
+		if events.is_empty():
+			event_summary_label.text = "[color=#888888]No event markers recorded in this run.[/color]"
+		else:
+			var ev_text = ""
+			for ev_name in events.keys():
+				var ev_data = events[ev_name]
+				var gpu_s = ("%.1f ms" % ev_data.gpu_frame_time_ms) if ev_data.get("gpu_frame_time_ms") != null else "N/A"
+				var b_col = "#ff5555" if ev_data.bottleneck == "CPU BOUND" else ("#ffaa00" if ev_data.bottleneck == "GPU BOUND" else "#44ff88")
+
+				ev_text += "• [b]%s[/b] (%d samples): Avg Frame: [b]%.1f ms[/b] | CPU: [b]%.1f ms[/b] | GPU: [b]%s[/b] | Bottleneck: [color=%s][b]%s[/b][/color]\n" % [
+					ev_name,
+					ev_data.get("samples", 0),
+					ev_data.get("avg_frame_time_ms", 0.0),
+					ev_data.get("cpu_frame_time_ms", 0.0),
+					gpu_s,
+					b_col,
+					ev_data.get("bottleneck", "UNKNOWN")
+				]
+			event_summary_label.text = ev_text
+
 func _format_row(metric_name: String, cur_str: String, prev_str: String, diff: float, higher_is_better: bool) -> String:
 	var diff_str = ""
 	var color = "#cccccc"
 
-	if prev_str.begins_with("0.0") or prev_str.begins_with("0"):
+	if prev_str.begins_with("0.0") or prev_str.begins_with("0") or prev_str == "N/A":
 		diff_str = "Baseline"
 	else:
 		if abs(diff) < 0.1:
