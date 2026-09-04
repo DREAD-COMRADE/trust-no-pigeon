@@ -1,7 +1,7 @@
 extends Area3D
 class_name PigeonBase
 
-enum State { FLYING, ATTACKING, DYING }
+enum State { FLYING, ATTACKING, FALLING, DEAD }
 
 @export var speed: float = 8.0
 @export var score_value: int = 100
@@ -20,9 +20,17 @@ var total_distance: float = 1.0
 var actual_speed: float = 8.0
 var previous_position: Vector3
 
+# Falling & Death Dynamics
+var fall_velocity: Vector3 = Vector3.ZERO
+var fall_tumble_axis: Vector3 = Vector3.ZERO
+var fall_tumble_speed: float = 0.0
+var death_timer: float = 0.0
+var is_on_ground: bool = false
+
 @onready var visual: Node3D = $Visual
 @onready var wing_left: Node3D = $Visual/WingLeft if has_node("Visual/WingLeft") else null
 @onready var wing_right: Node3D = $Visual/WingRight if has_node("Visual/WingRight") else null
+@onready var anim_player: AnimationPlayer = _find_animation_player()
 
 signal pigeon_killed(pigeon, score, is_gov)
 signal pigeon_escaped(pigeon)
@@ -30,6 +38,37 @@ signal pigeon_escaped(pigeon)
 func _ready() -> void:
 	time_passed = randf() * 10.0
 	previous_position = global_position
+	_setup_animations()
+
+func _find_animation_player() -> AnimationPlayer:
+	if has_node("Visual"):
+		var p = $Visual.find_child("AnimationPlayer", true, false)
+		if p is AnimationPlayer:
+			return p
+	return find_child("AnimationPlayer", true, false) as AnimationPlayer
+
+func _setup_animations() -> void:
+	if not anim_player:
+		return
+
+	# Configure linear looping for flight and turning animations
+	var looping_anims = [
+		"flying", "gliding", "soaring",
+		"turningLeft_flying", "turningRight_flying",
+		"turningLeft_gliding", "turningRight_gliding"
+	]
+	for a_name in looping_anims:
+		if anim_player.has_animation(a_name):
+			var anim = anim_player.get_animation(a_name)
+			if anim:
+				anim.loop_mode = Animation.LOOP_LINEAR
+
+	play_anim("flying", 0.2)
+
+func play_anim(anim_name: String, blend_time: float = 0.15) -> void:
+	if anim_player and anim_player.has_animation(anim_name):
+		if anim_player.current_animation != anim_name:
+			anim_player.play(anim_name, blend_time)
 
 func setup(start_pos: Vector3, target_pos: Vector3, speed_mult: float = 1.0) -> void:
 	if is_inside_tree():
@@ -63,15 +102,18 @@ func _process(delta: float) -> void:
 			_process_flying(delta)
 		State.ATTACKING:
 			_process_attacking(delta)
-		State.DYING:
+		State.FALLING:
+			_process_falling(delta)
+		State.DEAD:
 			pass
 
 func _animate_wings() -> void:
-	var flap_angle = sin(time_passed) * 0.45
-	if wing_left:
-		wing_left.rotation.z = flap_angle
-	if wing_right:
-		wing_right.rotation.z = -flap_angle
+	if wing_left or wing_right:
+		var flap_angle = sin(time_passed) * 0.45
+		if wing_left:
+			wing_left.rotation.z = flap_angle
+		if wing_right:
+			wing_right.rotation.z = -flap_angle
 
 func _process_flying(delta: float) -> void:
 	progress_t += (actual_speed / total_distance) * delta
@@ -84,7 +126,7 @@ func _process_flying(delta: float) -> void:
 	var u = 1.0 - progress_t
 	var pos = u * u * start_point + 2.0 * u * progress_t * control_point + progress_t * progress_t * end_point
 
-	# Organic undulating wing bobbing
+	# Organic undulating flight bobbing
 	var bob = Vector3(0, sin(time_passed * 1.8) * 0.25, cos(time_passed * 1.4) * 0.15)
 	global_position = pos + bob
 	global_position.y = max(global_position.y, 1.2)
@@ -107,16 +149,87 @@ func _process_attacking(delta: float) -> void:
 		look_at(global_position + dir, Vector3.UP)
 	global_position += dir * actual_speed * delta
 
+func _process_falling(delta: float) -> void:
+	death_timer += delta
+
+	# Transition to falling animation after initial air recoil
+	if anim_player and anim_player.current_animation == "gettingHit_DyingInTheAir" and death_timer > 0.35:
+		if anim_player.has_animation("falling"):
+			play_anim("falling", 0.15)
+
+	# Apply gravity & aerodynamic drag
+	fall_velocity.y -= 16.0 * delta
+	fall_velocity.x = lerp(fall_velocity.x, 0.0, delta * 1.2)
+	fall_velocity.z = lerp(fall_velocity.z, 0.0, delta * 1.2)
+
+	global_position += fall_velocity * delta
+
+	# Downward tumbling rotation
+	if fall_tumble_axis != Vector3.ZERO:
+		rotate(fall_tumble_axis, fall_tumble_speed * delta)
+		fall_tumble_speed = lerp(fall_tumble_speed, 1.0, delta * 1.5)
+
+	# Ground collision / impact check (ground is at y ~ 0.35)
+	if global_position.y <= 0.35 and not is_on_ground:
+		_on_hit_ground()
+
+	# Safe timeout cleanup
+	if death_timer >= 2.5:
+		queue_free()
+
+func _on_hit_ground() -> void:
+	is_on_ground = true
+	current_state = State.DEAD
+	global_position.y = 0.35
+	fall_velocity = Vector3.ZERO
+	fall_tumble_axis = Vector3.ZERO
+
+	if anim_player and anim_player.has_animation("gettingHit_DyingOnTheGround"):
+		play_anim("gettingHit_DyingOnTheGround", 0.1)
+
+	# Smoothly scale down and remove after dying on ground
+	var tween = create_tween()
+	tween.tween_interval(0.9)
+	tween.tween_property(self, "scale", Vector3.ZERO, 0.35)
+	tween.tween_callback(queue_free)
+
 func _on_reach_bounds() -> void:
 	pigeon_escaped.emit(self)
 	queue_free()
 
 func take_hit() -> void:
-	if current_state == State.DYING:
+	if current_state == State.FALLING or current_state == State.DEAD:
 		return
-	current_state = State.DYING
+
+	# Disable collision shape so the pigeon cannot be shot again
+	for child in get_children():
+		if child is CollisionShape3D:
+			child.set_deferred("disabled", true)
+
+	current_state = State.FALLING
+	death_timer = 0.0
+	is_on_ground = false
+
+	# Calculate recoil trajectory from current flight velocity
+	var flight_dir = (global_position - previous_position).normalized()
+	if flight_dir == Vector3.ZERO:
+		flight_dir = -global_transform.basis.z
+	fall_velocity = flight_dir * (actual_speed * 0.4) + Vector3(
+		randf_range(-1.5, 1.5),
+		randf_range(1.0, 3.5),
+		randf_range(-1.5, 1.5)
+	)
+	fall_tumble_axis = Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
+	fall_tumble_speed = randf_range(6.0, 12.0)
+
+	# Play getting hit animation
+	if anim_player and anim_player.has_animation("gettingHit_DyingInTheAir"):
+		play_anim("gettingHit_DyingInTheAir", 0.05)
+	elif anim_player and anim_player.has_animation("falling"):
+		play_anim("falling", 0.05)
+
 	_on_hit()
 
 func _on_hit() -> void:
 	pigeon_killed.emit(self, score_value, is_government)
-	queue_free()
+

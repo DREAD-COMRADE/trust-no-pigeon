@@ -12,8 +12,9 @@ func _ready() -> void:
 func _on_hit() -> void:
 	if hit_effect_scene:
 		var fx = hit_effect_scene.instantiate()
-		get_tree().root.add_child(fx)
+		var parent = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_tree().root
+		parent.add_child(fx)
 		fx.global_position = global_position
 
 	pigeon_killed.emit(self, score_value, is_government)
-	queue_free()
+
