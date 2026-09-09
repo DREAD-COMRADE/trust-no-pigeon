@@ -30,7 +30,7 @@ var hover_origin: Vector3 = Vector3(0.0, 18.5, -38.0)
 
 var explosion_scene: PackedScene = preload("res://scenes/effects/GovernmentPigeonPlayerExplosion.tscn")
 var hit_spark_scene: PackedScene = preload("res://scenes/effects/GovernmentPigeonHit.tscn")
-var gov_pigeon_scene: PackedScene = preload("res://scenes/pigeons/GovernmentPigeon_v2.tscn")
+var gov_pigeon_scene: PackedScene = preload("res://scenes/pigeons/GovernmentPigeon.tscn")
 
 var shield_material: ShaderMaterial
 

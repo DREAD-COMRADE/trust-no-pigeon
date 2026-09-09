@@ -103,7 +103,11 @@ func start_attack() -> void:
 		sensor_light.light_energy = 8.0
 		sensor_light.light_color = Color(1.0, 0.0, 0.0, 1.0)
 
-	play_anim("soaring", 0.15)
+	if not anim_player:
+		anim_player = _find_animation_player()
+	if anim_player:
+		anim_player.speed_scale = 1.6
+	play_anim("flying", 0.1)
 
 	var cam = _get_active_camera()
 	target_player_pos = cam.global_position if cam else Vector3(0, 1.6, 0)

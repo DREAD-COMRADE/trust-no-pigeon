@@ -84,6 +84,9 @@ var hint_tween: Tween
 @onready var message_label: Label = get_node_or_null("GameOverPanel/VBox/MessageLabel")
 @onready var restart_button: Button = get_node_or_null("GameOverPanel/VBox/RestartButton")
 
+# Crosshair
+@onready var crosshair: Control = get_node_or_null("Crosshair")
+
 # Damage Screen Flash
 @onready var damage_vignette: ColorRect = get_node_or_null("DamageVignette")
 var vignette_tween: Tween
@@ -103,11 +106,13 @@ func _ready() -> void:
 	add_to_group("hud")  # Enables group-based lookup from drones/pigeons
 
 	game_over_panel.visible = false
+	SettingsManager.register_listener(_on_settings_changed)
+	_update_crosshair_visibility()
 	if event_toast:
 		event_toast.modulate.a = 0.0
 		event_toast.visible = false
 
-	if restart_button:
+	if restart_button and not restart_button.pressed.is_connected(_on_restart_pressed):
 		restart_button.pressed.connect(_on_restart_pressed)
 
 	# Bind UI click audio
@@ -121,16 +126,28 @@ func _ready() -> void:
 	# Don't hardcode hearts here; wait for update_health() call from PlayerController
 
 	# Auto-resolve camera for compass (group-based, not find_child)
-	await get_tree().process_frame
-	for cam in get_tree().get_nodes_in_group("camera_main"):
-		if cam is Camera3D:
-			_camera = cam
-			break
+	if is_inside_tree() and get_tree():
+		await get_tree().process_frame
+		if is_inside_tree() and get_tree():
+			for cam in get_tree().get_nodes_in_group("camera_main"):
+				if cam is Camera3D:
+					_camera = cam
+					break
 	# Fallback: use viewport camera
 	if not _camera:
 		var vp = get_viewport()
 		if vp:
 			_camera = vp.get_camera_3d()
+
+func _exit_tree() -> void:
+	SettingsManager.unregister_listener(_on_settings_changed)
+
+func _on_settings_changed() -> void:
+	_update_crosshair_visibility()
+
+func _update_crosshair_visibility() -> void:
+	if crosshair:
+		crosshair.visible = SettingsManager.show_crosshair and (not game_over_panel or not game_over_panel.visible)
 
 # ── Process — Compass ─────────────────────────────────────────────────────────
 func _process(_delta: float) -> void:
@@ -412,7 +429,12 @@ func update_objective(line1: String, line2: String = "") -> void:
 
 # ── Game Over ─────────────────────────────────────────────────────────────────
 func show_game_over(final_score: int, high_score: int, gov_kills: int, total_kills: int, shots_fired: int) -> void:
-	game_over_panel.visible = true
+	if crosshair:
+		crosshair.visible = false
+	if game_over_panel:
+		game_over_panel.visible = true
+		if game_over_panel.get_parent():
+			game_over_panel.get_parent().move_child(game_over_panel, -1)
 	get_tree().paused = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 

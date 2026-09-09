@@ -16,6 +16,7 @@ func _init() -> void:
 	test_day_night_30min_schedule(test_root)
 	test_event_manager_and_idle_attack(test_root)
 	test_anti_clipping_and_speed_balancing(test_root)
+	test_crosshair_and_settings(test_root)
 
 	test_root.queue_free()
 
@@ -99,18 +100,18 @@ func test_weapons_and_shotgun_burst(parent: Node3D) -> void:
 	player.missile_launcher = launcher
 
 	# Initial weapon is Gun
-	player.switch_to_slot(0)
+	player._do_switch_to_slot(0)
 	assert(gun.visible == true, "Gun should be visible in slot 0")
 
 	# Switch to Shotgun
-	player.switch_to_slot(1)
+	player._do_switch_to_slot(1)
 	assert(shotgun.visible == true, "Shotgun should be visible in slot 1")
-	assert(shotgun.ammo == 2, "Shotgun starting ammo should be 2")
-	assert(shotgun.pellet_count >= 10, "Shotgun should fire 10 pellets per burst")
+	assert(shotgun.ammo == 6, "Shotgun starting ammo should be 6")
+	assert(shotgun.pellet_count >= 10, "Shotgun should fire 10+ pellets per burst")
 	assert(shotgun.tracer_scene != null, "Shotgun tracer scene must be loaded")
 
 	# Switch to Rocket Launcher
-	player.switch_to_slot(2)
+	player._do_switch_to_slot(2)
 	assert(launcher.visible == true, "Launcher should be visible in slot 2")
 	assert(launcher.ammo == 0, "Launcher starting ammo should be 0")
 
@@ -237,3 +238,43 @@ func test_anti_clipping_and_speed_balancing(parent: Node3D) -> void:
 	assert(final_y >= 1.2, "Pigeon altitude should be clamped above floor (MIN_ALTITUDE)")
 
 	print("  ✓ Government Pigeon speed balanced and altitude clamped (y=%.2f)" % final_y)
+
+func test_crosshair_and_settings(parent: Node3D) -> void:
+	print("[TEST] 9. Testing CrosshairDot, Settings Toggle & Weapon Alignment...")
+	var hud_scene = load("res://scenes/ui/HUD.tscn")
+	assert(hud_scene != null, "HUD scene failed to load")
+	var hud = hud_scene.instantiate()
+	parent.add_child(hud)
+	hud._ready()
+
+	var crosshair = hud.get_node_or_null("Crosshair")
+	assert(crosshair != null, "Crosshair node should exist in HUD")
+	assert(crosshair.get_script() == load("res://scripts/ui/crosshair_dot.gd"), "Crosshair should use crosshair_dot.gd script")
+
+	# Test Settings Toggle
+	SettingsManager.show_crosshair = false
+	SettingsManager.apply_all_settings()
+	assert(crosshair.visible == false, "Crosshair should be hidden when show_crosshair is false")
+
+	SettingsManager.show_crosshair = true
+	SettingsManager.apply_all_settings()
+	assert(crosshair.visible == true, "Crosshair should be visible when show_crosshair is true")
+
+	# Test Weapon Alignment parameters
+	var gun_scene = load("res://scenes/player/Gun.tscn")
+	var gun = gun_scene.instantiate() as Gun
+	assert(gun.tracer_scene != null, "Gun should have a bullet tracer scene configured")
+
+	var shg_scene = load("res://scenes/player/Shotgun.tscn")
+	var shg = shg_scene.instantiate() as Shotgun
+	assert(shg.ads_position.x < 0.0, "Shotgun ADS X should compensate barrel offset to center on crosshair")
+
+	var rkt_scene = load("res://scenes/player/MissileLauncher.tscn")
+	var rkt = rkt_scene.instantiate() as MissileLauncher
+	assert(rkt.ads_position.x > 0.0, "Missile launcher ADS X should align sight on crosshair")
+
+	hud.queue_free()
+	gun.queue_free()
+	shg.queue_free()
+	rkt.queue_free()
+	print("  ✓ CrosshairDot, settings toggle, and weapon alignments fully verified")

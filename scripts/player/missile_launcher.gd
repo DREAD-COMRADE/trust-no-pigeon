@@ -11,7 +11,7 @@ const RELOAD_DURATION: float = 2.48 # Matches Rocket_launcher_reload.mp3 length
 @export var camera: Camera3D
 @export var missile_scene: PackedScene = preload("res://scenes/objects/GuidedMissile.tscn")
 @export var hip_position: Vector3 = Vector3(0.32, -0.32, -0.6)
-@export var ads_position: Vector3 = Vector3(0.121, -0.123, -0.066)
+@export var ads_position: Vector3 = Vector3(0.121, -0.122, -0.05)
 @export var ads_speed: float = 14.0
 @export var reload_sound_delay: float = 0.20 # Tunable delay before audio plays while launcher lowers
 
@@ -216,15 +216,32 @@ func fire_missile() -> void:
 		camera.add_trauma(0.3)
 
 	if missile_scene:
-		var missile = missile_scene.instantiate() as GuidedMissile
-		var spawn_pos = shoot_origin.global_position if shoot_origin else global_position
 		var cam_node = camera if camera else (get_parent() if get_parent() is Camera3D else null)
-		var fwd_dir = -cam_node.global_transform.basis.z if cam_node else -global_transform.basis.z
+		var cam_pos = cam_node.global_position if cam_node else global_position
+		var cam_dir = -cam_node.global_transform.basis.z if cam_node else -global_transform.basis.z
+		var aim_target = cam_pos + cam_dir * 120.0
 
+		var space_state = get_world_3d().direct_space_state if is_inside_tree() else null
+		if space_state:
+			var query = PhysicsRayQueryParameters3D.create(cam_pos, aim_target)
+			query.collide_with_areas = true
+			query.collide_with_bodies = true
+			var hit = space_state.intersect_ray(query)
+			if hit:
+				aim_target = hit.position
+
+		var spawn_pos = shoot_origin.global_position if shoot_origin else global_position
+		var launch_dir = (aim_target - spawn_pos).normalized()
+		var up_vec = Vector3.UP
+		if abs(launch_dir.dot(up_vec)) > 0.95:
+			up_vec = Vector3.RIGHT
+
+		var missile = missile_scene.instantiate() as GuidedMissile
 		var target_parent = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_tree().root
 		target_parent.add_child(missile)
 		missile.global_position = spawn_pos
-		missile.global_transform = missile.global_transform.looking_at(spawn_pos + fwd_dir, Vector3.UP)
+		missile.global_transform = Transform3D().looking_at(launch_dir, up_vec)
+		missile.global_position = spawn_pos
 
 		missile.missile_detonated.connect(_on_missile_detonated)
 

@@ -1,0 +1,21 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://geniklefg"]
+
+[ext_resource type="Texture2D" uid="uid://genpklefg" path="res://assets/Textures/Random Textured Plaster Wall/Random Textured Plaster Wall v1 256/Random Textured Plaster Wall v1 256_BaseColor.png" id="jklefg"]
+[ext_resource type="Texture2D" uid="uid://genqklefg" path="res://assets/Textures/Random Textured Plaster Wall/Random Textured Plaster Wall v1 256/Random Textured Plaster Wall v1 256_AmbientOcclusion.png" id="kklefg"]
+[ext_resource type="Texture2D" uid="uid://genrklefg" path="res://assets/Textures/Random Textured Plaster Wall/Random Textured Plaster Wall v1 256/Random Textured Plaster Wall v1 256_Height.png" id="lklefg"]
+[ext_resource type="Texture2D" uid="uid://gensklefg" path="res://assets/Textures/Random Textured Plaster Wall/Random Textured Plaster Wall v1 256/Random Textured Plaster Wall v1 256_Metallic.png" id="mklefg"]
+[ext_resource type="Texture2D" uid="uid://gentklefg" path="res://assets/Textures/Random Textured Plaster Wall/Random Textured Plaster Wall v1 256/Random Textured Plaster Wall v1 256_Normal.png" id="nklefg"]
+[ext_resource type="Texture2D" uid="uid://genuklefg" path="res://assets/Textures/Random Textured Plaster Wall/Random Textured Plaster Wall v1 256/Random Textured Plaster Wall v1 256_Roughness.png" id="oklefg"]
+
+[resource]
+albedo_texture = ExtResource("jklefg")
+metallic = 1.0
+metallic_texture = ExtResource("mklefg")
+roughness_texture = ExtResource("oklefg")
+normal_enabled = true
+normal_texture = ExtResource("nklefg")
+ao_enabled = true
+ao_texture = ExtResource("kklefg")
+heightmap_enabled = true
+heightmap_texture = ExtResource("lklefg")
+

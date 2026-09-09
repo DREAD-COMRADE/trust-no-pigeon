@@ -63,9 +63,12 @@ func _setup_animations() -> void:
 			if anim:
 				anim.loop_mode = Animation.LOOP_LINEAR
 
+	anim_player.speed_scale = 1.3
 	play_anim("flying", 0.2)
 
 func play_anim(anim_name: String, blend_time: float = 0.15) -> void:
+	if not anim_player:
+		anim_player = _find_animation_player()
 	if anim_player and anim_player.has_animation(anim_name):
 		if anim_player.current_animation != anim_name:
 			anim_player.play(anim_name, blend_time)
@@ -116,7 +119,16 @@ func _animate_wings() -> void:
 			wing_right.rotation.z = -flap_angle
 
 func _process_flying(delta: float) -> void:
-	progress_t += (actual_speed / total_distance) * delta
+	# Flap-synchronized wingbeat phase (tied directly to the 3D model's skeletal wing cycle)
+	var flap_phase: float = 0.0
+	if anim_player and anim_player.current_animation == "flying" and anim_player.current_animation_length > 0.0:
+		flap_phase = (anim_player.current_animation_position / anim_player.current_animation_length) * TAU
+	else:
+		flap_phase = time_passed * 0.8
+
+	# Rhythmic wingbeat forward surge (thrust acceleration on downstroke)
+	var wingbeat_surge = 1.0 + sin(flap_phase) * 0.18
+	progress_t += (actual_speed * wingbeat_surge / total_distance) * delta
 
 	if progress_t >= 1.0:
 		_on_reach_bounds()
@@ -126,26 +138,38 @@ func _process_flying(delta: float) -> void:
 	var u = 1.0 - progress_t
 	var pos = u * u * start_point + 2.0 * u * progress_t * control_point + progress_t * progress_t * end_point
 
-	# Organic undulating flight bobbing
-	var bob = Vector3(0, sin(time_passed * 1.8) * 0.25, cos(time_passed * 1.4) * 0.15)
-	global_position = pos + bob
+	# Wingbeat-synchronized vertical lift (natural rise on flap, dip on recovery)
+	var wingbeat_lift = Vector3(0, sin(flap_phase) * 0.08, 0)
+	global_position = pos + wingbeat_lift
 	global_position.y = max(global_position.y, 1.2)
 
-	_update_flight_rotation(delta)
+	_update_flight_rotation(delta, flap_phase)
 
-func _update_flight_rotation(delta: float) -> void:
-	var velocity = (global_position - previous_position) / max(delta, 0.001)
-	previous_position = global_position
+func _update_flight_rotation(delta: float, flap_phase: float = 0.0) -> void:
+	# Calculate smooth Bezier curve tangent for clean, non-wobbly flight orientation
+	var u = 1.0 - progress_t
+	var tangent = 2.0 * u * (control_point - start_point) + 2.0 * progress_t * (end_point - control_point)
 
-	if velocity.length_squared() < 0.01:
+	if tangent.length_squared() < 0.001:
 		return
 
-	var forward_dir = velocity.normalized()
+	var forward_dir = tangent.normalized()
 	var up_vec = Vector3.UP
 	if abs(forward_dir.dot(up_vec)) > 0.98:
 		up_vec = Vector3.RIGHT
 	var target_basis = Basis.looking_at(forward_dir, up_vec)
-	global_transform.basis = global_transform.basis.orthonormalized().slerp(target_basis, delta * 12.0)
+
+	# Subtle pitch nod synced with wing downstroke thrust
+	var pitch_nod = sin(flap_phase) * 0.04
+	target_basis = target_basis.rotated(target_basis.x, pitch_nod)
+
+	# Gentle aerodynamic bank into flight curve turns
+	var curve_dir = (end_point - start_point).normalized()
+	var turn_cross = forward_dir.cross(curve_dir).y
+	var bank_tilt = clamp(turn_cross * 0.4, -0.22, 0.22)
+	target_basis = target_basis.rotated(target_basis.z, -bank_tilt)
+
+	global_transform.basis = global_transform.basis.orthonormalized().slerp(target_basis, delta * 8.0)
 
 func _process_attacking(delta: float) -> void:
 	var dir = (target_player_pos - global_position).normalized()

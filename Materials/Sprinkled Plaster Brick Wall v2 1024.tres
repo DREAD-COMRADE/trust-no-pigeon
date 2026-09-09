@@ -1,0 +1,21 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://genbmlefg"]
+
+[ext_resource type="Texture2D" uid="uid://genimlefg" path="res://assets/Textures/Sprinkled Plaster Brick Wall/Sprinkled Plaster Brick Wall v2 1024/Sprinkled Plaster Brick Wall v2 1024_BaseColor.png" id="cmlefg"]
+[ext_resource type="Texture2D" uid="uid://genjmlefg" path="res://assets/Textures/Sprinkled Plaster Brick Wall/Sprinkled Plaster Brick Wall v2 1024/Sprinkled Plaster Brick Wall v2 1024_AmbientOcclusion.png" id="dmlefg"]
+[ext_resource type="Texture2D" uid="uid://genkmlefg" path="res://assets/Textures/Sprinkled Plaster Brick Wall/Sprinkled Plaster Brick Wall v2 1024/Sprinkled Plaster Brick Wall v2 1024_Height.png" id="emlefg"]
+[ext_resource type="Texture2D" uid="uid://genlmlefg" path="res://assets/Textures/Sprinkled Plaster Brick Wall/Sprinkled Plaster Brick Wall v2 1024/Sprinkled Plaster Brick Wall v2 1024_Metallic.png" id="fmlefg"]
+[ext_resource type="Texture2D" uid="uid://genmmlefg" path="res://assets/Textures/Sprinkled Plaster Brick Wall/Sprinkled Plaster Brick Wall v2 1024/Sprinkled Plaster Brick Wall v2 1024_Normal.png" id="gmlefg"]
+[ext_resource type="Texture2D" uid="uid://gennmlefg" path="res://assets/Textures/Sprinkled Plaster Brick Wall/Sprinkled Plaster Brick Wall v2 1024/Sprinkled Plaster Brick Wall v2 1024_Roughness.png" id="hmlefg"]
+
+[resource]
+albedo_texture = ExtResource("cmlefg")
+metallic = 1.0
+metallic_texture = ExtResource("fmlefg")
+roughness_texture = ExtResource("hmlefg")
+normal_enabled = true
+normal_texture = ExtResource("gmlefg")
+ao_enabled = true
+ao_texture = ExtResource("dmlefg")
+heightmap_enabled = true
+heightmap_texture = ExtResource("emlefg")
+

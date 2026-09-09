@@ -61,6 +61,8 @@ func _ready() -> void:
 		if hud.has_method("queue_tutorial_hints"):
 			hud.queue_tutorial_hints()
 
+	if player:
+		_on_player_health_changed(player.health, player.max_health)
 	_on_score_updated(0, 0)
 	_on_aggression_changed(0, "NORMAL")
 	_refresh_hud_weapons()
@@ -98,6 +100,8 @@ func _on_player_health_changed(current: int, maximum: int) -> void:
 		PerformanceLab.instance.set_marker("PLAYER_DAMAGE")
 	if hud and hud.has_method("update_health"):
 		hud.update_health(current, maximum)
+	if current <= 0 and not is_game_over:
+		trigger_game_over()
 
 
 func _refresh_hud_weapons() -> void:
@@ -150,20 +154,33 @@ func trigger_game_over() -> void:
 		return
 	is_game_over = true
 
+	if player:
+		player.is_dead = true
+		if player.has_method("_disable_all_weapons"):
+			player._disable_all_weapons()
+
 	if spawner:
 		spawner.stop()
 
 	if event_manager:
 		event_manager.is_active = false
 
-	if hud and score_manager:
-		hud.show_game_over(
-			score_manager.current_score,
-			score_manager.high_score,
-			score_manager.government_kills,
-			score_manager.total_kills,
-			score_manager.shots_fired
-		)
+	var hud_node = hud
+	if not hud_node and is_inside_tree():
+		hud_node = find_child("HUD", true, false) as CanvasLayer
+		if not hud_node:
+			for h in get_tree().get_nodes_in_group("hud"):
+				if h is CanvasLayer:
+					hud_node = h
+					break
+
+	if hud_node and hud_node.has_method("show_game_over"):
+		var sc = score_manager.current_score if score_manager else 0
+		var hs = score_manager.high_score if score_manager else 0
+		var gk = score_manager.government_kills if score_manager else 0
+		var tk = score_manager.total_kills if score_manager else 0
+		var sf = score_manager.shots_fired if score_manager else 0
+		hud_node.show_game_over(sc, hs, gk, tk, sf)
 
 func restart_game() -> void:
 	_clean_up_spawned_objects()

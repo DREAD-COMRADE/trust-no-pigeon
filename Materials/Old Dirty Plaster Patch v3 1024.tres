@@ -1,0 +1,23 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://genkclefg"]
+
+[ext_resource type="Texture2D" uid="uid://cluuneh882td8" path="res://assets/Textures/Old Dirty Plaster Patch/Old Dirty Plaster Patch v3 1024/Old Dirty Plaster Patch v3 1024_BaseColor.png" id="lclefg"]
+[ext_resource type="Texture2D" uid="uid://bgoaaispxipuh" path="res://assets/Textures/Old Dirty Plaster Patch/Old Dirty Plaster Patch v3 1024/Old Dirty Plaster Patch v3 1024_AmbientOcclusion.png" id="mclefg"]
+[ext_resource type="Texture2D" uid="uid://ddximju8p85n1" path="res://assets/Textures/Old Dirty Plaster Patch/Old Dirty Plaster Patch v3 1024/Old Dirty Plaster Patch v3 1024_Height.png" id="nclefg"]
+[ext_resource type="Texture2D" uid="uid://cfckb01hh5wr1" path="res://assets/Textures/Old Dirty Plaster Patch/Old Dirty Plaster Patch v3 1024/Old Dirty Plaster Patch v3 1024_Metallic.png" id="oclefg"]
+[ext_resource type="Texture2D" uid="uid://b7b0stwblyh7u" path="res://assets/Textures/Old Dirty Plaster Patch/Old Dirty Plaster Patch v3 1024/Old Dirty Plaster Patch v3 1024_Normal.png" id="pclefg"]
+[ext_resource type="Texture2D" uid="uid://bvbibg6nk1ex4" path="res://assets/Textures/Old Dirty Plaster Patch/Old Dirty Plaster Patch v3 1024/Old Dirty Plaster Patch v3 1024_Roughness.png" id="qclefg"]
+
+[resource]
+albedo_texture = ExtResource("lclefg")
+metallic = 1.0
+metallic_texture = ExtResource("oclefg")
+roughness_texture = ExtResource("qclefg")
+normal_enabled = true
+normal_texture = ExtResource("pclefg")
+ao_enabled = true
+ao_texture = ExtResource("mclefg")
+heightmap_enabled = true
+heightmap_texture = ExtResource("nclefg")
+uv1_scale = Vector3(0.145, 0.24, -0.075)
+uv1_triplanar = true
+uv1_world_triplanar = true

@@ -9,6 +9,7 @@ enum Difficulty { EASY, NORMAL, HARD, NIGHTMARE }
 static var current_difficulty: int = Difficulty.NORMAL
 static var camera_shake_mult: float = 1.0
 static var field_of_view: float = 75.0
+static var show_crosshair: bool = true
 
 static var mouse_sens_hip: float = 0.15
 static var mouse_sens_ads: float = 0.07
@@ -47,6 +48,7 @@ static func load_from_disk() -> void:
 	current_difficulty = cfg.get_value("gameplay", "difficulty", Difficulty.NORMAL)
 	camera_shake_mult = cfg.get_value("gameplay", "camera_shake", 1.0)
 	field_of_view = cfg.get_value("gameplay", "fov", 75.0)
+	show_crosshair = cfg.get_value("gameplay", "show_crosshair", true)
 
 	mouse_sens_hip = cfg.get_value("controls", "sens_hip", 0.15)
 	mouse_sens_ads = cfg.get_value("controls", "sens_ads", 0.07)
@@ -72,6 +74,7 @@ static func save_to_disk() -> void:
 	cfg.set_value("gameplay", "difficulty", current_difficulty)
 	cfg.set_value("gameplay", "camera_shake", camera_shake_mult)
 	cfg.set_value("gameplay", "fov", field_of_view)
+	cfg.set_value("gameplay", "show_crosshair", show_crosshair)
 
 	cfg.set_value("controls", "sens_hip", mouse_sens_hip)
 	cfg.set_value("controls", "sens_ads", mouse_sens_ads)
@@ -100,20 +103,6 @@ static func apply_all_settings() -> void:
 	var db_master = linear_to_db(m_vol / 100.0) if m_vol > 0 else -80.0
 	AudioServer.set_bus_volume_db(0, db_master)
 
-	# Notify active scenes/listeners
-	for cb in _settings_listeners:
-		if cb.is_valid():
-			cb.call()
-
-static var _settings_listeners: Array[Callable] = []
-
-static func register_listener(cb: Callable) -> void:
-	if not _settings_listeners.has(cb):
-		_settings_listeners.append(cb)
-
-static func unregister_listener(cb: Callable) -> void:
-	_settings_listeners.erase(cb)
-
 	# Apply Display Mode
 	match window_mode:
 		0:
@@ -129,6 +118,20 @@ static func unregister_listener(cb: Callable) -> void:
 	# Apply FPS Cap
 	Engine.max_fps = fps_cap
 
+	# Notify active scenes/listeners
+	for cb in _settings_listeners:
+		if cb.is_valid():
+			cb.call()
+
+static var _settings_listeners: Array[Callable] = []
+
+static func register_listener(cb: Callable) -> void:
+	if not _settings_listeners.has(cb):
+		_settings_listeners.append(cb)
+
+static func unregister_listener(cb: Callable) -> void:
+	_settings_listeners.erase(cb)
+
 static func get_difficulty_speed_mult() -> float:
 	match current_difficulty:
 		Difficulty.EASY: return 0.85
@@ -138,9 +141,4 @@ static func get_difficulty_speed_mult() -> float:
 	return 1.0
 
 static func get_difficulty_max_hearts() -> int:
-	match current_difficulty:
-		Difficulty.EASY: return 4
-		Difficulty.NORMAL: return 3
-		Difficulty.HARD: return 3
-		Difficulty.NIGHTMARE: return 1
 	return 3

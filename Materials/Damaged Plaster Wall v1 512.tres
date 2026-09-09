@@ -1,0 +1,21 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://genm4kefg"]
+
+[ext_resource type="Texture2D" uid="uid://gent4kefg" path="res://assets/Textures/Damaged Plaster Wall/Damaged Plaster Wall v1 512/Damaged Plaster Wall v1 512_BaseColor.png" id="n4kefg"]
+[ext_resource type="Texture2D" uid="uid://genu4kefg" path="res://assets/Textures/Damaged Plaster Wall/Damaged Plaster Wall v1 512/Damaged Plaster Wall v1 512_AmbientOcclusion.png" id="o4kefg"]
+[ext_resource type="Texture2D" uid="uid://genv4kefg" path="res://assets/Textures/Damaged Plaster Wall/Damaged Plaster Wall v1 512/Damaged Plaster Wall v1 512_Height.png" id="p4kefg"]
+[ext_resource type="Texture2D" uid="uid://genw4kefg" path="res://assets/Textures/Damaged Plaster Wall/Damaged Plaster Wall v1 512/Damaged Plaster Wall v1 512_Metallic.png" id="q4kefg"]
+[ext_resource type="Texture2D" uid="uid://genx4kefg" path="res://assets/Textures/Damaged Plaster Wall/Damaged Plaster Wall v1 512/Damaged Plaster Wall v1 512_Normal.png" id="r4kefg"]
+[ext_resource type="Texture2D" uid="uid://geny4kefg" path="res://assets/Textures/Damaged Plaster Wall/Damaged Plaster Wall v1 512/Damaged Plaster Wall v1 512_Roughness.png" id="s4kefg"]
+
+[resource]
+albedo_texture = ExtResource("n4kefg")
+metallic = 1.0
+metallic_texture = ExtResource("q4kefg")
+roughness_texture = ExtResource("s4kefg")
+normal_enabled = true
+normal_texture = ExtResource("r4kefg")
+ao_enabled = true
+ao_texture = ExtResource("o4kefg")
+heightmap_enabled = true
+heightmap_texture = ExtResource("p4kefg")
+

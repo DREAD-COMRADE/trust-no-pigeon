@@ -39,8 +39,6 @@ var _swap_offset: float = 0.0  # Y offset applied to current weapon during anim
 @export var max_health: int = 3
 var health: int = 3
 var is_dead: bool = false
-var _invincible_timer: float = 0.0  # Brief post-hit invincibility window
-const INVINCIBLE_DURATION: float = 1.2
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -86,7 +84,7 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if is_inside_tree() and get_tree() and get_tree().paused:
+	if is_dead or (is_inside_tree() and get_tree() and get_tree().paused):
 		return
 
 	# ESC Key toggles mouse mode
@@ -145,7 +143,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
-	if is_inside_tree() and get_tree() and get_tree().paused:
+	if is_dead or (is_inside_tree() and get_tree() and get_tree().paused):
 		return
 
 	is_aiming = Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT) and (Input.mouse_mode == Input.MOUSE_MODE_CAPTURED)
@@ -164,9 +162,6 @@ func _process(delta: float) -> void:
 			active_wep.mouse_delta = mouse_delta
 
 	mouse_delta = mouse_delta.lerp(Vector2.ZERO, delta * 12.0)
-
-	_tick_health(delta)
-
 
 	# Weapon swap animation tick
 	_tick_swap_anim(delta)
@@ -337,20 +332,37 @@ func add_shotgun_ammo(count: int) -> void:
 # ── Health System ─────────────────────────────────────────────────────────────
 
 func take_damage(amount: int = 1) -> void:
-	if is_dead or _invincible_timer > 0.0:
+	if is_dead:
 		return
 
 	health = max(0, health - amount)
-	_invincible_timer = INVINCIBLE_DURATION
 	health_changed.emit(health, max_health)
 
 	# Camera trauma on hit
 	if camera and camera.has_method("add_trauma"):
-		camera.add_trauma(0.45)
+		camera.add_trauma(0.45 * float(amount))
 
 	if health <= 0:
 		is_dead = true
+		_disable_all_weapons()
 		player_died.emit()
+		var main = get_tree().current_scene if (is_inside_tree() and get_tree()) else null
+		if main and main.has_method("trigger_game_over"):
+			main.trigger_game_over()
+
+func _disable_all_weapons() -> void:
+	if gun:
+		gun.visible = false
+		if "is_active" in gun:
+			gun.is_active = false
+	if shotgun:
+		shotgun.visible = false
+		if "is_active" in shotgun:
+			shotgun.is_active = false
+	if missile_launcher:
+		missile_launcher.visible = false
+		if "is_active" in missile_launcher:
+			missile_launcher.is_active = false
 
 func heal(amount: int = 1) -> void:
 	if is_dead:
@@ -363,8 +375,4 @@ func replenish_health() -> void:
 	health = max_health
 	is_dead = false
 	health_changed.emit(health, max_health)
-
-func _tick_health(delta: float) -> void:
-	if _invincible_timer > 0.0:
-		_invincible_timer -= delta
 

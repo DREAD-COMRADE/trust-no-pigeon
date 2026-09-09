@@ -20,7 +20,7 @@ const HUMAN_PRACTICAL_FIRE_RATE: float = 0.25
 
 # ── Spread & pellets ───────────────────────────────────────────────────────────
 const STANDARD_PELLET_COUNT: int = 12
-const BASE_SPREAD_DEGREES: float = 8.0
+const BASE_SPREAD_DEGREES: float = 4.5
 const PUSH_PULL_BRACE_SPREAD_MULT: float = 0.55  # ADS tightens spread by 45%
 
 # ── Damage drop-off ────────────────────────────────────────────────────────────
@@ -41,7 +41,7 @@ const RECOIL_RECOVERY_SPEED: float = 8.5
 
 
 @export var hip_position: Vector3 = Vector3(0.26, -0.28, -0.48)
-@export var ads_position: Vector3 = Vector3(0.0, -0.17, -0.38)
+@export var ads_position: Vector3 = Vector3(-0.0113, -0.078, -0.32)
 @export var ads_speed: float = 14.0
 
 @export var starting_ammo: int = 6
@@ -279,13 +279,16 @@ func shoot() -> void:
 	var hit_targets: Dictionary = {}  # target -> cumulative dmg_factor from all pellets
 	var space_state = get_world_3d().direct_space_state if is_inside_tree() else null
 
-	# Fire 12-Pellet Spread Array (wider cone covers pigeon flocks)
+	# Fire 12-Pellet Spread Array (wider cone covers pigeon flocks, center pellet hits crosshair)
 	for i in range(pellet_count):
-		# Circular cone distribution
-		var circle_angle = randf() * TAU
-		var circle_radius = sqrt(randf()) * spread_rad
-		var offset_x = cos(circle_angle) * circle_radius
-		var offset_y = sin(circle_angle) * circle_radius
+		# Pellet 0 goes straight down the crosshair; others disperse in cone
+		var offset_x = 0.0
+		var offset_y = 0.0
+		if i > 0:
+			var circle_angle = randf() * TAU
+			var circle_radius = sqrt(randf()) * spread_rad
+			offset_x = cos(circle_angle) * circle_radius
+			offset_y = sin(circle_angle) * circle_radius
 
 		var pellet_dir = (base_dir + right_vec * offset_x + up_vec * offset_y).normalized()
 		var to = from + pellet_dir * max_range

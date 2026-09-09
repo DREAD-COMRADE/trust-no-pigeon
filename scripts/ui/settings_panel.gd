@@ -23,6 +23,7 @@ signal back_pressed
 @onready var shake_val: Label = $Margin/VBoxMain/HBox/RightPanel/GameplaySection/ShakeHBox/ShakeValue if has_node("Margin/VBoxMain/HBox/RightPanel/GameplaySection/ShakeHBox/ShakeValue") else null
 @onready var fov_slider: HSlider = $Margin/VBoxMain/HBox/RightPanel/GameplaySection/FovHBox/FovSlider if has_node("Margin/VBoxMain/HBox/RightPanel/GameplaySection/FovHBox/FovSlider") else null
 @onready var fov_val: Label = $Margin/VBoxMain/HBox/RightPanel/GameplaySection/FovHBox/FovValue if has_node("Margin/VBoxMain/HBox/RightPanel/GameplaySection/FovHBox/FovValue") else null
+@onready var crosshair_check: CheckButton = $Margin/VBoxMain/HBox/RightPanel/GameplaySection/CrosshairHBox/CrosshairCheck if has_node("Margin/VBoxMain/HBox/RightPanel/GameplaySection/CrosshairHBox/CrosshairCheck") else null
 
 # ── Controls / Sensitivity ───────────────────────────────────────────────────
 @onready var hip_slider: HSlider = $Margin/VBoxMain/HBox/RightPanel/ControlsSection/HipSensHBox/HipSensSlider if has_node("Margin/VBoxMain/HBox/RightPanel/ControlsSection/HipSensHBox/HipSensSlider") else null
@@ -121,6 +122,9 @@ func _load_ui_from_settings() -> void:
 	if fov_slider:
 		fov_slider.value = SettingsManager.field_of_view
 		if fov_val: fov_val.text = "%d°" % int(fov_slider.value)
+	if crosshair_check:
+		crosshair_check.button_pressed = SettingsManager.show_crosshair
+		crosshair_check.text = "ON" if SettingsManager.show_crosshair else "OFF"
 
 	# Controls
 	if hip_slider:
@@ -190,6 +194,13 @@ func _bind_control_signals() -> void:
 		fov_slider.value_changed.connect(func(val):
 			SettingsManager.field_of_view = val
 			if fov_val: fov_val.text = "%d°" % int(val)
+			SettingsManager.save_to_disk()
+		)
+	if crosshair_check:
+		crosshair_check.toggled.connect(func(btn_on):
+			SettingsManager.show_crosshair = btn_on
+			crosshair_check.text = "ON" if btn_on else "OFF"
+			SettingsManager.apply_all_settings()
 			SettingsManager.save_to_disk()
 		)
 

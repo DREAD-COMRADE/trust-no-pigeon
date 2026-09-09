@@ -1,0 +1,21 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://gen2akefg"]
+
+[ext_resource type="Texture2D" uid="uid://gen89kefg" path="res://assets/Textures/Old Dirty Plaster Patch/Old Dirty Plaster Patch v10 512/Old Dirty Plaster Patch v10 512_BaseColor.png" id="29kefg"]
+[ext_resource type="Texture2D" uid="uid://gen99kefg" path="res://assets/Textures/Old Dirty Plaster Patch/Old Dirty Plaster Patch v10 512/Old Dirty Plaster Patch v10 512_AmbientOcclusion.png" id="39kefg"]
+[ext_resource type="Texture2D" uid="uid://genaalefg" path="res://assets/Textures/Old Dirty Plaster Patch/Old Dirty Plaster Patch v10 512/Old Dirty Plaster Patch v10 512_Height.png" id="49kefg"]
+[ext_resource type="Texture2D" uid="uid://genbalefg" path="res://assets/Textures/Old Dirty Plaster Patch/Old Dirty Plaster Patch v10 512/Old Dirty Plaster Patch v10 512_Metallic.png" id="59kefg"]
+[ext_resource type="Texture2D" uid="uid://gencalefg" path="res://assets/Textures/Old Dirty Plaster Patch/Old Dirty Plaster Patch v10 512/Old Dirty Plaster Patch v10 512_Normal.png" id="69kefg"]
+[ext_resource type="Texture2D" uid="uid://gendalefg" path="res://assets/Textures/Old Dirty Plaster Patch/Old Dirty Plaster Patch v10 512/Old Dirty Plaster Patch v10 512_Roughness.png" id="79kefg"]
+
+[resource]
+albedo_texture = ExtResource("29kefg")
+metallic = 1.0
+metallic_texture = ExtResource("59kefg")
+roughness_texture = ExtResource("79kefg")
+normal_enabled = true
+normal_texture = ExtResource("69kefg")
+ao_enabled = true
+ao_texture = ExtResource("39kefg")
+heightmap_enabled = true
+heightmap_texture = ExtResource("49kefg")
+

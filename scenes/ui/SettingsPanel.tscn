@@ -196,6 +196,20 @@ theme_override_font_sizes/font_size = 17
 text = "75°"
 horizontal_alignment = 2
 
+[node name="CrosshairHBox" type="HBoxContainer" parent="Margin/VBoxMain/HBox/RightPanel/GameplaySection" unique_id=1111560944]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Margin/VBoxMain/HBox/RightPanel/GameplaySection/CrosshairHBox" unique_id=1111560945]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "CROSSHAIR (CENTER DOT)"
+
+[node name="CrosshairCheck" type="CheckButton" parent="Margin/VBoxMain/HBox/RightPanel/GameplaySection/CrosshairHBox" unique_id=1111560946]
+layout_mode = 2
+button_pressed = true
+text = "ON"
+
 ; ══════════════════════════════════════════════════════════════════════════════
 ; 2. CONTROLS SECTION
 ; ══════════════════════════════════════════════════════════════════════════════

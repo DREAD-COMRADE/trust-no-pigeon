@@ -17,4 +17,3 @@ func _on_hit() -> void:
 		fx.global_position = global_position
 
 	pigeon_killed.emit(self, score_value, is_government)
-

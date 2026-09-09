@@ -95,12 +95,16 @@ func _process(delta: float) -> void:
 		queue_free()
 
 func _get_player() -> PlayerController:
+	if not is_inside_tree() or not get_tree():
+		return null
 	for node in get_tree().get_nodes_in_group("player"):
 		if node is PlayerController:
 			return node as PlayerController
 	return null
 
 func _get_hud() -> CanvasLayer:
+	if not is_inside_tree() or not get_tree():
+		return null
 	for node in get_tree().get_nodes_in_group("hud"):
 		if node is CanvasLayer:
 			return node as CanvasLayer
@@ -113,7 +117,8 @@ func take_hit(damage: int = 1) -> void:
 	health -= damage
 
 	var cam = get_viewport().get_camera_3d() if get_viewport() else null
-	var target_parent = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_tree().root
+	var tree = get_tree()
+	var target_parent = tree.current_scene if (tree and tree.current_scene) else (tree.root if tree else null)
 
 	# First hit: spark visual, camera nudge
 	if health > 0:
@@ -122,7 +127,7 @@ func take_hit(damage: int = 1) -> void:
 			beacon_light.light_energy = 15.0
 		if cam and cam.has_method("add_trauma"):
 			cam.add_trauma(0.12)
-		if explosion_scene and is_inside_tree():
+		if explosion_scene and is_inside_tree() and target_parent:
 			var fx = explosion_scene.instantiate()
 			target_parent.add_child(fx)
 			fx.global_position = global_position if is_inside_tree() else position
@@ -135,13 +140,12 @@ func take_hit(damage: int = 1) -> void:
 		flight_audio.stop()
 
 	# Loot collection sound
-	if loot_sound_stream:
+	if loot_sound_stream and target_parent:
 		var loot_asp = AudioStreamPlayer.new()
 		loot_asp.stream = loot_sound_stream
 		loot_asp.volume_db = 2.0
 		loot_asp.pitch_scale = randf_range(0.98, 1.02)
-		var p_root = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_tree().root
-		p_root.add_child(loot_asp)
+		target_parent.add_child(loot_asp)
 		loot_asp.play()
 		loot_asp.finished.connect(loot_asp.queue_free)
 
