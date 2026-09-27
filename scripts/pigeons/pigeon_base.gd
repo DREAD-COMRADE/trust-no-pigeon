@@ -141,7 +141,8 @@ func _process_flying(delta: float) -> void:
 	# Wingbeat-synchronized vertical lift (natural rise on flap, dip on recovery)
 	var wingbeat_lift = Vector3(0, sin(flap_phase) * 0.08, 0)
 	global_position = pos + wingbeat_lift
-	global_position.y = max(global_position.y, 1.2)
+	var min_flight_y = _get_ground_y() + 0.85
+	global_position.y = max(global_position.y, min_flight_y)
 
 	_update_flight_rotation(delta, flap_phase)
 
@@ -200,18 +201,26 @@ func _process_falling(delta: float) -> void:
 		rotate(fall_tumble_axis, fall_tumble_speed * delta)
 		fall_tumble_speed = lerp(fall_tumble_speed, 1.0, delta * 1.5)
 
-	# Ground collision / impact check (ground is at y ~ 0.35)
-	if global_position.y <= 0.35 and not is_on_ground:
+	# Ground collision / impact check
+	var ground_y = _get_ground_y()
+	if global_position.y <= ground_y and not is_on_ground:
 		_on_hit_ground()
 
 	# Safe timeout cleanup
 	if death_timer >= 2.5:
 		queue_free()
 
+func _get_ground_y() -> float:
+	if is_inside_tree():
+		var floor_node = get_tree().get_first_node_in_group("pigeon_floor")
+		if floor_node and floor_node is Node3D:
+			return floor_node.global_position.y
+	return 0.35
+
 func _on_hit_ground() -> void:
 	is_on_ground = true
 	current_state = State.DEAD
-	global_position.y = 0.35
+	global_position.y = _get_ground_y()
 	fall_velocity = Vector3.ZERO
 	fall_tumble_axis = Vector3.ZERO
 

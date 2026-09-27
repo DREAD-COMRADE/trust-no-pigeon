@@ -63,27 +63,6 @@ text = "[b]TRUST [color=#cc2222]NO[/color] PIGEON[/b]"
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="BestScoreBox" type="PanelContainer" parent="Margin/VBoxMain/HeaderHBox" unique_id=1517667069]
-custom_minimum_size = Vector2(180, 60)
-layout_mode = 2
-
-[node name="VBox" type="VBoxContainer" parent="Margin/VBoxMain/HeaderHBox/BestScoreBox" unique_id=2022330406]
-layout_mode = 2
-alignment = 1
-
-[node name="Label" type="Label" parent="Margin/VBoxMain/HeaderHBox/BestScoreBox/VBox" unique_id=1150459312]
-modulate = Color(0.8, 0.8, 0.8, 1)
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "BEST SCORE"
-horizontal_alignment = 1
-
-[node name="ScoreValue" type="Label" parent="Margin/VBoxMain/HeaderHBox/BestScoreBox/VBox" unique_id=1031623365]
-modulate = Color(1, 0.85, 0.2, 1)
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "0"
-horizontal_alignment = 1
 
 [node name="ContentHBox" type="HBoxContainer" parent="Margin/VBoxMain" unique_id=339925536]
 layout_mode = 2
@@ -288,7 +267,7 @@ alignment = 1
 [node name="Title" type="Label" parent="ModalDialog/Card/VBox" unique_id=155275741]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "MODAL TITLE"
+text = ""
 horizontal_alignment = 1
 
 [node name="HSeparator" type="HSeparator" parent="ModalDialog/Card/VBox" unique_id=1274971300]
@@ -298,7 +277,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 16
-text = "Modal body text..."
+text = ""
 horizontal_alignment = 1
 autowrap_mode = 2
 

@@ -1,0 +1,38 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://2yw6n0y4u342"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_o1ohc"]
+resource_name = "Main"
+load_path = "res://.godot/imported/Random Ceramic Floor Tiles_BaseColor.png-1150d75c318ba4615139faf5cee8df56.s3tc.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_botte"]
+load_path = "res://.godot/imported/Random Ceramic Floor Tiles_AmbientOcclusion.png-c803fb7beec2382a0145b414b70adc37.s3tc.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_2cgg3"]
+load_path = "res://.godot/imported/Random Ceramic Floor Tiles_Height.png-7ee33d80e3744ff1690f23480de1e469.s3tc.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_wke70"]
+load_path = "res://.godot/imported/Random Ceramic Floor Tiles_Metallic.png-749c2967de319fb77b13fc76106c3645.s3tc.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_yq8p8"]
+load_path = "res://.godot/imported/Random Ceramic Floor Tiles_Normal.png-f10ac6e2d4fec82f330857c98d38ae7f.s3tc.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_0mlv0"]
+load_path = "res://.godot/imported/Random Ceramic Floor Tiles_Roughness.png-0e39a5cf60bf493a690190edba50bb16.s3tc.ctex"
+
+[resource]
+albedo_texture = SubResource("CompressedTexture2D_o1ohc")
+metallic_texture = SubResource("CompressedTexture2D_wke70")
+roughness = 0.67
+roughness_texture = SubResource("CompressedTexture2D_0mlv0")
+normal_enabled = true
+normal_scale = -2.64
+normal_texture = SubResource("CompressedTexture2D_yq8p8")
+ao_enabled = true
+ao_light_affect = 0.02
+ao_texture = SubResource("CompressedTexture2D_botte")
+heightmap_enabled = true
+heightmap_texture = SubResource("CompressedTexture2D_2cgg3")
+uv1_scale = Vector3(6.55, 1, 4.035)
+uv1_offset = Vector3(0.1, 0, 0.835)
+uv1_triplanar = true
+uv1_triplanar_sharpness = 0.5743494

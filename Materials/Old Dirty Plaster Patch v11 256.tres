@@ -18,3 +18,5 @@ ao_enabled = true
 ao_texture = ExtResource("talefg")
 heightmap_enabled = true
 heightmap_texture = ExtResource("ualefg")
+uv1_scale = Vector3(0.34, -0.91, -0.385)
+uv1_triplanar = true

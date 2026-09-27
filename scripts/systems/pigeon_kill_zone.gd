@@ -3,6 +3,10 @@ class_name PigeonKillZone
 
 @export var position_jitter: Vector3 = Vector3(1.5, 1.0, 1.5)
 
+func _ready() -> void:
+	add_to_group("pigeon_kill_zones")
+
+
 func get_kill_position() -> Vector3:
 	var jitter = Vector3(
 		randf_range(-position_jitter.x, position_jitter.x),

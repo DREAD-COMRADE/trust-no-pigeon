@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://cc608kxgk3rr1"]
+
+[ext_resource type="Script" uid="uid://b5sotk6jh8fbk" path="res://scripts/player/player_controller.gd" id="1_2hlsy"]
+[ext_resource type="Script" uid="uid://dxxf0ftut1myt" path="res://scripts/main/camera_shake.gd" id="2_riacy"]
+[ext_resource type="PackedScene" uid="uid://barfphcn7cd6h" path="res://scenes/player/Gun.tscn" id="3_q2ck2"]
+[ext_resource type="PackedScene" uid="uid://df2m5ax8y73kp" path="res://scenes/player/Shotgun.tscn" id="4_u2d4w"]
+[ext_resource type="PackedScene" uid="uid://dfvx0574p102j" path="res://scenes/player/MissileLauncher.tscn" id="5_nsfi6"]
+
+[node name="Player" type="Node3D" unique_id=678988432]
+script = ExtResource("1_2hlsy")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1067812712]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.31343818, 0.47783518)
+current = true
+script = ExtResource("2_riacy")
+
+[node name="Gun" parent="Camera3D" unique_id=359005382 node_paths=PackedStringArray("camera") instance=ExtResource("3_q2ck2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, -0.28, -0.55)
+camera = NodePath("..")
+
+[node name="Shotgun" parent="Camera3D" unique_id=1716641380 instance=ExtResource("4_u2d4w")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, -0.3, -0.52)
+visible = false
+
+[node name="MissileLauncher" parent="Camera3D" unique_id=169035131 instance=ExtResource("5_nsfi6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.32, -0.32, -0.6)
+visible = false

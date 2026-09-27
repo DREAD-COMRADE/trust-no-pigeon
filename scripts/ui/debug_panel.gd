@@ -98,3 +98,7 @@ func _on_godmode_toggled(toggled: bool) -> void:
 	var main = get_tree().current_scene
 	if main and "is_god_mode" in main:
 		main.is_god_mode = toggled
+	if is_inside_tree():
+		for p in get_tree().get_nodes_in_group("player"):
+			if "is_god_mode" in p:
+				p.is_god_mode = toggled

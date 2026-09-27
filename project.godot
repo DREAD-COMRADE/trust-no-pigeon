@@ -24,6 +24,10 @@ run/bg_color=Color(0.14, 0.14, 0.14, 1)
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[editor_plugins]
+
+enabled=PackedStringArray()
+
 [gui]
 
 theme/custom="uid://b8je50e7y15kx"
@@ -34,6 +38,10 @@ shoot={
 "deadzone": 0.5,
 "events": []
 }
+
+[input_devices]
+
+pointing/android/enable_pan_and_scale_gestures=true
 
 [physics]
 

@@ -39,6 +39,7 @@ var _swap_offset: float = 0.0  # Y offset applied to current weapon during anim
 @export var max_health: int = 3
 var health: int = 3
 var is_dead: bool = false
+var is_god_mode: bool = false
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -161,10 +162,17 @@ func _process(delta: float) -> void:
 		if "mouse_delta" in active_wep:
 			active_wep.mouse_delta = mouse_delta
 
+	# Hide crosshair in ADS (player uses iron sights), show in hipfire
+	for hud_node in get_tree().get_nodes_in_group("hud"):
+		if hud_node.has_method("set_aiming"):
+			hud_node.set_aiming(is_aiming)
+			break
+
 	mouse_delta = mouse_delta.lerp(Vector2.ZERO, delta * 12.0)
 
 	# Weapon swap animation tick
 	_tick_swap_anim(delta)
+
 
 func _tick_swap_anim(delta: float) -> void:
 	if not _is_swapping:
@@ -332,7 +340,10 @@ func add_shotgun_ammo(count: int) -> void:
 # ── Health System ─────────────────────────────────────────────────────────────
 
 func take_damage(amount: int = 1) -> void:
-	if is_dead:
+	if is_dead or is_god_mode:
+		return
+	var main = get_tree().current_scene if (is_inside_tree() and get_tree()) else null
+	if main and "is_god_mode" in main and main.is_god_mode:
 		return
 
 	health = max(0, health - amount)
@@ -346,7 +357,6 @@ func take_damage(amount: int = 1) -> void:
 		is_dead = true
 		_disable_all_weapons()
 		player_died.emit()
-		var main = get_tree().current_scene if (is_inside_tree() and get_tree()) else null
 		if main and main.has_method("trigger_game_over"):
 			main.trigger_game_over()
 

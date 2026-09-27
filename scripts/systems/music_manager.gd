@@ -7,10 +7,11 @@ class_name MusicManager
 	preload("res://assets/Audio/Theme1.mp3"),
 	preload("res://assets/Audio/Theme2.mp3"),
 	preload("res://assets/Audio/Theme3.mp3"),
+	preload("res://assets/Audio/audio_ai_2.mp3"),
 	preload("res://assets/Audio/Theme4.mp3")
 ]
 
-var ufo_theme: AudioStream = preload("res://assets/Audio/Theme4.mp3")
+var ufo_theme: AudioStream = preload("res://assets/Audio/audio_ai_2.mp3")
 
 @onready var audio_player: AudioStreamPlayer = $AudioPlayer if has_node("AudioPlayer") else null
 

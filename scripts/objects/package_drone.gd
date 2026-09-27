@@ -116,8 +116,8 @@ func take_hit(damage: int = 1) -> void:
 
 	health -= damage
 
-	var cam = get_viewport().get_camera_3d() if get_viewport() else null
-	var tree = get_tree()
+	var cam = get_viewport().get_camera_3d() if (is_inside_tree() and get_viewport()) else null
+	var tree = get_tree() if is_inside_tree() else null
 	var target_parent = tree.current_scene if (tree and tree.current_scene) else (tree.root if tree else null)
 
 	# First hit: spark visual, camera nudge

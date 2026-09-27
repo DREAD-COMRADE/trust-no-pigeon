@@ -1,37 +1,27 @@
-﻿@tool
-extends Control
+@tool
+extends TextureRect
 class_name CrosshairDot
 
-## Radius of the inner white dot in pixels
-@export var dot_radius: float = 2.0:
+## Size of the crosshair dot on screen in pixels
+@export var dot_size: Vector2 = Vector2(3.0, 3.0):
 	set(val):
-		dot_radius = val
-		queue_redraw()
 
-## Thickness of the outer dark outline in pixels
-@export var outline_width: float = 1.0:
-	set(val):
-		outline_width = val
-		queue_redraw()
-
-## Color of the center dot
-@export var dot_color: Color = Color(1.0, 1.0, 1.0, 1.0):
-	set(val):
-		dot_color = val
-		queue_redraw()
-
-## Color of the outline border (provides contrast against bright sky and clouds)
-@export var outline_color: Color = Color(0.0, 0.0, 0.0, 0.85):
-	set(val):
-		outline_color = val
-		queue_redraw()
+		dot_size = val
+		_update_crosshair_size()
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	queue_redraw()
+	if not texture:
+		texture = preload("res://crossair.png")
+	expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_update_crosshair_size()
 
-func _draw() -> void:
-	# Draw sharp high-contrast outline
-	draw_circle(Vector2.ZERO, dot_radius + outline_width, outline_color)
-	# Draw crisp white dot at exact sub-pixel center
-	draw_circle(Vector2.ZERO, dot_radius, dot_color)
+func _update_crosshair_size() -> void:
+	custom_minimum_size = dot_size
+	size = dot_size
+	offset_left = -dot_size.x * 0.5
+	offset_top = -dot_size.y * 0.5
+	offset_right = dot_size.x * 0.5
+	offset_bottom = dot_size.y * 0.5
+

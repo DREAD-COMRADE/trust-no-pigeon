@@ -53,18 +53,18 @@ func _ready() -> void:
 		settings_panel.visible = false
 		settings_panel.back_pressed.connect(func(): settings_panel.visible = false)
 
-	if btn_play:
+	if btn_play and not btn_play.pressed.is_connected(_on_play_pressed):
 		btn_play.pressed.connect(_on_play_pressed)
-	if btn_high_scores:
+	if btn_high_scores and not btn_high_scores.pressed.is_connected(_on_high_scores_pressed):
 		btn_high_scores.pressed.connect(_on_high_scores_pressed)
-	if btn_achievements:
+	if btn_achievements and not btn_achievements.pressed.is_connected(_on_achievements_pressed):
 		btn_achievements.pressed.connect(_on_achievements_pressed)
-	if btn_settings:
-		btn_settings.pressed.connect(func(): if settings_panel: settings_panel.visible = true)
-	if btn_credits:
+	if btn_settings and not btn_settings.pressed.is_connected(_on_settings_pressed):
+		btn_settings.pressed.connect(_on_settings_pressed)
+	if btn_credits and not btn_credits.pressed.is_connected(_on_credits_pressed):
 		btn_credits.pressed.connect(_on_credits_pressed)
-	if btn_quit:
-		btn_quit.pressed.connect(func(): get_tree().quit())
+	if btn_quit and not btn_quit.pressed.is_connected(_on_quit_pressed):
+		btn_quit.pressed.connect(_on_quit_pressed)
 
 	_update_best_score()
 	_start_menu_music()
@@ -82,7 +82,7 @@ func _start_menu_music() -> void:
 	_play_next_menu_theme()
 
 func _play_next_menu_theme() -> void:
-	if not menu_music_player or menu_music_playlist.is_empty():
+	if not menu_music_player or not menu_music_player.is_inside_tree() or menu_music_playlist.is_empty():
 		return
 
 	var next_idx = randi() % menu_music_playlist.size()
@@ -119,10 +119,17 @@ func _on_play_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/main/Main.tscn")
 
 func _on_high_scores_pressed() -> void:
-	_show_modal("👑 HIGH SCORES", "TOP RESISTANCE OPERATIVES:\n\n1. OPERATIVE #01 - 12,450 PTS\n2. SURVEILLANCE BUSTER - 8,900 PTS\n3. PIGEON HUNTER - 5,400 PTS")
+	_show_modal("", "")
 
 func _on_achievements_pressed() -> void:
-	_show_modal("🏆 ACHIEVEMENTS", "RESISTANCE MILESTONES:\n\n✔ TRUST NO ONE: Completed Intro Sequence\n✔ FEATHERED FOE: Destroyed 10 Government Pigeons\n🔒 SKY DOMINATOR: Score 10,000+ points\n🔒 NIGHT OPS: Survive a full night cycle")
+	_show_modal("", "")
+
+func _on_settings_pressed() -> void:
+	if settings_panel:
+		settings_panel.visible = true
+
+func _on_quit_pressed() -> void:
+	get_tree().quit()
 
 func _on_credits_pressed() -> void:
 	_start_credits()
@@ -166,6 +173,13 @@ func _input(event: InputEvent) -> void:
 
 func _show_modal(title_text: String, body_text: String) -> void:
 	if modal_dialog:
-		modal_title.text = title_text
-		modal_body.text = body_text
+		if modal_title:
+			modal_title.text = title_text
+			modal_title.visible = (title_text != "")
+		if modal_body:
+			modal_body.text = body_text
+			modal_body.visible = (body_text != "")
+		var sep = modal_dialog.get_node_or_null("Card/VBox/HSeparator")
+		if sep:
+			sep.visible = (title_text != "" and body_text != "")
 		modal_dialog.visible = true

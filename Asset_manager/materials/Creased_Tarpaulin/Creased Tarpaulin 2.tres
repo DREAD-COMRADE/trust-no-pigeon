@@ -1,0 +1,21 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://geng2kefg"]
+
+[ext_resource type="Texture2D" uid="uid://genn2kefg" path="res://assets/Textures/Creased Tarpaulin 2/Creased Tarpaulin 2_BaseColor.png" id="h2kefg"]
+[ext_resource type="Texture2D" uid="uid://geno2kefg" path="res://assets/Textures/Creased Tarpaulin 2/Creased Tarpaulin 2_AmbientOcclusion.png" id="i2kefg"]
+[ext_resource type="Texture2D" uid="uid://genp2kefg" path="res://assets/Textures/Creased Tarpaulin 2/Creased Tarpaulin 2_Height.png" id="j2kefg"]
+[ext_resource type="Texture2D" uid="uid://genq2kefg" path="res://assets/Textures/Creased Tarpaulin 2/Creased Tarpaulin 2_Metallic.png" id="k2kefg"]
+[ext_resource type="Texture2D" uid="uid://genr2kefg" path="res://assets/Textures/Creased Tarpaulin 2/Creased Tarpaulin 2_Normal.png" id="l2kefg"]
+[ext_resource type="Texture2D" uid="uid://gens2kefg" path="res://assets/Textures/Creased Tarpaulin 2/Creased Tarpaulin 2_Roughness.png" id="m2kefg"]
+
+[resource]
+albedo_texture = ExtResource("h2kefg")
+metallic = 1.0
+metallic_texture = ExtResource("k2kefg")
+roughness_texture = ExtResource("m2kefg")
+normal_enabled = true
+normal_texture = ExtResource("l2kefg")
+ao_enabled = true
+ao_texture = ExtResource("i2kefg")
+heightmap_enabled = true
+heightmap_texture = ExtResource("j2kefg")
+

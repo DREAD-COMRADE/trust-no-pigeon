@@ -9,9 +9,9 @@ signal shot_fired(from_pos: Vector3, direction_vec: Vector3)
 @export var max_range: float = 150.0
 
 @export var hip_position: Vector3 = Vector3(0.28, -0.28, -0.55)
-@export var ads_position: Vector3 = Vector3(0.0, -0.096, -0.25)
+@export var ads_position: Vector3 = Vector3(0.0, -0.11, -0.265)
 @export var ads_speed: float = 16.0
-@export var tracer_scene: PackedScene = preload("res://scenes/effects/BulletTracer.tscn")
+
 
 @onready var shoot_origin: Node3D = $ShootOrigin if has_node("ShootOrigin") else null
 @onready var muzzle_flash: OmniLight3D = $MuzzleFlash if has_node("MuzzleFlash") else null
@@ -81,8 +81,8 @@ func _process(delta: float) -> void:
 	var target_pos = ads_position if is_aiming else hip_position
 	position = position.lerp(target_pos, delta * ads_speed)
 
-	# Direct level alignment with crosshair center
-	var target_tilt = 0.0
+	# Smoothly interpolate the iron sight alignment angle (-0.85 degrees on X)
+	var target_tilt = deg_to_rad(-0.85) if is_aiming else 0.0
 	current_ads_tilt_x = lerp(current_ads_tilt_x, target_tilt, delta * ads_speed)
 
 	# Weapon sway & recoil recovery
@@ -164,9 +164,7 @@ func shoot() -> void:
 
 	var result = space_state.intersect_ray(query)
 
-	var target_end_point = to
 	if result:
-		target_end_point = result.position
 		var collider = result.collider
 		gun_fired.emit(collider, result.position)
 		var hit_node = collider if collider.has_method("take_hit") else (collider.get_parent() if collider.get_parent() and collider.get_parent().has_method("take_hit") else null)
@@ -177,10 +175,3 @@ func shoot() -> void:
 				hit_node.take_hit()
 	else:
 		gun_fired.emit(null, Vector3.ZERO)
-
-	var spawn_muzzle_pos = shoot_origin.global_position if (shoot_origin and shoot_origin.is_inside_tree()) else from
-	if tracer_scene and is_inside_tree():
-		var tracer = tracer_scene.instantiate() as BulletTracer
-		var target_parent = get_tree().current_scene if (get_tree() and get_tree().current_scene) else get_tree().root
-		target_parent.add_child(tracer)
-		tracer.setup(spawn_muzzle_pos, target_end_point)

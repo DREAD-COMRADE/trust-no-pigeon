@@ -3,6 +3,13 @@
 [ext_resource type="Script" uid="uid://bb2bl20qhjde2" path="res://scripts/ui/hud.gd" id="1_hud"]
 [ext_resource type="PackedScene" uid="uid://b5d8g24klmnpq" path="res://scenes/ui/DebugPanel.tscn" id="2_dbg"]
 [ext_resource type="Script" path="res://scripts/ui/crosshair_dot.gd" id="3_crd"]
+[ext_resource type="Texture2D" uid="uid://c0wlg4lotyk1t" path="res://crossair.png" id="4_cpng"]
+[ext_resource type="Texture2D" uid="uid://b0ctsjexsba3e" path="res://assets/icons/UI/LOADOUT.png" id="5_loadout"]
+[ext_resource type="Texture2D" uid="uid://c5hkgsisu0aqc" path="res://assets/icons/UI/ACTIVE PASSIVE_BG.png" id="6_slots_bg"]
+[ext_resource type="Texture2D" uid="uid://cnkm8cxyvj7jq" path="res://assets/icons/UI/ACTIVE.png" id="7_active"]
+[ext_resource type="Texture2D" uid="uid://mag5iwvydsu8" path="res://assets/icons/UI/PASSIVE.png" id="8_passive"]
+[ext_resource type="Texture2D" uid="uid://c3mwy8umvrdi7" path="res://assets/icons/weapons/Pistol_icon.png" id="9_pistol"]
+
 
 [sub_resource type="StyleBoxFlat" id="SB_obj_accent"]
 bg_color = Color(0, 0, 0, 0)
@@ -399,129 +406,175 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -250.0
-offset_top = -105.0
+offset_left = -260.0
+offset_top = -142.0
 offset_right = -35.0
-offset_bottom = -30.0
+offset_bottom = -25.0
 grow_horizontal = 0
 grow_vertical = 0
 
 [node name="WeaponVBox" type="VBoxContainer" parent="WeaponPanel" unique_id=700000003]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 2
 alignment = 2
 
-[node name="AmmoRow" type="HBoxContainer" parent="WeaponPanel/WeaponVBox" unique_id=700000010]
+[node name="LoadoutBox" type="NinePatchRect" parent="WeaponPanel/WeaponVBox" unique_id=700000004]
+custom_minimum_size = Vector2(222, 68)
 layout_mode = 2
-theme_override_constants/separation = 6
-alignment = 2
+texture = ExtResource("5_loadout")
+patch_margin_left = 6
+patch_margin_top = 6
+patch_margin_right = 6
+patch_margin_bottom = 6
 
-[node name="AmmoLoaded" type="Label" parent="WeaponPanel/WeaponVBox/AmmoRow" unique_id=700000011]
+[node name="Margin" type="MarginContainer" parent="WeaponPanel/WeaponVBox/LoadoutBox" unique_id=700000005]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 4
+
+[node name="AmmoRow" type="HBoxContainer" parent="WeaponPanel/WeaponVBox/LoadoutBox/Margin" unique_id=700000010]
+layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 0
+
+[node name="AmmoLoaded" type="Label" parent="WeaponPanel/WeaponVBox/LoadoutBox/Margin/AmmoRow" unique_id=700000011]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 36
 text = "12"
+vertical_alignment = 1
 
-[node name="AmmoSlash" type="Label" parent="WeaponPanel/WeaponVBox/AmmoRow" unique_id=700000012]
+[node name="AmmoSlash" type="Label" parent="WeaponPanel/WeaponVBox/LoadoutBox/Margin/AmmoRow" unique_id=700000012]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.65, 0.68, 0.72, 0.7)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 1, 1, 0.85)
+theme_override_font_sizes/font_size = 24
 text = "/"
-vertical_alignment = 2
+vertical_alignment = 1
 
-[node name="AmmoReserve" type="Label" parent="WeaponPanel/WeaponVBox/AmmoRow" unique_id=700000013]
+[node name="AmmoReserve" type="Label" parent="WeaponPanel/WeaponVBox/LoadoutBox/Margin/AmmoRow" unique_id=700000013]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.72, 0.76, 0.8)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 1, 1, 0.85)
+theme_override_font_sizes/font_size = 28
 text = "36"
-vertical_alignment = 2
+vertical_alignment = 1
 
-[node name="IconSpacer" type="Control" parent="WeaponPanel/WeaponVBox/AmmoRow" unique_id=700000015]
-custom_minimum_size = Vector2(8, 0)
+[node name="Spacer" type="Control" parent="WeaponPanel/WeaponVBox/LoadoutBox/Margin/AmmoRow" unique_id=700000015]
 layout_mode = 2
+size_flags_horizontal = 3
 
-[node name="WeaponIcon" type="TextureRect" parent="WeaponPanel/WeaponVBox/AmmoRow" unique_id=700000014]
-custom_minimum_size = Vector2(44, 26)
+[node name="WeaponIcon" type="TextureRect" parent="WeaponPanel/WeaponVBox/LoadoutBox/Margin/AmmoRow" unique_id=700000014]
+custom_minimum_size = Vector2(100, 52)
 layout_mode = 2
-texture = SubResource("CompressedTexture2D_atyv1")
+size_flags_vertical = 4
+texture = ExtResource("9_pistol")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="SlotRow" type="HBoxContainer" parent="WeaponPanel/WeaponVBox" unique_id=700000020]
+[node name="SlotsBg" type="NinePatchRect" parent="WeaponPanel/WeaponVBox" unique_id=700000020]
+custom_minimum_size = Vector2(222, 44)
 layout_mode = 2
-theme_override_constants/separation = 24
-alignment = 2
+texture = ExtResource("6_slots_bg")
+patch_margin_left = 4
+patch_margin_top = 4
+patch_margin_right = 4
+patch_margin_bottom = 4
 
-[node name="Slot1VBox" type="VBoxContainer" parent="WeaponPanel/WeaponVBox/SlotRow" unique_id=700000021]
+[node name="Margin" type="MarginContainer" parent="WeaponPanel/WeaponVBox/SlotsBg" unique_id=700000021]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 2
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 2
+theme_override_constants/margin_bottom = 2
+
+[node name="SlotRow" type="HBoxContainer" parent="WeaponPanel/WeaponVBox/SlotsBg/Margin" unique_id=700000022]
 layout_mode = 2
 theme_override_constants/separation = 2
 alignment = 1
 
-[node name="SlotLabel1" type="Label" parent="WeaponPanel/WeaponVBox/SlotRow/Slot1VBox" unique_id=700000022]
+[node name="Slot1" type="NinePatchRect" parent="WeaponPanel/WeaponVBox/SlotsBg/Margin/SlotRow" unique_id=700000023]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 0
+texture = ExtResource("7_active")
+patch_margin_left = 4
+patch_margin_top = 4
+patch_margin_right = 4
+patch_margin_bottom = 4
+
+[node name="SlotLabel1" type="Label" parent="WeaponPanel/WeaponVBox/SlotsBg/Margin/SlotRow/Slot1" unique_id=700000024]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 26
 text = "1"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Underline1" type="Panel" parent="WeaponPanel/WeaponVBox/SlotRow/Slot1VBox" unique_id=700000023]
-custom_minimum_size = Vector2(16, 2)
+[node name="Slot2" type="NinePatchRect" parent="WeaponPanel/WeaponVBox/SlotsBg/Margin/SlotRow" unique_id=700000025]
 layout_mode = 2
-theme_override_styles/panel = SubResource("SB_slot_underline")
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 0
+texture = ExtResource("8_passive")
+patch_margin_left = 4
+patch_margin_top = 4
+patch_margin_right = 4
+patch_margin_bottom = 4
 
-[node name="Slot2VBox" type="VBoxContainer" parent="WeaponPanel/WeaponVBox/SlotRow" unique_id=700000024]
-layout_mode = 2
-theme_override_constants/separation = 2
-alignment = 1
-
-[node name="SlotLabel2" type="Label" parent="WeaponPanel/WeaponVBox/SlotRow/Slot2VBox" unique_id=700000025]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.62, 0.65, 0.5)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 14
+[node name="SlotLabel2" type="Label" parent="WeaponPanel/WeaponVBox/SlotsBg/Margin/SlotRow/Slot2" unique_id=700000026]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
 text = "2"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Underline2" type="Panel" parent="WeaponPanel/WeaponVBox/SlotRow/Slot2VBox" unique_id=700000026]
-modulate = Color(1, 1, 1, 0)
-custom_minimum_size = Vector2(16, 2)
+[node name="Slot3" type="NinePatchRect" parent="WeaponPanel/WeaponVBox/SlotsBg/Margin/SlotRow" unique_id=700000027]
 layout_mode = 2
-theme_override_styles/panel = SubResource("SB_slot_underline")
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 0
+texture = ExtResource("8_passive")
+patch_margin_left = 4
+patch_margin_top = 4
+patch_margin_right = 4
+patch_margin_bottom = 4
 
-[node name="Slot3VBox" type="VBoxContainer" parent="WeaponPanel/WeaponVBox/SlotRow" unique_id=700000027]
-layout_mode = 2
-theme_override_constants/separation = 2
-alignment = 1
-
-[node name="SlotLabel3" type="Label" parent="WeaponPanel/WeaponVBox/SlotRow/Slot3VBox" unique_id=700000028]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.62, 0.65, 0.5)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 14
+[node name="SlotLabel3" type="Label" parent="WeaponPanel/WeaponVBox/SlotsBg/Margin/SlotRow/Slot3" unique_id=700000028]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
 text = "3"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Underline3" type="Panel" parent="WeaponPanel/WeaponVBox/SlotRow/Slot3VBox" unique_id=700000029]
-modulate = Color(1, 1, 1, 0)
-custom_minimum_size = Vector2(16, 2)
-layout_mode = 2
-theme_override_styles/panel = SubResource("SB_slot_underline")
 
 [node name="DebugPanel" parent="." unique_id=1313506476 instance=ExtResource("2_dbg")]
 visible = false
@@ -642,16 +695,25 @@ size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 20
 text = "RESTART (R)"
 
-[node name="Crosshair" type="Control" parent="." unique_id=950000001]
+[node name="Crosshair" type="TextureRect" parent="." unique_id=950000001]
+custom_minimum_size = Vector2(3, 3)
 layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
+offset_left = -1.5
+offset_top = -1.5
+offset_right = 1.5
+offset_bottom = 1.5
 grow_horizontal = 2
 grow_vertical = 2
+
 mouse_filter = 2
+texture = ExtResource("4_cpng")
+expand_mode = 1
+stretch_mode = 5
 script = ExtResource("3_crd")
 
 [node name="DamageVignette" type="ColorRect" parent="." unique_id=900000001]

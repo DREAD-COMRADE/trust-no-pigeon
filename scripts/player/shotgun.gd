@@ -24,9 +24,9 @@ const BASE_SPREAD_DEGREES: float = 4.5
 const PUSH_PULL_BRACE_SPREAD_MULT: float = 0.55  # ADS tightens spread by 45%
 
 # ── Damage drop-off ────────────────────────────────────────────────────────────
-const DAMAGE_DROP_FULL_RANGE: float = 18.0       # 100% damage within 18m
-const DAMAGE_DROP_MAX_RANGE: float = 55.0        # Linear decay 18–55m
-const DAMAGE_DROP_MIN_THRESHOLD: float = 0.10    # 10% floor beyond 55m
+const DAMAGE_DROP_FULL_RANGE: float = 36.0       # 100% damage within 36m (doubled 2x)
+const DAMAGE_DROP_MAX_RANGE: float = 110.0       # Linear decay 36–110m (doubled 2x)
+const DAMAGE_DROP_MIN_THRESHOLD: float = 0.10    # 10% floor beyond 110m
 
 # ── Recoil ─────────────────────────────────────────────────────────────────────
 const GAS_PISTON_DAMPENING: float = 0.75
@@ -37,7 +37,7 @@ const RECOIL_RECOVERY_SPEED: float = 8.5
 @export var camera: Camera3D
 @export var fire_rate: float = HUMAN_PRACTICAL_FIRE_RATE
 @export var pellet_count: int = STANDARD_PELLET_COUNT
-@export var max_range: float = 100.0
+@export var max_range: float = 200.0
 
 
 @export var hip_position: Vector3 = Vector3(0.26, -0.28, -0.48)

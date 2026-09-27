@@ -34,11 +34,14 @@ func _on_reach_bounds() -> void:
 func _get_player() -> PlayerController:
 	if is_instance_valid(_cached_player):
 		return _cached_player
+	if not is_inside_tree() or not get_tree():
+		return null
 	for node in get_tree().get_nodes_in_group("player"):
 		if node is PlayerController:
 			_cached_player = node as PlayerController
 			return _cached_player
 	return null
+
 
 func _get_active_camera() -> Camera3D:
 	var vp = get_viewport()
@@ -46,7 +49,13 @@ func _get_active_camera() -> Camera3D:
 		var cam = vp.get_camera_3d()
 		if cam and cam.is_inside_tree():
 			return cam
+	var p = _get_player()
+	if p:
+		var cam = p.get_node_or_null("Camera3D")
+		if cam and cam.is_inside_tree():
+			return cam
 	return null
+
 
 # Near-miss dodge trigger
 
@@ -131,7 +140,7 @@ func _process_attacking(delta: float) -> void:
 	var cur_pos = global_position if is_inside_tree() else position
 	var dist_to_target = cur_pos.distance_to(target_player_pos)
 
-	if dist_to_target < 1.5:
+	if dist_to_target < 1.8:
 		_explode_on_player()
 		return
 
@@ -155,16 +164,26 @@ func _process_attacking(delta: float) -> void:
 			look_at(cur_pos + dir, up_vec)
 		cur_pos += dir * actual_speed * delta
 
-	# Fair-play constraints
-	cur_pos.y = max(cur_pos.y, MIN_ALTITUDE)
+	# Fair-play & floor anti-clipping constraints:
+	var floor_node = get_tree().get_first_node_in_group("pigeon_floor") if is_inside_tree() else null
+	if floor_node and floor_node is Node3D:
+		var floor_y = floor_node.global_position.y
+		cur_pos.y = max(cur_pos.y, floor_y + 0.2)
+	else:
+		cur_pos.y = max(cur_pos.y, MIN_ALTITUDE)
+
 	cur_pos.x = clamp(cur_pos.x, -MAX_LATERAL_X, MAX_LATERAL_X)
-	if dist_to_target > 1.5 and cur_pos.z > -0.5:
-		cur_pos.z = -0.5
 
 	if is_inside_tree():
 		global_position = cur_pos
 	else:
 		position = cur_pos
+
+	# Trigger explosion on arrival
+	if cur_pos.distance_to(target_player_pos) < 2.0:
+		_explode_on_player()
+		return
+
 
 # Hit and explosion
 
@@ -188,14 +207,16 @@ func _explode_on_player() -> void:
 		parent_node.add_child(fx)
 		fx.global_position = spawn_pos
 
-	if cam and cam.has_method("add_trauma"):
+	var player = _get_player()
+	var main = get_tree().current_scene if (is_inside_tree() and get_tree()) else null
+	var is_god = (player and "is_god_mode" in player and player.is_god_mode) or (main and "is_god_mode" in main and main.is_god_mode)
+
+	if not is_god and cam and cam.has_method("add_trauma"):
 		cam.add_trauma(0.65)
 
-	var player = _get_player()
 	if player:
 		player.take_damage(1)
-	else:
-		var main = get_tree().current_scene
+	elif not is_god:
 		if main and main.has_method("trigger_game_over"):
 			main.trigger_game_over()
 

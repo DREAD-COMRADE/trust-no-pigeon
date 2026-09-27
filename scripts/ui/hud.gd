@@ -61,18 +61,25 @@ var hint_tween: Tween
 @onready var wave_label: Label = get_node_or_null("HealthHeartsPanel/HeartsVBox/WaveLabel")
 
 # Weapon & Ammo (bottom-right)
-@onready var ammo_loaded_label: Label = get_node_or_null("WeaponPanel/WeaponVBox/AmmoRow/AmmoLoaded")
-@onready var ammo_slash_label: Label = get_node_or_null("WeaponPanel/WeaponVBox/AmmoRow/AmmoSlash")
-@onready var ammo_reserve_label: Label = get_node_or_null("WeaponPanel/WeaponVBox/AmmoRow/AmmoReserve")
-@onready var weapon_icon: TextureRect = get_node_or_null("WeaponPanel/WeaponVBox/AmmoRow/WeaponIcon")
+@export var texture_active: Texture2D = preload("res://assets/icons/UI/ACTIVE.png")
+@export var texture_passive: Texture2D = preload("res://assets/icons/UI/PASSIVE.png")
 
-# Slot Selector Underlines
-@onready var slot_label1: Label = get_node_or_null("WeaponPanel/WeaponVBox/SlotRow/Slot1VBox/SlotLabel1")
+@onready var ammo_loaded_label: Label = _find_label(["WeaponPanel/WeaponVBox/LoadoutBox/Margin/AmmoRow/AmmoLoaded", "WeaponPanel/WeaponVBox/AmmoRow/AmmoLoaded"])
+@onready var ammo_slash_label: Label = _find_label(["WeaponPanel/WeaponVBox/LoadoutBox/Margin/AmmoRow/AmmoSlash", "WeaponPanel/WeaponVBox/AmmoRow/AmmoSlash"])
+@onready var ammo_reserve_label: Label = _find_label(["WeaponPanel/WeaponVBox/LoadoutBox/Margin/AmmoRow/AmmoReserve", "WeaponPanel/WeaponVBox/AmmoRow/AmmoReserve"])
+@onready var weapon_icon: TextureRect = _find_texture_rect(["WeaponPanel/WeaponVBox/LoadoutBox/Margin/AmmoRow/WeaponIcon", "WeaponPanel/WeaponVBox/AmmoRow/WeaponIcon"])
+
+# Slot Selector Underlines / Backgrounds
+@onready var slot_bg1: Control = _find_control(["WeaponPanel/WeaponVBox/SlotsBg/Margin/SlotRow/Slot1", "WeaponPanel/WeaponVBox/SlotRow/Slot1VBox/Underline1"])
+@onready var slot_bg2: Control = _find_control(["WeaponPanel/WeaponVBox/SlotsBg/Margin/SlotRow/Slot2", "WeaponPanel/WeaponVBox/SlotRow/Slot2VBox/Underline2"])
+@onready var slot_bg3: Control = _find_control(["WeaponPanel/WeaponVBox/SlotsBg/Margin/SlotRow/Slot3", "WeaponPanel/WeaponVBox/SlotRow/Slot3VBox/Underline3"])
+@onready var slot_label1: Label = _find_label(["WeaponPanel/WeaponVBox/SlotsBg/Margin/SlotRow/Slot1/SlotLabel1", "WeaponPanel/WeaponVBox/SlotRow/Slot1VBox/SlotLabel1"])
+@onready var slot_label2: Label = _find_label(["WeaponPanel/WeaponVBox/SlotsBg/Margin/SlotRow/Slot2/SlotLabel2", "WeaponPanel/WeaponVBox/SlotRow/Slot2VBox/SlotLabel2"])
+@onready var slot_label3: Label = _find_label(["WeaponPanel/WeaponVBox/SlotsBg/Margin/SlotRow/Slot3/SlotLabel3", "WeaponPanel/WeaponVBox/SlotRow/Slot3VBox/SlotLabel3"])
 @onready var underline1: Panel = get_node_or_null("WeaponPanel/WeaponVBox/SlotRow/Slot1VBox/Underline1")
-@onready var slot_label2: Label = get_node_or_null("WeaponPanel/WeaponVBox/SlotRow/Slot2VBox/SlotLabel2")
 @onready var underline2: Panel = get_node_or_null("WeaponPanel/WeaponVBox/SlotRow/Slot2VBox/Underline2")
-@onready var slot_label3: Label = get_node_or_null("WeaponPanel/WeaponVBox/SlotRow/Slot3VBox/SlotLabel3")
 @onready var underline3: Panel = get_node_or_null("WeaponPanel/WeaponVBox/SlotRow/Slot3VBox/Underline3")
+
 
 # Debug & Game Over
 @onready var debug_panel: Control = $DebugPanel if has_node("DebugPanel") else null
@@ -95,6 +102,8 @@ var last_recorded_health: int = -1  # -1 = uninitialized; set on first update_he
 # ── Internal state ────────────────────────────────────────────────────────────
 var toast_tween: Tween
 var cur_active_slot: int = 0
+var is_aiming: bool = false
+
 
 
 var game_over_bad_stream: AudioStream = preload("res://assets/Audio/GAME_OVER.mp3")
@@ -123,7 +132,15 @@ func _ready() -> void:
 	# Initial setup — hearts will be re-initialized by player's health_changed signal
 	update_score(0, 0)
 	update_weapon_ui(0, 6, 0, 18)
-	# Don't hardcode hearts here; wait for update_health() call from PlayerController
+
+	# Clickable weapon slot selection
+	if slot_bg1:
+		slot_bg1.gui_input.connect(func(ev): if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT: _switch_player_slot(0))
+	if slot_bg2:
+		slot_bg2.gui_input.connect(func(ev): if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT: _switch_player_slot(1))
+	if slot_bg3:
+		slot_bg3.gui_input.connect(func(ev): if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT: _switch_player_slot(2))
+
 
 	# Auto-resolve camera for compass (group-based, not find_child)
 	if is_inside_tree() and get_tree():
@@ -145,9 +162,14 @@ func _exit_tree() -> void:
 func _on_settings_changed() -> void:
 	_update_crosshair_visibility()
 
+func set_aiming(aiming: bool) -> void:
+	is_aiming = aiming
+	_update_crosshair_visibility()
+
 func _update_crosshair_visibility() -> void:
 	if crosshair:
-		crosshair.visible = SettingsManager.show_crosshair and (not game_over_panel or not game_over_panel.visible)
+		crosshair.visible = SettingsManager.show_crosshair and (not is_aiming) and (not game_over_panel or not game_over_panel.visible)
+
 
 # ── Process — Compass ─────────────────────────────────────────────────────────
 func _process(_delta: float) -> void:
@@ -316,55 +338,61 @@ func update_player_status(hp: int, max_hp: int, shield: int, max_shield: int) ->
 func update_weapon_ui(slot: int, shotgun_ammo: int, rocket_ammo: int, shotgun_reserve: int = 0) -> void:
 	cur_active_slot = slot
 
-	const ACTIVE_LABEL_COLOR = Color(1.0, 1.0, 1.0, 1.0)
-	const INACTIVE_LABEL_COLOR = Color(0.6, 0.62, 0.65, 0.5)
+	# Set Active/Passive textures on weapon slots (Active uses ACTIVE.png, passive uses PASSIVE.png)
+	if slot_bg1 and "texture" in slot_bg1:
+		slot_bg1.texture = texture_active if slot == 0 else texture_passive
+	if slot_bg2 and "texture" in slot_bg2:
+		slot_bg2.texture = texture_active if slot == 1 else texture_passive
+	if slot_bg3 and "texture" in slot_bg3:
+		slot_bg3.texture = texture_active if slot == 2 else texture_passive
 
-	# Update 1 2 3 slot labels & active underlines
-	if slot_label1: slot_label1.modulate = ACTIVE_LABEL_COLOR if slot == 0 else INACTIVE_LABEL_COLOR
+	# Backward compatibility for old underlines if present
 	if underline1: underline1.modulate.a = 1.0 if slot == 0 else 0.0
-
-	if slot_label2: slot_label2.modulate = ACTIVE_LABEL_COLOR if slot == 1 else INACTIVE_LABEL_COLOR
 	if underline2: underline2.modulate.a = 1.0 if slot == 1 else 0.0
-
-	if slot_label3: slot_label3.modulate = ACTIVE_LABEL_COLOR if slot == 2 else INACTIVE_LABEL_COLOR
 	if underline3: underline3.modulate.a = 1.0 if slot == 2 else 0.0
+
+	const ACTIVE_COLOR = Color(1.0, 1.0, 1.0, 1.0)
+	if slot_label1: slot_label1.modulate = ACTIVE_COLOR
+	if slot_label2: slot_label2.modulate = ACTIVE_COLOR
+	if slot_label3: slot_label3.modulate = ACTIVE_COLOR
 
 	match slot:
 		0: # Pistol (Gun)
 			if ammo_loaded_label:
 				ammo_loaded_label.text = "12"
-				ammo_loaded_label.modulate = ACTIVE_LABEL_COLOR
+				ammo_loaded_label.modulate = ACTIVE_COLOR
 			if ammo_slash_label: ammo_slash_label.visible = true
 			if ammo_reserve_label:
 				ammo_reserve_label.visible = true
 				ammo_reserve_label.text = "36"
-				ammo_reserve_label.modulate = Color(0.7, 0.72, 0.76, 0.8)
+				ammo_reserve_label.modulate = ACTIVE_COLOR
 			if weapon_icon and weapon_icon_pistol:
 				weapon_icon.texture = weapon_icon_pistol
-				weapon_icon.custom_minimum_size = Vector2(44, 26)
 
 		1: # Shotgun
 			if ammo_loaded_label:
 				ammo_loaded_label.text = str(shotgun_ammo)
-				ammo_loaded_label.modulate = Color(1.0, 0.35, 0.35, 1.0) if shotgun_ammo == 0 else ACTIVE_LABEL_COLOR
+				ammo_loaded_label.modulate = Color(1.0, 0.35, 0.35, 1.0) if shotgun_ammo == 0 else ACTIVE_COLOR
 			if ammo_slash_label: ammo_slash_label.visible = true
 			if ammo_reserve_label:
 				ammo_reserve_label.visible = true
 				ammo_reserve_label.text = str(shotgun_reserve)
-				ammo_reserve_label.modulate = Color(1.0, 0.35, 0.35, 0.8) if shotgun_reserve == 0 else Color(0.7, 0.72, 0.76, 0.8)
+				ammo_reserve_label.modulate = Color(1.0, 0.35, 0.35, 0.8) if shotgun_reserve == 0 else ACTIVE_COLOR
 			if weapon_icon and weapon_icon_shotgun:
 				weapon_icon.texture = weapon_icon_shotgun
-				weapon_icon.custom_minimum_size = Vector2(52, 24)
 
 		2: # Rocket Launcher
 			if ammo_loaded_label:
-				ammo_loaded_label.text = str(rocket_ammo)
-				ammo_loaded_label.modulate = Color(1.0, 0.35, 0.35, 1.0) if rocket_ammo == 0 else ACTIVE_LABEL_COLOR
-			if ammo_slash_label: ammo_slash_label.visible = false
-			if ammo_reserve_label: ammo_reserve_label.visible = false
+				ammo_loaded_label.text = str(min(1, rocket_ammo))
+				ammo_loaded_label.modulate = Color(1.0, 0.35, 0.35, 1.0) if rocket_ammo == 0 else ACTIVE_COLOR
+			if ammo_slash_label: ammo_slash_label.visible = true
+			if ammo_reserve_label:
+				ammo_reserve_label.visible = true
+				ammo_reserve_label.text = str(max(0, rocket_ammo - 1))
+				ammo_reserve_label.modulate = Color(1.0, 0.35, 0.35, 0.8) if rocket_ammo <= 1 else ACTIVE_COLOR
 			if weapon_icon and weapon_icon_rocket:
 				weapon_icon.texture = weapon_icon_rocket
-				weapon_icon.custom_minimum_size = Vector2(56, 26)
+
 
 # ── Toast / Feedback Popup ────────────────────────────────────────────────────
 func show_event_banner(title: String, points_text: String = "+ 25") -> void:
@@ -494,3 +522,29 @@ func _on_restart_pressed() -> void:
 		game_over_audio.stop()
 	get_tree().paused = false
 	restart_requested.emit()
+
+func _switch_player_slot(slot: int) -> void:
+	for p in get_tree().get_nodes_in_group("player"):
+		if p.has_method("switch_to_slot"):
+			p.switch_to_slot(slot)
+
+func _find_label(paths: Array) -> Label:
+	for p in paths:
+		var n = get_node_or_null(p)
+		if n is Label:
+			return n
+	return null
+
+func _find_texture_rect(paths: Array) -> TextureRect:
+	for p in paths:
+		var n = get_node_or_null(p)
+		if n is TextureRect:
+			return n
+	return null
+
+func _find_control(paths: Array) -> Control:
+	for p in paths:
+		var n = get_node_or_null(p)
+		if n is Control:
+			return n
+	return null

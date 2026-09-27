@@ -1,11 +1,11 @@
 [gd_resource type="StandardMaterial3D" format=3 uid="uid://gen62kefg"]
 
-[ext_resource type="Texture2D" uid="uid://gend3kefg" path="res://assets/Textures/Damaged Mixed Plaster Brick Wall/Damaged Mixed Plaster Brick Wall v3 256/Damaged Mixed Plaster Brick Wall v3 256_BaseColor.png" id="72kefg"]
-[ext_resource type="Texture2D" uid="uid://gene3kefg" path="res://assets/Textures/Damaged Mixed Plaster Brick Wall/Damaged Mixed Plaster Brick Wall v3 256/Damaged Mixed Plaster Brick Wall v3 256_AmbientOcclusion.png" id="82kefg"]
-[ext_resource type="Texture2D" uid="uid://genf3kefg" path="res://assets/Textures/Damaged Mixed Plaster Brick Wall/Damaged Mixed Plaster Brick Wall v3 256/Damaged Mixed Plaster Brick Wall v3 256_Height.png" id="92kefg"]
-[ext_resource type="Texture2D" uid="uid://geng3kefg" path="res://assets/Textures/Damaged Mixed Plaster Brick Wall/Damaged Mixed Plaster Brick Wall v3 256/Damaged Mixed Plaster Brick Wall v3 256_Metallic.png" id="a3kefg"]
-[ext_resource type="Texture2D" uid="uid://genh3kefg" path="res://assets/Textures/Damaged Mixed Plaster Brick Wall/Damaged Mixed Plaster Brick Wall v3 256/Damaged Mixed Plaster Brick Wall v3 256_Normal.png" id="b3kefg"]
-[ext_resource type="Texture2D" uid="uid://geni3kefg" path="res://assets/Textures/Damaged Mixed Plaster Brick Wall/Damaged Mixed Plaster Brick Wall v3 256/Damaged Mixed Plaster Brick Wall v3 256_Roughness.png" id="c3kefg"]
+[ext_resource type="Texture2D" uid="uid://cm417lrkpjtuq" path="res://assets/Textures/Damaged Mixed Plaster Brick Wall/Damaged Mixed Plaster Brick Wall v3 256/Damaged Mixed Plaster Brick Wall v3 256_BaseColor.png" id="72kefg"]
+[ext_resource type="Texture2D" uid="uid://banfg6johjeqe" path="res://assets/Textures/Damaged Mixed Plaster Brick Wall/Damaged Mixed Plaster Brick Wall v3 256/Damaged Mixed Plaster Brick Wall v3 256_AmbientOcclusion.png" id="82kefg"]
+[ext_resource type="Texture2D" uid="uid://m0bpimy3ib8p" path="res://assets/Textures/Damaged Mixed Plaster Brick Wall/Damaged Mixed Plaster Brick Wall v3 256/Damaged Mixed Plaster Brick Wall v3 256_Height.png" id="92kefg"]
+[ext_resource type="Texture2D" uid="uid://bghn0gopmsd4a" path="res://assets/Textures/Damaged Mixed Plaster Brick Wall/Damaged Mixed Plaster Brick Wall v3 256/Damaged Mixed Plaster Brick Wall v3 256_Metallic.png" id="a3kefg"]
+[ext_resource type="Texture2D" uid="uid://dgw8nljvqwr2w" path="res://assets/Textures/Damaged Mixed Plaster Brick Wall/Damaged Mixed Plaster Brick Wall v3 256/Damaged Mixed Plaster Brick Wall v3 256_Normal.png" id="b3kefg"]
+[ext_resource type="Texture2D" uid="uid://cponkyccef0vu" path="res://assets/Textures/Damaged Mixed Plaster Brick Wall/Damaged Mixed Plaster Brick Wall v3 256/Damaged Mixed Plaster Brick Wall v3 256_Roughness.png" id="c3kefg"]
 
 [resource]
 albedo_texture = ExtResource("72kefg")
@@ -18,4 +18,6 @@ ao_enabled = true
 ao_texture = ExtResource("82kefg")
 heightmap_enabled = true
 heightmap_texture = ExtResource("92kefg")
-
+uv1_scale = Vector3(0.255, 0.255, 0.255)
+uv1_triplanar = true
+uv1_world_triplanar = true

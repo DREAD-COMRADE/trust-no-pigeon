@@ -249,16 +249,59 @@ func _trigger_multi_gov() -> void:
 	if spawner:
 		spawner.spawn_multi_government(3)
 
-func spawn_package_drone(rockets: int = 3, shells: int = 4) -> void:
-	if drone_scene and is_inside_tree():
-		var drone = drone_scene.instantiate() as PackageDrone
-		var start_left = randf() > 0.5
-		var from_pos = Vector3(-35.0 if start_left else 35.0, randf_range(9.0, 14.0), randf_range(-14.0, -28.0))
-		var to_pos = Vector3(35.0 if start_left else -35.0, randf_range(8.0, 13.0), randf_range(-14.0, -28.0))
+func spawn_package_drone(rockets: int = 3, shells: int = 4) -> PackageDrone:
+	if not drone_scene:
+		return null
 
-		var parent_node = get_tree().current_scene if get_tree() and get_tree().current_scene else get_tree().root
+	var drone = drone_scene.instantiate() as PackageDrone
+	var from_pos: Vector3
+	var to_pos: Vector3
+
+	var active_spawner: PigeonSpawner = spawner
+	if not active_spawner and is_inside_tree():
+		var spawners = get_tree().get_nodes_in_group("pigeon_spawners")
+		if spawners.size() > 0:
+			active_spawner = spawners[0] as PigeonSpawner
+		elif get_parent() and get_parent().has_node("PigeonSpawner"):
+			active_spawner = get_parent().get_node("PigeonSpawner") as PigeonSpawner
+
+	if active_spawner and active_spawner.has_method("get_spawn_and_kill_positions"):
+		var positions = active_spawner.get_spawn_and_kill_positions()
+		from_pos = positions[0]
+		to_pos = positions[1]
+	elif active_spawner and active_spawner.has_method("_get_spawn_and_kill_positions"):
+		var positions = active_spawner._get_spawn_and_kill_positions()
+		from_pos = positions[0]
+		to_pos = positions[1]
+	else:
+		var all_spawns = get_tree().get_nodes_in_group("pigeon_spawn_zones") if is_inside_tree() else []
+		var all_kills = get_tree().get_nodes_in_group("pigeon_kill_zones") if is_inside_tree() else []
+		if all_spawns.size() > 0 and all_kills.size() > 0:
+			var sz = all_spawns[randi() % all_spawns.size()]
+			from_pos = sz.get_spawn_position() if sz.has_method("get_spawn_position") else (sz.global_position if sz.is_inside_tree() else sz.position)
+			var best_k = null
+			var max_d: float = -1.0
+			for kz in all_kills:
+				var kp = kz.global_position if kz.is_inside_tree() else kz.position
+				var d = kp.distance_to(from_pos)
+				if d > max_d:
+					max_d = d
+					best_k = kz
+			if best_k:
+				to_pos = best_k.get_kill_position() if best_k.has_method("get_kill_position") else (best_k.global_position if best_k.is_inside_tree() else best_k.position)
+			else:
+				to_pos = -from_pos
+		else:
+			var start_left = randf() > 0.5
+			from_pos = Vector3(-35.0 if start_left else 35.0, randf_range(9.0, 14.0), randf_range(-14.0, -28.0))
+			to_pos = Vector3(35.0 if start_left else -35.0, randf_range(8.0, 13.0), randf_range(-14.0, -28.0))
+
+	var tree = get_tree() if is_inside_tree() else null
+	var parent_node = tree.current_scene if (tree and tree.current_scene) else (tree.root if tree else get_parent())
+	if parent_node:
 		parent_node.add_child(drone)
-		drone.setup(from_pos, to_pos, rockets, shells)
+	drone.setup(from_pos, to_pos, rockets, shells)
+	return drone
 
 func _trigger_government_noticed() -> void:
 	_broadcast_screens("GOVERNMENT HAS NOTICED", "SURVEILLANCE LEVEL INCREASED")

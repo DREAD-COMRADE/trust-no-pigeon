@@ -4,7 +4,7 @@ class_name GuidedMissile
 signal missile_detonated(hit_ufo: bool)
 
 @export var speed: float = 36.0
-@export var turn_speed: float = 24.0
+@export var turn_speed: float = 10.0
 @export var max_lifetime: float = 7.5
 @export var ufo_proximity_radius: float = 4.8
 

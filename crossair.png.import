@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://eaypfhq3emrd"
-path="res://.godot/imported/Play.png-6b870f91b417ad3e58d4ec5ff97ca824.ctex"
+uid="uid://c0wlg4lotyk1t"
+path="res://.godot/imported/crossair.png-fe5dfd5f7ef5b2f712644d84e20d66bf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/Play.png"
-dest_files=["res://.godot/imported/Play.png-6b870f91b417ad3e58d4ec5ff97ca824.ctex"]
+source_file="res://crossair.png"
+dest_files=["res://.godot/imported/crossair.png-fe5dfd5f7ef5b2f712644d84e20d66bf.ctex"]
 
 [params]
 

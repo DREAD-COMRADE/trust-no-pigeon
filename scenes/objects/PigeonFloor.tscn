@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://b87fpk0tpfl0r"]
+
+[ext_resource type="Script" uid="uid://b0pgeonf100r1" path="res://scripts/objects/pigeon_floor.gd" id="1_floor"]
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_flr"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_plane"]
+transparency = 1
+blend_mode = 0
+cull_mode = 0
+shading_mode = 0
+albedo_color = Color(0.2, 0.75, 1, 0.25)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_plane"]
+material = SubResource("StandardMaterial3D_plane")
+size = Vector2(160, 160)
+
+[node name="PigeonFloor" type="StaticBody3D" groups=["pigeon_floor"]]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_floor")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("WorldBoundaryShape3D_flr")
+
+[node name="VisualPlane" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_plane")

@@ -29,6 +29,7 @@ var is_wave_spawning: bool = false
 var _cached_difficulty_speed: float = 1.0  # Cached per-wave, avoids repeated SettingsManager calls
 
 func _ready() -> void:
+	add_to_group("pigeon_spawners")
 	spawn_timer = 1.0
 
 func _process(delta: float) -> void:
@@ -113,7 +114,12 @@ func spawn_direct_attacking_government(count: int = 1) -> void:
 
 		var start_pos = Vector3(randf_range(-20.0, 20.0), randf_range(8.0, 15.0), randf_range(-20.0, -30.0))
 		var target_pos = Vector3(0, 1.6, 0)
+		var vp = get_viewport()
+		var cam = vp.get_camera_3d() if vp else null
+		if cam and cam.is_inside_tree():
+			target_pos = cam.global_position
 		var speed_mult = speed_multiplier * (aggression_manager.get_attack_speed_multiplier() if aggression_manager else 1.0)
+
 
 		get_parent().add_child(pigeon)
 		pigeon.setup(start_pos, target_pos, speed_mult)
@@ -151,13 +157,33 @@ func _instantiate_pigeon(is_gov: bool) -> void:
 	pigeon.pigeon_killed.connect(_on_pigeon_killed)
 
 
+func _get_all_spawn_zones() -> Array:
+	if spawn_zones.size() > 0:
+		return spawn_zones
+	if is_inside_tree():
+		return get_tree().get_nodes_in_group("pigeon_spawn_zones")
+	return []
+
+func _get_all_kill_zones() -> Array:
+	if kill_zones.size() > 0:
+		return kill_zones
+	if is_inside_tree():
+		return get_tree().get_nodes_in_group("pigeon_kill_zones")
+	return []
+
+func get_spawn_and_kill_positions() -> Array[Vector3]:
+	return _get_spawn_and_kill_positions()
+
 func _get_spawn_and_kill_positions() -> Array[Vector3]:
+	var all_spawns = _get_all_spawn_zones()
+	var all_kills = _get_all_kill_zones()
+
 	var start_pos: Vector3 = Vector3(-26.0 if randf() > 0.5 else 26.0, randf_range(3.0, 12.0), randf_range(-6.0, -28.0))
 	var target_pos: Vector3 = Vector3(26.0 if start_pos.x < 0 else -26.0, randf_range(2.5, 11.0), randf_range(-6.0, -28.0))
 
 	# Resolve start position from spawn zones
-	if spawn_zones.size() > 0:
-		var zone: Marker3D = spawn_zones[randi() % spawn_zones.size()]
+	if all_spawns.size() > 0:
+		var zone = all_spawns[randi() % all_spawns.size()]
 		if zone and is_instance_valid(zone):
 			if zone.has_method("get_spawn_position"):
 				start_pos = zone.get_spawn_position()
@@ -166,25 +192,28 @@ func _get_spawn_and_kill_positions() -> Array[Vector3]:
 			else:
 				start_pos = zone.position
 
-	# Resolve target position from kill zones (guaranteed opposite / min dist 20m)
-	var valid_kill_nodes: Array[Marker3D] = []
-	if kill_zones.size() > 0:
-		for zone in kill_zones:
+	# Resolve target position from kill zones (furthest/opposite from start_pos)
+	if all_kills.size() > 0:
+		var best_zone = null
+		var max_dist: float = -1.0
+		for zone in all_kills:
 			if zone and is_instance_valid(zone):
 				var pos = zone.global_position if zone.is_inside_tree() else zone.position
-				if pos.distance_to(start_pos) >= 20.0:
-					valid_kill_nodes.append(zone)
+				var dist = pos.distance_to(start_pos)
+				if dist > max_dist:
+					max_dist = dist
+					best_zone = zone
 
-	if valid_kill_nodes.size() > 0:
-		var zone = valid_kill_nodes[randi() % valid_kill_nodes.size()]
-		if zone.has_method("get_kill_position"):
-			target_pos = zone.get_kill_position()
-		elif zone.is_inside_tree():
-			target_pos = zone.global_position
-		else:
-			target_pos = zone.position
+		if best_zone:
+			if best_zone.has_method("get_kill_position"):
+				target_pos = best_zone.get_kill_position()
+			elif best_zone.is_inside_tree():
+				target_pos = best_zone.global_position
+			else:
+				target_pos = best_zone.position
 
 	return [start_pos, target_pos]
+
 
 func _on_pigeon_killed(_pigeon: PigeonBase, score: int, is_gov: bool) -> void:
 	if score_manager:

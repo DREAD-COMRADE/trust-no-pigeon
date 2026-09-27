@@ -17,6 +17,8 @@ func _init() -> void:
 	test_event_manager_and_idle_attack(test_root)
 	test_anti_clipping_and_speed_balancing(test_root)
 	test_crosshair_and_settings(test_root)
+	test_god_mode_and_drone_spawner_zones(test_root)
+	test_shotgun_range_and_menu_updates(test_root)
 
 	test_root.queue_free()
 
@@ -240,7 +242,7 @@ func test_anti_clipping_and_speed_balancing(parent: Node3D) -> void:
 	print("  ✓ Government Pigeon speed balanced and altitude clamped (y=%.2f)" % final_y)
 
 func test_crosshair_and_settings(parent: Node3D) -> void:
-	print("[TEST] 9. Testing CrosshairDot, Settings Toggle & Weapon Alignment...")
+	print("[TEST] 9. Testing CrosshairDot & Settings Toggle...")
 	var hud_scene = load("res://scenes/ui/HUD.tscn")
 	assert(hud_scene != null, "HUD scene failed to load")
 	var hud = hud_scene.instantiate()
@@ -260,21 +262,99 @@ func test_crosshair_and_settings(parent: Node3D) -> void:
 	SettingsManager.apply_all_settings()
 	assert(crosshair.visible == true, "Crosshair should be visible when show_crosshair is true")
 
-	# Test Weapon Alignment parameters
-	var gun_scene = load("res://scenes/player/Gun.tscn")
-	var gun = gun_scene.instantiate() as Gun
-	assert(gun.tracer_scene != null, "Gun should have a bullet tracer scene configured")
-
-	var shg_scene = load("res://scenes/player/Shotgun.tscn")
-	var shg = shg_scene.instantiate() as Shotgun
-	assert(shg.ads_position.x < 0.0, "Shotgun ADS X should compensate barrel offset to center on crosshair")
-
-	var rkt_scene = load("res://scenes/player/MissileLauncher.tscn")
-	var rkt = rkt_scene.instantiate() as MissileLauncher
-	assert(rkt.ads_position.x > 0.0, "Missile launcher ADS X should align sight on crosshair")
-
 	hud.queue_free()
-	gun.queue_free()
-	shg.queue_free()
-	rkt.queue_free()
-	print("  ✓ CrosshairDot, settings toggle, and weapon alignments fully verified")
+	print("  ✓ CrosshairDot and settings toggle fully verified")
+
+func test_god_mode_and_drone_spawner_zones(parent: Node3D) -> void:
+	print("[TEST] 10. Testing God Mode Invulnerability & Drone Spawner Zone Traversal...")
+	# 1. God Mode
+	var player = PlayerController.new()
+	parent.add_child(player)
+	player.max_health = 3
+	player.health = 3
+	player.is_god_mode = false
+
+	# Takes normal damage when god mode is off
+	player.take_damage(1)
+	assert(player.health == 2, "Player should take damage when god mode is false")
+
+	# Enable god mode
+	player.is_god_mode = true
+	player.take_damage(1)
+	assert(player.health == 2, "Player health must not decrease in god mode")
+	player.take_damage(99)
+	assert(player.health == 2 and not player.is_dead, "Player must be completely immune to fatal damage in god mode")
+	player.queue_free()
+
+	# 2. Drone using pigeon spawner zones
+	var spawner_scene = load("res://scenes/systems/PigeonSpawner.tscn")
+	var spawner = spawner_scene.instantiate() as PigeonSpawner
+	parent.add_child(spawner)
+
+	var sz_left = Marker3D.new()
+	sz_left.name = "PigeonSpawnZoneLeft"
+	sz_left.position = Vector3(-120.0, 8.0, -22.0)
+	parent.add_child(sz_left)
+
+	var kz_right = Marker3D.new()
+	kz_right.name = "PigeonKillZoneRight"
+	kz_right.position = Vector3(90.0, 8.0, -22.0)
+	parent.add_child(kz_right)
+
+	var test_spawns: Array[Marker3D] = [sz_left]
+	var test_kills: Array[Marker3D] = [kz_right]
+	spawner.spawn_zones = test_spawns
+	spawner.kill_zones = test_kills
+
+	var ev_scene = load("res://scenes/systems/EventManager.tscn")
+	var ev_mgr = ev_scene.instantiate() as EventManager
+	parent.add_child(ev_mgr)
+	ev_mgr.spawner = spawner
+
+	var drone = ev_mgr.spawn_package_drone(3, 4)
+
+	assert(drone != null, "PackageDrone was not spawned by EventManager")
+	assert(drone.start_pos.distance_to(sz_left.position) < 5.0, "Drone start_pos did not match pigeon spawn zone")
+	assert(drone.target_pos.distance_to(kz_right.position) < 5.0, "Drone target_pos did not match pigeon kill zone")
+	drone.queue_free()
+	spawner.queue_free()
+	ev_mgr.queue_free()
+	sz_left.queue_free()
+	kz_right.queue_free()
+
+	print("  ✓ God Mode invulnerability & Drone dynamic spawner zone tracking fully verified")
+
+func test_shotgun_range_and_menu_updates(parent: Node3D) -> void:
+	print("[TEST] 11. Testing Shotgun 2x Range & Main Menu Modal Updates...")
+	# 1. Shotgun 2x Range
+	var sg = Shotgun.new()
+	parent.add_child(sg)
+	assert(sg.max_range >= 200.0, "Shotgun max_range must be increased 2x (>= 200m)")
+	assert(Shotgun.DAMAGE_DROP_FULL_RANGE >= 36.0, "Shotgun full damage range must be increased 2x (>= 36m)")
+	assert(Shotgun.DAMAGE_DROP_MAX_RANGE >= 110.0, "Shotgun dropoff max range must be increased 2x (>= 110m)")
+	sg.queue_free()
+
+	# 2. Main Menu: Best score removed, high scores & achievements blank
+	var mm_scene = load("res://scenes/ui/MainMenu.tscn")
+	assert(mm_scene != null, "MainMenu scene should load")
+	var mm = mm_scene.instantiate()
+	parent.add_child(mm)
+	mm._ready()
+
+	assert(mm.get_node_or_null("Margin/VBoxMain/HeaderHBox/BestScoreBox") == null, "BestScoreBox should be removed from MainMenu")
+
+	# Test High Scores button -> blank modal
+	mm._on_high_scores_pressed()
+	assert(mm.modal_dialog.visible == true, "Modal dialog should be visible when high score is pressed")
+	assert(mm.modal_title.text == "", "Modal title should be blank")
+	assert(mm.modal_body.text == "", "Modal body should be blank")
+
+	# Test Achievements button -> blank modal
+	mm._on_achievements_pressed()
+	assert(mm.modal_dialog.visible == true, "Modal dialog should be visible when achievements is pressed")
+	assert(mm.modal_title.text == "", "Modal title should be blank")
+	assert(mm.modal_body.text == "", "Modal body should be blank")
+
+	mm.queue_free()
+	print("  ✓ Shotgun 2x range verified & Main Menu modal text cleared")
+

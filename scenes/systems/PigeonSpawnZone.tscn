@@ -2,5 +2,6 @@
 
 [ext_resource type="Script" path="res://scripts/systems/pigeon_spawn_zone.gd" id="1_sz"]
 
-[node name="PigeonSpawnZone" type="Marker3D"]
+[node name="PigeonSpawnZone" type="Marker3D" groups=["pigeon_spawn_zones"]]
 script = ExtResource("1_sz")
+
