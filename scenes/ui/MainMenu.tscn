@@ -1,14 +1,11 @@
 [gd_scene format=3 uid="uid://2u0drqlnv3ux"]
 
 [ext_resource type="Script" uid="uid://uylqvm267m6j" path="res://scripts/ui/main_menu.gd" id="1_mm"]
+[ext_resource type="Theme" uid="uid://b8je50e7y15kx" path="res://scenes/ui/new_theme.tres" id="2_theme"]
 [ext_resource type="Script" uid="uid://bwgphw3wqsvrl" path="res://scenes/ui/parallax_background.gd" id="2_2ysvc"]
 [ext_resource type="Texture2D" uid="uid://bb78s26g8gecb" path="res://assets/icons/game_title_screen.png" id="2_iwbf0"]
 [ext_resource type="PackedScene" uid="uid://hx1f36yywf0w" path="res://scenes/ui/SettingsPanel.tscn" id="2_sett"]
 [ext_resource type="AudioStream" uid="uid://b3mmc8f4e6laf" path="res://assets/Audio/Steel_Feathers_Theme5.mp3" id="5_xpiny"]
-
-[sub_resource type="Theme" id="Theme_6jbdy"]
-
-[sub_resource type="Theme" id="Theme_082nw"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2smhn"]
 
@@ -20,6 +17,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 script = ExtResource("1_mm")
 
 [node name="ParallaxBackground" type="ParallaxBackground" parent="." unique_id=243588116]
@@ -67,46 +65,44 @@ size_flags_horizontal = 3
 [node name="ContentHBox" type="HBoxContainer" parent="Margin/VBoxMain" unique_id=339925536]
 layout_mode = 2
 size_flags_vertical = 3
-theme = SubResource("Theme_6jbdy")
 
 [node name="LeftMenu" type="PanelContainer" parent="Margin/VBoxMain/ContentHBox" unique_id=1828897474]
-custom_minimum_size = Vector2(280, 0)
+custom_minimum_size = Vector2(230, 0)
 layout_mode = 2
-theme = SubResource("Theme_082nw")
 theme_override_styles/panel = SubResource("StyleBoxEmpty_2smhn")
 
 [node name="VBox" type="VBoxContainer" parent="Margin/VBoxMain/ContentHBox/LeftMenu" unique_id=1990135063]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 8
 alignment = 1
 
 [node name="BtnPlay" type="Button" parent="Margin/VBoxMain/ContentHBox/LeftMenu/VBox" unique_id=1708568592]
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 text = "PLAY"
 
 [node name="BtnHighScores" type="Button" parent="Margin/VBoxMain/ContentHBox/LeftMenu/VBox" unique_id=1687750879]
-custom_minimum_size = Vector2(0, 45)
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 text = "HIGH SCORES"
 
 [node name="BtnAchievements" type="Button" parent="Margin/VBoxMain/ContentHBox/LeftMenu/VBox" unique_id=1403356206]
-custom_minimum_size = Vector2(0, 45)
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 text = "ACHIEVEMENTS"
 
 [node name="BtnSettings" type="Button" parent="Margin/VBoxMain/ContentHBox/LeftMenu/VBox" unique_id=1050643226]
-custom_minimum_size = Vector2(0, 45)
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 text = "SETTINGS"
 
 [node name="BtnCredits" type="Button" parent="Margin/VBoxMain/ContentHBox/LeftMenu/VBox" unique_id=2097991538]
-custom_minimum_size = Vector2(0, 45)
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 text = "CREDITS"
 
 [node name="BtnQuit" type="Button" parent="Margin/VBoxMain/ContentHBox/LeftMenu/VBox" unique_id=2044612977]
-custom_minimum_size = Vector2(0, 45)
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
 text = "QUIT"
 

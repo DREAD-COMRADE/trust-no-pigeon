@@ -131,8 +131,7 @@ size_flags_horizontal = 3
 text = "GOD MODE (INVINCIBLE)"
 
 [node name="BtnPerfLab" type="Button" parent="Margin/VBox/MiscHBox" unique_id=1378624616]
+modulate = Color(0.3, 0.9, 1, 1)
 layout_mode = 2
 size_flags_horizontal = 3
-modulate = Color(0.3, 0.9, 1, 1)
 text = "⚡ PERF LAB (F4)"
-

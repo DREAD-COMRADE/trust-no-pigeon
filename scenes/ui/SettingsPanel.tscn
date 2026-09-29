@@ -33,6 +33,15 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_sett")
 
+[node name="BgColorRect" type="ColorRect" parent="." unique_id=987123456]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.05, 0.07, 0.96)
+
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=847105168]
 modulate = Color(0.08, 0.08, 0.09, 0.95)
 position = Vector2(585, 527.99994)
@@ -71,44 +80,44 @@ size_flags_vertical = 3
 theme_override_constants/separation = 50
 
 [node name="LeftNav" type="PanelContainer" parent="Margin/VBoxMain/HBox" unique_id=173449639]
-custom_minimum_size = Vector2(230, 0)
+custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxEmpty_8hc44")
 
 [node name="VBox" type="VBoxContainer" parent="Margin/VBoxMain/HBox/LeftNav" unique_id=11519136]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 alignment = 1
 
 [node name="BtnGameplay" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=687622690]
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 16
 text = "GAMEPLAY"
 
 [node name="BtnControls" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=2082860018]
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 16
 text = "CONTROLS"
 
 [node name="BtnAudio" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=1443893904]
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 16
 text = "AUDIO"
 
 [node name="BtnVideo" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=730472107]
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 16
 text = "VIDEO"
 
 [node name="BtnAccessibility" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=622570886]
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 16
 text = "ACCESSIBILITY"
 
 [node name="Spacer" type="Control" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=11519137]
@@ -116,9 +125,9 @@ custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
 [node name="BtnBack" type="Button" parent="Margin/VBoxMain/HBox/LeftNav/VBox" unique_id=182818748]
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(0, 38)
 layout_mode = 2
-theme_override_font_sizes/font_size = 17
+theme_override_font_sizes/font_size = 16
 text = "⬅ BACK"
 
 [node name="RightPanel" type="PanelContainer" parent="Margin/VBoxMain/HBox" unique_id=1111560931]

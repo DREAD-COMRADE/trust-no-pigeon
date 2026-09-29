@@ -19,6 +19,7 @@ func _init() -> void:
 	test_crosshair_and_settings(test_root)
 	test_god_mode_and_drone_spawner_zones(test_root)
 	test_shotgun_range_and_menu_updates(test_root)
+	test_main_menu_buttons_and_pause_settings(test_root)
 
 	test_root.queue_free()
 
@@ -357,4 +358,70 @@ func test_shotgun_range_and_menu_updates(parent: Node3D) -> void:
 
 	mm.queue_free()
 	print("  ✓ Shotgun 2x range verified & Main Menu modal text cleared")
+
+func test_main_menu_buttons_and_pause_settings(parent: Node3D) -> void:
+	print("[TEST] 12. Testing Main Menu new ui_test1 Buttons & Pause Menu Settings Isolation...")
+	# 1. Verify new_theme.tres uses new ui_test1 textures
+	var theme_res = load("res://scenes/ui/new_theme.tres") as Theme
+	assert(theme_res != null, "Theme scenes/ui/new_theme.tres should load successfully")
+	var normal_box = theme_res.get_stylebox("normal", "Button") as StyleBoxTexture
+	assert(normal_box != null, "Button normal style should be StyleBoxTexture")
+	assert("new ui_test1/normal.png" in normal_box.texture.resource_path, "Button normal texture should use new ui_test1/normal.png")
+
+	var hover_box = theme_res.get_stylebox("hover", "Button") as StyleBoxTexture
+	assert(hover_box != null, "Button hover style should be StyleBoxTexture")
+	assert("new ui_test1/hover.png" in hover_box.texture.resource_path, "Button hover texture should use new ui_test1/hover.png")
+
+	var pressed_box = theme_res.get_stylebox("pressed", "Button") as StyleBoxTexture
+	assert(pressed_box != null, "Button pressed style should be StyleBoxTexture")
+	assert("new ui_test1/pressed.png" in pressed_box.texture.resource_path, "Button pressed texture should use new ui_test1/pressed.png")
+
+	# 2. Verify MainMenu buttons
+	var mm_scene = load("res://scenes/ui/MainMenu.tscn")
+	assert(mm_scene != null, "MainMenu scene should load")
+	var mm = mm_scene.instantiate()
+	parent.add_child(mm)
+	mm._ready()
+
+	var btn_play = mm.get_node_or_null("Margin/VBoxMain/ContentHBox/LeftMenu/VBox/BtnPlay") as Button
+	assert(btn_play != null, "BtnPlay should exist in MainMenu")
+	var btn_quit = mm.get_node_or_null("Margin/VBoxMain/ContentHBox/LeftMenu/VBox/BtnQuit") as Button
+	assert(btn_quit != null, "BtnQuit should exist in MainMenu")
+	mm.queue_free()
+
+	# 3. Verify PauseMenu Settings isolation (CenterVBox hidden while settings open)
+	var pm_scene = load("res://scenes/ui/PauseMenu.tscn")
+	assert(pm_scene != null, "PauseMenu scene should load")
+	var pm = pm_scene.instantiate()
+	parent.add_child(pm)
+	pm._ready()
+
+	pm.toggle_pause()
+	assert(pm.center_vbox.visible == true, "CenterVBox should be visible when paused")
+
+	pm._on_settings_pressed()
+	assert(pm.center_vbox.visible == false, "CenterVBox should be hidden when SettingsPanel is opened")
+	assert(pm.settings_panel.visible == true, "SettingsPanel should be visible")
+
+	pm._on_settings_back()
+	assert(pm.center_vbox.visible == true, "CenterVBox should be restored when SettingsPanel is closed")
+	assert(pm.settings_panel.visible == false, "SettingsPanel should be hidden")
+
+	pm.queue_free()
+
+	# 4. Verify HSlider and CheckButton styles
+	var slider_style = theme_res.get_stylebox("slider", "HSlider") as StyleBoxFlat
+	assert(slider_style != null, "HSlider slider style should be a valid StyleBoxFlat")
+	var grabber_area = theme_res.get_stylebox("grabber_area", "HSlider") as StyleBoxFlat
+	assert(grabber_area != null, "HSlider grabber_area style should be a valid StyleBoxFlat")
+	var check_style = theme_res.get_stylebox("normal", "CheckButton") as StyleBoxEmpty
+	assert(check_style != null, "CheckButton normal style should be StyleBoxEmpty")
+
+	# 5. Verify floor red tile material has internal repo textures
+	var floor_mat = load("res://Materials/floor red tile.tres") as StandardMaterial3D
+	assert(floor_mat != null, "floor red tile.tres should load successfully")
+	assert(floor_mat.albedo_texture != null, "floor red tile should have a valid albedo_texture")
+	assert("res://assets/Textures/Random Ceramic Floor Tiles/" in floor_mat.albedo_texture.resource_path, "floor albedo_texture should be in assets/Textures/Random Ceramic Floor Tiles/")
+
+	print("  ✓ Main Menu new ui_test1 buttons, HSliders, CheckButtons & floor texture repo path fully verified")
 
